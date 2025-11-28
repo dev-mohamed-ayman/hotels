@@ -11,7 +11,7 @@
             </a>
         </div>
         <div class="card-datatable table-responsive">
-            <table class="table border-top table-bordered table-hover table-sm">
+            <table class="table border-top table-bordered table-hover table-sm text-center">
                 <thead>
                     <tr>
                         <th>{{ __('Name') }}</th>

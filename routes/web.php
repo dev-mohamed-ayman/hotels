@@ -38,6 +38,9 @@ Route::group(
             // Currencies Routes
             Route::resource('currencies', \App\Http\Controllers\Admin\CurrencyController::class);
 
+            // Hotels Routes
+            Route::resource('hotels', \App\Http\Controllers\Admin\HotelController::class);
+
             // Logout
             Route::get('/logout', [DashboardController::class, 'logout'])->name('logout');
         });

@@ -60,6 +60,14 @@
                 <div data-i18n="@lang('Currencies')">@lang('Currencies')</div>
             </a>
         </li>
+
+        <!-- Hotels -->
+        <li class="menu-item {{ isActiveRoute('hotels.*') }}">
+            <a href="{{ route('hotels.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-building"></i>
+                <div data-i18n="@lang('Hotels')">@lang('Hotels')</div>
+            </a>
+        </li>
     </ul>
 </aside>
 
