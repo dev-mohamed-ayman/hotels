@@ -35,6 +35,9 @@ Route::group(
                 Route::post('/password', 'updatePassword')->name('password');
             });
 
+            // Currencies Routes
+            Route::resource('currencies', \App\Http\Controllers\Admin\CurrencyController::class);
+
             // Logout
             Route::get('/logout', [DashboardController::class, 'logout'])->name('logout');
         });

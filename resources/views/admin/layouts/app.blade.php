@@ -1,6 +1,7 @@
 <!doctype html>
 
-<html lang="en" class=" layout-navbar-fixed layout-menu-fixed layout-compact " dir="ltr" data-skin="default"
+<html lang="{{app()->getLocale()}}" class=" layout-navbar-fixed layout-menu-fixed layout-compact " dir="{{app()->getLocale() === 'ar' ? 'rtl' : 'ltr'}}"
+      data-skin="default"
       data-bs-theme="light" data-assets-path="assets/" data-template="vertical-menu-template">
 
 <head>

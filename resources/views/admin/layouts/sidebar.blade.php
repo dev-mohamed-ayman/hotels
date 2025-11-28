@@ -52,6 +52,14 @@
                 </li>
             </ul>
         </li>
+
+        <!-- Currencies -->
+        <li class="menu-item {{ isActiveRoute('currencies.*') }}">
+            <a href="{{ route('currencies.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-currency-dollar"></i>
+                <div data-i18n="@lang('Currencies')">@lang('Currencies')</div>
+            </a>
+        </li>
     </ul>
 </aside>
 
