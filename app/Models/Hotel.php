@@ -23,4 +23,9 @@ class Hotel extends Model
     {
         return $this->hasMany(HotelBankAccount::class);
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class);
+    }
 }

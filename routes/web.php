@@ -41,6 +41,9 @@ Route::group(
             // Hotels Routes
             Route::resource('hotels', \App\Http\Controllers\Admin\HotelController::class);
 
+            // Customers Routes
+            Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);
+
             // Logout
             Route::get('/logout', [DashboardController::class, 'logout'])->name('logout');
         });
