@@ -44,6 +44,10 @@ Route::group(
             // Customers Routes
             Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);
 
+            // Bookings Routes
+            Route::post('bookings/{booking}/update-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updatePayment'])->name('bookings.update-payment');
+            Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
+
             // Logout
             Route::get('/logout', [DashboardController::class, 'logout'])->name('logout');
         });

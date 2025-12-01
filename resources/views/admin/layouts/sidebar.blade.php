@@ -76,6 +76,14 @@
                 <div data-i18n="@lang('Customers')">@lang('Customers')</div>
             </a>
         </li>
+
+        <!-- Bookings -->
+        <li class="menu-item {{ isActiveRoute('bookings.*') }}">
+            <a href="{{ route('bookings.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-calendar"></i>
+                <div data-i18n="@lang('Bookings')">@lang('Bookings')</div>
+            </a>
+        </li>
     </ul>
 </aside>
 
