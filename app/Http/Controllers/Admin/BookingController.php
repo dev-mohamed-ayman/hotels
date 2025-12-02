@@ -12,10 +12,69 @@ use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['customer', 'hotel', 'currency'])->latest()->paginate(10);
-        return view('admin.pages.bookings.index', compact('bookings'));
+        $query = Booking::with(['customer', 'hotel', 'currency']);
+
+        // Filter by hotel
+        if ($request->filled('hotel_id')) {
+            $query->where('hotel_id', $request->hotel_id);
+        }
+
+        // Filter by customer
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            switch ($request->payment_status) {
+                case 'paid':
+                    $query->whereRaw('paid_amount >= total_amount');
+                    break;
+                case 'unpaid':
+                    $query->where('paid_amount', 0);
+                    break;
+                case 'partial':
+                    $query->whereRaw('paid_amount > 0 AND paid_amount < total_amount');
+                    break;
+            }
+        }
+
+        // Filter by check-in date range
+        if ($request->filled('check_in_from')) {
+            $query->whereDate('check_in', '>=', $request->check_in_from);
+        }
+        if ($request->filled('check_in_to')) {
+            $query->whereDate('check_in', '<=', $request->check_in_to);
+        }
+
+        // Filter by check-out date range
+        if ($request->filled('check_out_from')) {
+            $query->whereDate('check_out', '>=', $request->check_out_from);
+        }
+        if ($request->filled('check_out_to')) {
+            $query->whereDate('check_out', '<=', $request->check_out_to);
+        }
+
+        // Filter by currency
+        if ($request->filled('currency_id')) {
+            $query->where('currency_id', $request->currency_id);
+        }
+
+        // Search by booking code
+        if ($request->filled('search')) {
+            $query->where('code', 'like', '%' . $request->search . '%');
+        }
+
+        $bookings = $query->latest()->paginate(10)->withQueryString();
+
+        // Get filter options
+        $hotels = Hotel::orderBy('name')->get();
+        $customers = Customer::orderBy('name')->get();
+        $currencies = Currency::where('is_active', true)->orderBy('code')->get();
+
+        return view('admin.pages.bookings.index', compact('bookings', 'hotels', 'customers', 'currencies'));
     }
 
     public function create()

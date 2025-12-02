@@ -123,5 +123,17 @@
     "Payment updated successfully.": "تم تحديث الدفعة بنجاح.",
     "Payment amount cannot exceed remaining amount of :amount": "مبلغ الدفعة لا يمكن أن يتجاوز المبلغ المتبقي :amount",
     "Are you sure you want to delete this booking?": "هل أنت متأكد أنك تريد حذف هذا الحجز؟",
-    "No bookings found": "لا توجد حجوزات"
+    "No bookings found": "لا توجد حجوزات",
+    "Filter Bookings": "تصفية الحجوزات",
+    "Apply Filters": "تطبيق الفلاتر",
+    "Clear All Filters": "مسح كل الفلاتر",
+    "Active Filters": "الفلاتر النشطة",
+    "Search by Code": "البحث بالكود",
+    "Enter booking code": "أدخل كود الحجز",
+    "From Date": "من تاريخ",
+    "To Date": "إلى تاريخ",
+    "All": "الكل",
+    "Currency": "العملة",
+    "Search": "بحث",
+    "Select": "اختر"
 }
