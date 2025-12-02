@@ -13,15 +13,9 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    @if (session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
 
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover text-center">
                             <thead>
                                 <tr>
                                     <th>{{ __('Code') }}</th>
@@ -65,23 +59,32 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                data-bs-target="#paymentModal{{ $booking->id }}">
-                                                <i class="ti tabler-currency-dollar"></i>
-                                            </button>
+                                            <div class="d-flex gap-1">
+                                                @if ($booking->check_in >= now())
+                                                    <a href="{{ route('bookings.edit', $booking) }}"
+                                                        class="btn btn-sm btn-success" title="{{ __('Edit') }}">
+                                                        <i class="ti tabler-edit"></i>
+                                                    </a>
+                                                @endif
 
-                                            @if ($booking->check_in >= now())
-                                                <form action="{{ route('bookings.destroy', $booking) }}" method="POST"
-                                                    class="d-inline-block"
-                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger"
-                                                        title="{{ __('Delete') }}">
-                                                        <i class="ti tabler-trash"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
+                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                                    data-bs-target="#paymentModal{{ $booking->id }}">
+                                                    <i class="ti tabler-currency-dollar"></i>
+                                                </button>
+
+                                                @if ($booking->check_in >= now())
+                                                    <form action="{{ route('bookings.destroy', $booking) }}" method="POST"
+                                                        class="d-inline-block"
+                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                            title="{{ __('Delete') }}">
+                                                            <i class="ti tabler-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
 
