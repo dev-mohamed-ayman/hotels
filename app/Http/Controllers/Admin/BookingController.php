@@ -285,13 +285,26 @@ class BookingController extends Controller
 
     public function updatePayment(Request $request, Booking $booking)
     {
+        $remainingAmount = $booking->total_amount - $booking->paid_amount;
+
         $request->validate([
-            'paid_amount' => 'required|numeric|min:0',
+            'payment_amount' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                'max:' . $remainingAmount,
+            ],
+        ], [
+            'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
+                'amount' => number_format($remainingAmount, 2) . ' ' . $booking->currency->code
+            ]),
         ]);
 
-        $booking->update(['paid_amount' => $request->paid_amount]);
+        $booking->update([
+            'paid_amount' => $booking->paid_amount + $request->payment_amount
+        ]);
 
-        return back()->with('success', 'Payment updated successfully.');
+        return back()->with('success', __('Payment updated successfully.'));
     }
 
     public function destroy(Booking $booking)

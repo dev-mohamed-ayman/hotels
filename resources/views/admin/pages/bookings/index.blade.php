@@ -116,17 +116,43 @@
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
+                                                            @php
+                                                                $remaining =
+                                                                    $booking->total_amount - $booking->paid_amount;
+                                                            @endphp
                                                             <label class="form-label">{{ __('Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ number_format($booking->total_amount - $booking->paid_amount, 2) }} {{ $booking->currency->code }}"
+                                                                id="remaining{{ $booking->id }}"
+                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->code }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label"
-                                                                for="paid_amount{{ $booking->id }}">{{ __('New Paid Amount') }}</label>
-                                                            <input type="number" step="0.01" class="form-control"
-                                                                id="paid_amount{{ $booking->id }}" name="paid_amount"
-                                                                value="{{ $booking->paid_amount }}" required>
+                                                                for="payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                                *</label>
+                                                            <div class="input-group">
+                                                                <input type="number" step="0.01" class="form-control"
+                                                                    id="payment_amount{{ $booking->id }}"
+                                                                    name="payment_amount" min="0.01"
+                                                                    max="{{ $remaining }}"
+                                                                    data-remaining="{{ $remaining }}"
+                                                                    data-currency="{{ $booking->currency->code }}"
+                                                                    data-booking-id="{{ $booking->id }}"
+                                                                    placeholder="{{ __('Enter amount to pay') }}" required>
+                                                                <span
+                                                                    class="input-group-text">{{ $booking->currency->code }}</span>
+                                                            </div>
+                                                            <small class="text-muted">{{ __('Maximum') }}:
+                                                                {{ number_format($remaining, 2) }}
+                                                                {{ $booking->currency->code }}</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label
+                                                                class="form-label">{{ __('New Remaining Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="new_remaining{{ $booking->id }}"
+                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->code }}"
+                                                                readonly>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -155,4 +181,40 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get all payment amount inputs
+                const paymentInputs = document.querySelectorAll('[id^="payment_amount"]');
+
+                paymentInputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        const bookingId = this.getAttribute('data-booking-id');
+                        const remaining = parseFloat(this.getAttribute('data-remaining'));
+                        const currency = this.getAttribute('data-currency');
+                        const paymentAmount = parseFloat(this.value) || 0;
+
+                        // Calculate new remaining
+                        const newRemaining = remaining - paymentAmount;
+
+                        // Update the new remaining field
+                        const newRemainingField = document.getElementById('new_remaining' + bookingId);
+                        if (newRemainingField) {
+                            newRemainingField.value = newRemaining.toFixed(2) + ' ' + currency;
+
+                            // Add visual feedback
+                            if (paymentAmount > remaining) {
+                                this.classList.add('is-invalid');
+                                newRemainingField.classList.add('text-danger');
+                            } else {
+                                this.classList.remove('is-invalid');
+                                newRemainingField.classList.remove('text-danger');
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+    @endpush
 @endsection
