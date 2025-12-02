@@ -39,7 +39,7 @@
         </li>
 
         <!-- Multi Level Menu Item Example -->
-        <li class="menu-item {{ isOpenMenu(['profile.*']) }} {{ isActiveRoute(['profile.*']) }}">
+        {{-- <li class="menu-item {{ isOpenMenu(['profile.*']) }} {{ isActiveRoute(['profile.*']) }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-user"></i>
                 <div data-i18n="@lang('Profile')">@lang('Profile')</div>
@@ -51,7 +51,7 @@
                     </a>
                 </li>
             </ul>
-        </li>
+        </li> --}}
 
         <!-- Currencies -->
         <li class="menu-item {{ isActiveRoute('currencies.*') }}">

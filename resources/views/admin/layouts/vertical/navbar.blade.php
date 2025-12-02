@@ -31,6 +31,29 @@
             </li>
             <!--/ Language -->
 
+            <!-- Layout Toggle (Visual Only) -->
+            <li class="nav-item dropdown me-2 me-xl-0">
+                <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
+                    href="javascript:void(0);" data-bs-toggle="dropdown" title="Sidebar Layout">
+                    <i class="icon-base icon-22px text-heading" id="layout-icon"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <button type="button" class="dropdown-item align-items-center" data-layout-value="vertical">
+                            <span><i class="icon-base ti tabler-layout-sidebar icon-22px me-3"></i>Vertical
+                                Sidebar</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item align-items-center" data-layout-value="horizontal">
+                            <span><i class="icon-base ti tabler-layout-navbar icon-22px me-3"></i>Horizontal
+                                Sidebar</span>
+                        </button>
+                    </li>
+                </ul>
+            </li>
+            <!--/ Layout Toggle -->
+
             <!-- Style Switcher -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
@@ -62,6 +85,61 @@
                 </ul>
             </li>
             <!-- / Style Switcher-->
+
+            <script>
+                // Sidebar Layout Toggle (Cookie Only)
+                document.addEventListener('DOMContentLoaded', function() {
+                    const layoutButtons = document.querySelectorAll('[data-layout-value]');
+
+                    // Helper function to get cookie value
+                    function getCookie(name) {
+                        const value = `; ${document.cookie}`;
+                        const parts = value.split(`; ${name}=`);
+                        if (parts.length === 2) return parts.pop().split(';').shift();
+                        return null;
+                    }
+
+                    // Helper function to set cookie
+                    function setCookie(name, value) {
+                        document.cookie = `${name}=${value}; path=/; max-age=31536000; SameSite=Lax`;
+                    }
+
+                    const savedLayout = getCookie('sidebarLayout') || 'vertical';
+                    const layoutIcon = document.getElementById('layout-icon');
+
+                    // Update main icon based on saved layout
+                    if (layoutIcon) {
+                        if (savedLayout === 'horizontal') {
+                            layoutIcon.className = 'icon-base ti tabler-layout-navbar icon-22px text-heading';
+                        } else {
+                            layoutIcon.className = 'icon-base ti tabler-layout-sidebar icon-22px text-heading';
+                        }
+                    }
+
+                    // Set active class based on saved preference
+                    layoutButtons.forEach(button => {
+                        if (button.getAttribute('data-layout-value') === savedLayout) {
+                            button.classList.add('active');
+                        } else {
+                            button.classList.remove('active');
+                        }
+                    });
+
+                    // Handle click events
+                    layoutButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const layout = this.getAttribute('data-layout-value');
+
+                            // Save to Cookie only
+                            setCookie('sidebarLayout', layout);
+
+                            // Reload page to apply changes
+                            window.location.reload();
+                        });
+                    });
+                });
+            </script>
+
 
 
             <!-- User -->
