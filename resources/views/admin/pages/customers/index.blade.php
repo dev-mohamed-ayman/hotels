@@ -10,6 +10,168 @@
                 <i class="ti tabler-plus me-2"></i>{{ __('Add Customer') }}
             </a>
         </div>
+        <div class="card-body">
+            <!-- Filters Section -->
+            <div class="mb-3">
+                <div class="accordion" id="filterAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button
+                                class="accordion-button {{ request()->hasAny(['search', 'type', 'priority', 'source']) ? '' : 'collapsed' }}"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                                <i class="ti tabler-filter me-2"></i>
+                                {{ __('Filter Bookings') }}
+                                @php
+                                    $activeFilters = 0;
+                                    if (request('search')) {
+                                        $activeFilters++;
+                                    }
+                                    if (request('type')) {
+                                        $activeFilters++;
+                                    }
+                                    if (request('priority')) {
+                                        $activeFilters++;
+                                    }
+                                    if (request('source')) {
+                                        $activeFilters++;
+                                    }
+                                @endphp
+                                @if ($activeFilters > 0)
+                                    <span class="badge bg-primary ms-2">{{ $activeFilters }}</span>
+                                @endif
+                            </button>
+                        </h2>
+                        <div id="filterCollapse"
+                            class="accordion-collapse collapse {{ request()->hasAny(['search', 'type', 'priority', 'source']) ? 'show' : '' }}">
+                            <div class="accordion-body">
+                                <form method="GET" action="{{ route('customers.index') }}">
+                                    <div class="row g-3">
+                                        <!-- Search -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ __('Search') }}</label>
+                                            <input type="text" name="search" class="form-control"
+                                                value="{{ request('search') }}" placeholder="{{ __('Name or Phone') }}">
+                                        </div>
+
+                                        <!-- Type Filter -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ __('Type') }}</label>
+                                            <select name="type" class="form-select">
+                                                <option value="">{{ __('All') }}</option>
+                                                <option value="individual"
+                                                    {{ request('type') == 'individual' ? 'selected' : '' }}>
+                                                    {{ __('Individual') }}
+                                                </option>
+                                                <option value="corporate"
+                                                    {{ request('type') == 'corporate' ? 'selected' : '' }}>
+                                                    {{ __('Corporate') }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Priority Filter -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ __('Priority') }}</label>
+                                            <select name="priority" class="form-select">
+                                                <option value="">{{ __('All') }}</option>
+                                                <option value="low"
+                                                    {{ request('priority') == 'low' ? 'selected' : '' }}>
+                                                    {{ __('Low') }}
+                                                </option>
+                                                <option value="medium"
+                                                    {{ request('priority') == 'medium' ? 'selected' : '' }}>
+                                                    {{ __('Medium') }}
+                                                </option>
+                                                <option value="high"
+                                                    {{ request('priority') == 'high' ? 'selected' : '' }}>
+                                                    {{ __('High') }}
+                                                </option>
+                                                <option value="urgent"
+                                                    {{ request('priority') == 'urgent' ? 'selected' : '' }}>
+                                                    {{ __('Urgent') }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Source Filter -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ __('Source') }}</label>
+                                            <select name="source" class="form-select">
+                                                <option value="">{{ __('All') }}</option>
+                                                <option value="website"
+                                                    {{ request('source') == 'website' ? 'selected' : '' }}>
+                                                    {{ __('Website') }}
+                                                </option>
+                                                <option value="social_media"
+                                                    {{ request('source') == 'social_media' ? 'selected' : '' }}>
+                                                    {{ __('Social Media') }}
+                                                </option>
+                                                <option value="referral"
+                                                    {{ request('source') == 'referral' ? 'selected' : '' }}>
+                                                    {{ __('Referral') }}
+                                                </option>
+                                                <option value="direct_visit"
+                                                    {{ request('source') == 'direct_visit' ? 'selected' : '' }}>
+                                                    {{ __('Direct Visit') }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ti tabler-search me-2"></i>{{ __('Apply Filters') }}
+                                        </button>
+                                        <a href="{{ route('customers.index') }}" class="btn btn-secondary">
+                                            <i class="ti tabler-x me-2"></i>{{ __('Clear All Filters') }}
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            @if (request()->hasAny(['search', 'type', 'priority', 'source']))
+                <div class="mb-3">
+                    <strong>{{ __('Active Filters') }}:</strong>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        @if (request('search'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Search') }}: {{ request('search') }}
+                                <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+
+                        @if (request('type'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Type') }}: {{ __(ucfirst(request('type'))) }}
+                                <a href="{{ request()->fullUrlWithQuery(['type' => null]) }}" class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+
+                        @if (request('priority'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Priority') }}: {{ __(ucfirst(request('priority'))) }}
+                                <a href="{{ request()->fullUrlWithQuery(['priority' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+
+                        @if (request('source'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Source') }}: {{ __(str_replace('_', ' ', ucfirst(request('source')))) }}
+                                <a href="{{ request()->fullUrlWithQuery(['source' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
         <div class="card-datatable table-responsive">
             <table class="table border-top table-bordered table-hover table-sm text-center">
                 <thead>

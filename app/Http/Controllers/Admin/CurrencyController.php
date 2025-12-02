@@ -11,9 +11,24 @@ class CurrencyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $currencies = Currency::query()->latest()->get();
+        $query = Currency::query();
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        // Search by code or symbol
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('code', 'like', '%' . $request->search . '%')
+                    ->orWhere('symbol', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $currencies = $query->latest()->get();
         return view('admin.pages.currencies.index', compact('currencies'));
     }
 

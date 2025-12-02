@@ -10,9 +10,19 @@ use Illuminate\Http\Request;
 
 class HotelController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $hotels = Hotel::with('bankAccounts.currency')->latest()->paginate(10);
+        $query = Hotel::with('bankAccounts.currency');
+
+        // Search by name or address
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('address', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $hotels = $query->latest()->paginate(10)->withQueryString();
         return view('admin.pages.hotels.index', compact('hotels'));
     }
 

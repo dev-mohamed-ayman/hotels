@@ -12,9 +12,35 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::with('hotels')->latest()->paginate(10);
+        $query = Customer::with('hotels');
+
+        // Search by name or phone
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone1', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone2', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by priority
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        // Filter by source
+        if ($request->filled('source')) {
+            $query->where('source', $request->source);
+        }
+
+        $customers = $query->latest()->paginate(10)->withQueryString();
         return view('admin.pages.customers.index', compact('customers'));
     }
 

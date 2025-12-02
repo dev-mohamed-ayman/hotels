@@ -135,5 +135,8 @@
     "All": "All",
     "Currency": "Currency",
     "Search": "Search",
-    "Select": "Select"
+    "Select": "Select",
+    "Code or Symbol": "Code or Symbol",
+    "Hotel name or address": "Hotel name or address",
+    "Name or Phone": "Name or Phone"
 }
