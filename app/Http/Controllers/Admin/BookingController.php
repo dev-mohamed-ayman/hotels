@@ -67,7 +67,24 @@ class BookingController extends Controller
             $query->where('code', 'like', '%' . $request->search . '%');
         }
 
-        $bookings = $query->latest()->paginate(10)->withQueryString();
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Validate sort_by column
+        $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        // Validate sort_order
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
+
+        $bookings = $query->paginate(10)->withQueryString();
 
         // Get filter options
         $hotels = Hotel::orderBy('name')->get();
@@ -88,7 +105,7 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|unique:bookings,code',
+            'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',
@@ -225,7 +242,7 @@ class BookingController extends Controller
         }
 
         $request->validate([
-            'code' => 'required|unique:bookings,code,' . $booking->id,
+            'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',

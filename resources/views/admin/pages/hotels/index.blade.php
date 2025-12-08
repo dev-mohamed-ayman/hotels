@@ -16,25 +16,71 @@
                 <div class="accordion" id="filterAccordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button {{ request('search') ? '' : 'collapsed' }}" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                            <button
+                                class="accordion-button {{ request()->hasAny(['search', 'sort_by']) ? '' : 'collapsed' }}"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
                                 <i class="ti tabler-filter me-2"></i>
-                                {{ __('Filter Bookings') }}
-                                @if (request('search'))
-                                    <span class="badge bg-primary ms-2">1</span>
+                                {{ __('Filter Hotels') }}
+                                @php
+                                    $activeFilters = 0;
+                                    if (request('search')) {
+                                        $activeFilters++;
+                                    }
+                                    if (request('sort_by')) {
+                                        $activeFilters++;
+                                    }
+                                @endphp
+                                @if ($activeFilters > 0)
+                                    <span class="badge bg-primary ms-2">{{ $activeFilters }}</span>
                                 @endif
                             </button>
                         </h2>
-                        <div id="filterCollapse" class="accordion-collapse collapse {{ request('search') ? 'show' : '' }}">
+                        <div id="filterCollapse"
+                            class="accordion-collapse collapse {{ request()->hasAny(['search', 'sort_by']) ? 'show' : '' }}">
                             <div class="accordion-body">
                                 <form method="GET" action="{{ route('hotels.index') }}">
                                     <div class="row g-3">
                                         <!-- Search -->
-                                        <div class="col-md-12">
+                                        <div class="col-md-6">
                                             <label class="form-label">{{ __('Search') }}</label>
                                             <input type="text" name="search" class="form-control"
                                                 value="{{ request('search') }}"
                                                 placeholder="{{ __('Hotel name or address') }}">
+                                        </div>
+
+                                        <!-- Sort By -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">{{ __('Sort By') }}</label>
+                                            <select name="sort_by" class="form-select">
+                                                <option value="created_at"
+                                                    {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>
+                                                    {{ __('Created At') }}</option>
+                                                <option value="name"
+                                                    {{ request('sort_by') == 'name' ? 'selected' : '' }}>
+                                                    {{ __('Name') }}</option>
+                                                <option value="address"
+                                                    {{ request('sort_by') == 'address' ? 'selected' : '' }}>
+                                                    {{ __('Address') }}</option>
+                                                <option value="is_active"
+                                                    {{ request('sort_by') == 'is_active' ? 'selected' : '' }}>
+                                                    {{ __('Status') }}</option>
+                                                <option value="updated_at"
+                                                    {{ request('sort_by') == 'updated_at' ? 'selected' : '' }}>
+                                                    {{ __('Updated At') }}</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Sort Order -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">{{ __('Sort Order') }}</label>
+                                            <select name="sort_order" class="form-select">
+                                                <option value="desc"
+                                                    {{ request('sort_order') == 'desc' ? 'selected' : '' }}>
+                                                    {{ __('Descending') }}</option>
+                                                <option value="asc"
+                                                    {{ request('sort_order') == 'asc' ? 'selected' : '' }}>
+                                                    {{ __('Ascending') }}</option>
+                                            </select>
                                         </div>
                                     </div>
 
@@ -54,14 +100,25 @@
             </div>
 
             <!-- Active Filters Display -->
-            @if (request('search'))
+            @if (request()->hasAny(['search', 'sort_by']))
                 <div class="mb-3">
                     <strong>{{ __('Active Filters') }}:</strong>
                     <div class="d-flex flex-wrap gap-2 mt-2">
-                        <span class="badge bg-label-primary">
-                            {{ __('Search') }}: {{ request('search') }}
-                            <a href="{{ route('hotels.index') }}" class="text-white ms-1">×</a>
-                        </span>
+                        @if (request('search'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Search') }}: {{ request('search') }}
+                                <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+                        @if (request('sort_by'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Sort By') }}: {{ __(ucfirst(str_replace('_', ' ', request('sort_by')))) }}
+                                ({{ request('sort_order') == 'asc' ? __('Ascending') : __('Descending') }})
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => null, 'sort_order' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
                     </div>
                 </div>
             @endif

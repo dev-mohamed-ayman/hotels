@@ -116,6 +116,70 @@
                                                 </option>
                                             </select>
                                         </div>
+
+                                        <!-- Status Filter -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ __('Status') }}</label>
+                                            <select name="status" class="form-select">
+                                                <option value="">{{ __('All') }}</option>
+                                                <option value="potential"
+                                                    {{ request('status') == 'potential' ? 'selected' : '' }}>
+                                                    {{ __('Potential') }}
+                                                </option>
+                                                <option value="active"
+                                                    {{ request('status') == 'active' ? 'selected' : '' }}>
+                                                    {{ __('Active') }}
+                                                </option>
+                                                <option value="cancelled"
+                                                    {{ request('status') == 'cancelled' ? 'selected' : '' }}>
+                                                    {{ __('Cancelled') }}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Sort By -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">{{ __('Sort By') }}</label>
+                                            <select name="sort_by" class="form-select">
+                                                <option value="created_at"
+                                                    {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>
+                                                    {{ __('Created At') }}</option>
+                                                <option value="name"
+                                                    {{ request('sort_by') == 'name' ? 'selected' : '' }}>
+                                                    {{ __('Name') }}</option>
+                                                <option value="email"
+                                                    {{ request('sort_by') == 'email' ? 'selected' : '' }}>
+                                                    {{ __('Email') }}</option>
+                                                <option value="phone_1"
+                                                    {{ request('sort_by') == 'phone_1' ? 'selected' : '' }}>
+                                                    {{ __('Phone') }}</option>
+                                                <option value="type"
+                                                    {{ request('sort_by') == 'type' ? 'selected' : '' }}>
+                                                    {{ __('Type') }}</option>
+                                                <option value="status"
+                                                    {{ request('sort_by') == 'status' ? 'selected' : '' }}>
+                                                    {{ __('Status') }}</option>
+                                                <option value="priority"
+                                                    {{ request('sort_by') == 'priority' ? 'selected' : '' }}>
+                                                    {{ __('Priority') }}</option>
+                                                <option value="updated_at"
+                                                    {{ request('sort_by') == 'updated_at' ? 'selected' : '' }}>
+                                                    {{ __('Updated At') }}</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Sort Order -->
+                                        <div class="col-md-3">
+                                            <label class="form-label">{{ __('Sort Order') }}</label>
+                                            <select name="sort_order" class="form-select">
+                                                <option value="desc"
+                                                    {{ request('sort_order') == 'desc' ? 'selected' : '' }}>
+                                                    {{ __('Descending') }}</option>
+                                                <option value="asc"
+                                                    {{ request('sort_order') == 'asc' ? 'selected' : '' }}>
+                                                    {{ __('Ascending') }}</option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <div class="mt-3 d-flex gap-2">
@@ -168,6 +232,23 @@
                                     class="text-white ms-1">×</a>
                             </span>
                         @endif
+
+                        @if (request('status'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Status') }}: {{ __(ucfirst(request('status'))) }}
+                                <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
+
+                        @if (request('sort_by'))
+                            <span class="badge bg-label-primary">
+                                {{ __('Sort By') }}: {{ __(ucfirst(str_replace('_', ' ', request('sort_by')))) }}
+                                ({{ request('sort_order') == 'asc' ? __('Ascending') : __('Descending') }})
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => null, 'sort_order' => null]) }}"
+                                    class="text-white ms-1">×</a>
+                            </span>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -182,7 +263,7 @@
                         <th>{{ __('Type') }}</th>
                         <th>{{ __('Status') }}</th>
                         <th>{{ __('Priority') }}</th>
-                        <th>{{ __('Interested Hotels') }}</th>
+                        <th>{{ __('Last Follow-up') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -220,13 +301,37 @@
                                 @endif
                             </td>
                             <td>
-                                @if ($customer->hotels->count() > 0)
-                                    <span class="badge bg-label-success">{{ $customer->hotels->count() }}</span>
+                                @php
+                                    $latestFollowUp = $customer->latestFollowUp;
+                                @endphp
+                                @if ($latestFollowUp)
+                                    <button type="button" class="btn btn-sm p-0 border-0 follow-up-status-btn"
+                                        data-customer-id="{{ $customer->id }}"
+                                        data-follow-up-id="{{ $latestFollowUp->id }}"
+                                        data-current-status="{{ $latestFollowUp->status }}" data-bs-toggle="modal"
+                                        data-bs-target="#changeFollowUpStatusModal">
+                                        @if ($latestFollowUp->status == 'none')
+                                            <span class="badge bg-label-secondary">{{ __('None') }}</span>
+                                        @elseif($latestFollowUp->status == 'in_progress')
+                                            <span class="badge bg-label-primary">{{ __('In Progress') }}</span>
+                                        @elseif($latestFollowUp->status == 'awaiting_replay')
+                                            <span class="badge bg-label-warning">{{ __('Awaiting Replay') }}</span>
+                                        @elseif($latestFollowUp->status == 'completed')
+                                            <span class="badge bg-label-success">{{ __('Completed') }}</span>
+                                        @elseif($latestFollowUp->status == 'canceled')
+                                            <span class="badge bg-label-danger">{{ __('Canceled') }}</span>
+                                        @endif
+                                    </button>
                                 @else
-                                    <span class="badge bg-label-secondary">0</span>
+                                    <span class="badge bg-label-secondary">{{ __('None') }}</span>
                                 @endif
                             </td>
                             <td>
+                                <a href="{{ route('customers.show', $customer->id) }}"
+                                    class="btn btn-sm btn-icon btn-info text-white" data-bs-toggle="tooltip"
+                                    title="{{ __('View Details') }}">
+                                    <i class="ti tabler-eye ti-sm"></i>
+                                </a>
                                 <a href="{{ route('customers.edit', $customer->id) }}"
                                     class="btn btn-sm btn-icon btn-success text-white" data-bs-toggle="tooltip"
                                     title="{{ __('Edit') }}">
@@ -259,4 +364,80 @@
             </div>
         @endif
     </div>
+
+    <!-- Change Follow-up Status Modal -->
+    <div class="modal fade" id="changeFollowUpStatusModal" tabindex="-1"
+        aria-labelledby="changeFollowUpStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeFollowUpStatusModalLabel">{{ __('Change Follow-up Status') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="changeFollowUpStatusForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="modalCustomerId" name="customer_id">
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Status') }} *</label>
+                            <select class="form-select" name="status" id="modalFollowUpStatus" required>
+                                <option value="none">{{ __('None') }}</option>
+                                <option value="in_progress">{{ __('In Progress') }}</option>
+                                <option value="awaiting_replay">{{ __('Awaiting Replay') }}</option>
+                                <option value="completed">{{ __('Completed') }}</option>
+                                <option value="canceled">{{ __('Canceled') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                            data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            // Handle follow-up status button click
+            $('.follow-up-status-btn').on('click', function() {
+                const customerId = $(this).data('customer-id');
+                const currentStatus = $(this).data('current-status');
+
+                $('#modalCustomerId').val(customerId);
+                $('#modalFollowUpStatus').val(currentStatus);
+            });
+
+            // Handle change follow-up status form submission
+            $('#changeFollowUpStatusForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const customerId = $('#modalCustomerId').val();
+                const status = $('#modalFollowUpStatus').val();
+
+                $.ajax({
+                    url: '{{ route('follow-ups.update-latest', ':id') }}'.replace(':id',
+                        customerId),
+                    method: 'PUT',
+                    data: {
+                        status: status,
+                        _token: '{{ csrf_token() }}',
+                        _method: 'PUT'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON?.message ||
+                            '{{ __('Failed to update follow-up status') }}');
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class FileHelper
 {
-    public static function upload(UploadedFile $file, string $path, string $oldFile = null, string $disk = 'public')
+    public static function upload(UploadedFile $file, string $path,  $oldFile = null, string $disk = 'public')
     {
 
         try {
@@ -26,7 +26,6 @@ class FileHelper
             Log::error("File upload error: " . $exception->getMessage());
             return null;
         }
-
     }
 
     public static function delete(string $path, string $disk = 'public')

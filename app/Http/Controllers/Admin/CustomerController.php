@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Hotel;
 use Illuminate\Http\Request;
@@ -14,20 +15,26 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::with('hotels');
+        $query = Customer::with(['latestFollowUp']);
 
         // Search by name or phone
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('phone1', 'like', '%' . $request->search . '%')
-                    ->orWhere('phone2', 'like', '%' . $request->search . '%');
+                    ->orWhere('phone_1', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone_2', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
             });
         }
 
         // Filter by type
         if ($request->filled('type')) {
             $query->where('type', $request->type);
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
 
         // Filter by priority
@@ -40,7 +47,24 @@ class CustomerController extends Controller
             $query->where('source', $request->source);
         }
 
-        $customers = $query->latest()->paginate(10)->withQueryString();
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Validate sort_by column
+        $allowedSortColumns = ['name', 'email', 'phone_1', 'type', 'status', 'priority', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        // Validate sort_order
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
+
+        $customers = $query->paginate(10)->withQueryString();
         return view('admin.pages.customers.index', compact('customers'));
     }
 
@@ -90,7 +114,48 @@ class CustomerController extends Controller
             $customer->hotels()->sync($validated['hotels']);
         }
 
+        // Create default follow-up with status 'none'
+        $customer->followUps()->create([
+            'status' => 'none',
+            'notes' => null,
+        ]);
+
         return redirect()->route('customers.index')->with('success', __('Customer created successfully'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $customer = Customer::with(['hotels', 'bookings.hotel', 'bookings.currency', 'bookings.rooms', 'followUps'])
+            ->findOrFail($id);
+
+        // Calculate statistics
+        $totalBookings = $customer->bookings->count();
+        $totalAmount = $customer->bookings->sum('total_amount');
+        $paidAmount = $customer->bookings->sum('paid_amount');
+        $pendingAmount = $totalAmount - $paidAmount;
+
+        // Get recent bookings (last 10)
+        $recentBookings = $customer->bookings()
+            ->with(['hotel', 'currency'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        // Get latest follow-up
+        $latestFollowUp = $customer->latestFollowUp;
+
+        return view('admin.pages.customers.show', compact(
+            'customer',
+            'totalBookings',
+            'totalAmount',
+            'paidAmount',
+            'pendingAmount',
+            'recentBookings',
+            'latestFollowUp'
+        ));
     }
 
     /**

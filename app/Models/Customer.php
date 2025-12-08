@@ -33,4 +33,19 @@ class Customer extends Model
     {
         return $this->belongsToMany(Hotel::class);
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function followUps()
+    {
+        return $this->hasMany(FollowUp::class);
+    }
+
+    public function latestFollowUp()
+    {
+        return $this->hasOne(FollowUp::class)->latestOfMany();
+    }
 }

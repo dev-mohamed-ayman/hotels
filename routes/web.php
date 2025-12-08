@@ -39,10 +39,18 @@ Route::group(
             Route::resource('currencies', \App\Http\Controllers\Admin\CurrencyController::class);
 
             // Hotels Routes
+            Route::post('hotels/quick-create', [\App\Http\Controllers\Admin\HotelController::class, 'quickCreate'])->name('hotels.quick-create');
             Route::resource('hotels', \App\Http\Controllers\Admin\HotelController::class);
 
             // Customers Routes
             Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);
+
+            // Follow-ups Routes
+            Route::prefix('customers/{customer}/follow-ups')->name('follow-ups.')->controller(\App\Http\Controllers\Admin\FollowUpController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/', 'store')->name('store');
+                Route::put('/latest', 'updateLatest')->name('update-latest');
+            });
 
             // Bookings Routes
             Route::post('bookings/{booking}/update-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updatePayment'])->name('bookings.update-payment');

@@ -1,0 +1,26 @@
+
+   INFO  Running migrations.  
+
+  2025_11_27_234437_remove_fields_from_currencies_table  4.65ms FAIL
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP 'exchange_rate'; check that column/key exists (Connection: mysql, SQL: alter table `currencies` drop `exchange_rate`, drop `is_default`)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:824
+    820Γûò                     $this->getName(), $query, $this->prepareBindings($bindings), $e
+    821Γûò                 );
+    822Γûò             }
+    823Γûò 
+  Γ₧£ 824Γûò             throw new QueryException(
+    825Γûò                 $this->getName(), $query, $this->prepareBindings($bindings), $e
+    826Γûò             );
+    827Γûò         }
+    828Γûò     }
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOException::("SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP 'exchange_rate'; check that column/key exists")
+
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:570
+      PDOStatement::execute()
+

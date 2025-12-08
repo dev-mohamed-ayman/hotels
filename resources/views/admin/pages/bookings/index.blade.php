@@ -159,6 +159,50 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
+
+                                                <!-- Sort By -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label">{{ __('Sort By') }}</label>
+                                                    <select name="sort_by" class="form-select">
+                                                        <option value="created_at"
+                                                            {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>
+                                                            {{ __('Created At') }}</option>
+                                                        <option value="code"
+                                                            {{ request('sort_by') == 'code' ? 'selected' : '' }}>
+                                                            {{ __('Code') }}</option>
+                                                        <option value="check_in"
+                                                            {{ request('sort_by') == 'check_in' ? 'selected' : '' }}>
+                                                            {{ __('Check In') }}</option>
+                                                        <option value="check_out"
+                                                            {{ request('sort_by') == 'check_out' ? 'selected' : '' }}>
+                                                            {{ __('Check Out') }}</option>
+                                                        <option value="total_amount"
+                                                            {{ request('sort_by') == 'total_amount' ? 'selected' : '' }}>
+                                                            {{ __('Total Amount') }}</option>
+                                                        <option value="paid_amount"
+                                                            {{ request('sort_by') == 'paid_amount' ? 'selected' : '' }}>
+                                                            {{ __('Paid Amount') }}</option>
+                                                        <option value="status"
+                                                            {{ request('sort_by') == 'status' ? 'selected' : '' }}>
+                                                            {{ __('Status') }}</option>
+                                                        <option value="updated_at"
+                                                            {{ request('sort_by') == 'updated_at' ? 'selected' : '' }}>
+                                                            {{ __('Updated At') }}</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Sort Order -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label">{{ __('Sort Order') }}</label>
+                                                    <select name="sort_order" class="form-select">
+                                                        <option value="desc"
+                                                            {{ request('sort_order') == 'desc' ? 'selected' : '' }}>
+                                                            {{ __('Descending') }}</option>
+                                                        <option value="asc"
+                                                            {{ request('sort_order') == 'asc' ? 'selected' : '' }}>
+                                                            {{ __('Ascending') }}</option>
+                                                    </select>
+                                                </div>
                                             </div>
 
                                             <div class="mt-3 d-flex gap-2">
@@ -187,6 +231,7 @@
                             'check_out_to',
                             'currency_id',
                             'search',
+                            'sort_by',
                         ]))
                         <div class="mb-3">
                             <strong>{{ __('Active Filters') }}:</strong>
@@ -261,6 +306,15 @@
                                             class="text-white ms-1">×</a>
                                     </span>
                                 @endif
+
+                                @if (request('sort_by'))
+                                    <span class="badge bg-label-primary">
+                                        {{ __('Sort By') }}: {{ __(ucfirst(str_replace('_', ' ', request('sort_by')))) }}
+                                        ({{ request('sort_order') == 'asc' ? __('Ascending') : __('Descending') }})
+                                        <a href="{{ request()->fullUrlWithQuery(['sort_by' => null, 'sort_order' => null]) }}"
+                                            class="text-white ms-1">×</a>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -290,7 +344,8 @@
                                         <td>{{ $booking->check_in->format('Y-m-d') }}</td>
                                         <td>{{ $booking->check_out->format('Y-m-d') }}</td>
                                         <td>{{ $booking->nights }}</td>
-                                        <td>{{ number_format($booking->total_amount, 2) }} {{ $booking->currency->code }}
+                                        <td>{{ number_format($booking->total_amount, 2) }}
+                                            {{ $booking->currency->code }}
                                         </td>
                                         <td>{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->code }}
                                         </td>

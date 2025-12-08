@@ -22,7 +22,24 @@ class HotelController extends Controller
             });
         }
 
-        $hotels = $query->latest()->paginate(10)->withQueryString();
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        // Validate sort_by column
+        $allowedSortColumns = ['name', 'address', 'is_active', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'created_at';
+        }
+
+        // Validate sort_order
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
+
+        $hotels = $query->paginate(10)->withQueryString();
         return view('admin.pages.hotels.index', compact('hotels'));
     }
 
@@ -57,6 +74,12 @@ class HotelController extends Controller
         }
 
         return redirect()->route('hotels.index')->with('success', __('Hotel created successfully'));
+    }
+
+    public function show(string $id)
+    {
+        $hotel = Hotel::with(['bankAccounts.currency', 'customers'])->findOrFail($id);
+        return view('admin.pages.hotels.show', compact('hotel'));
     }
 
     public function edit(string $id)
@@ -104,5 +127,29 @@ class HotelController extends Controller
         $hotel->delete();
 
         return redirect()->route('hotels.index')->with('success', __('Hotel deleted successfully'));
+    }
+
+    /**
+     * Quick create a hotel with just the name (for use in select dropdowns)
+     */
+    public function quickCreate(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $hotel = Hotel::create([
+            'name' => $validated['name'],
+            'address' => '', // Empty address, can be edited later
+            'is_active' => true, // Set as active by default
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'hotel' => [
+                'id' => $hotel->id,
+                'name' => $hotel->name,
+            ]
+        ]);
     }
 }
