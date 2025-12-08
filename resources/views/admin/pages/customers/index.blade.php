@@ -352,11 +352,10 @@
                                         </li>
                                         <li>
                                             <form action="{{ route('customers.destroy', $customer->id) }}"
-                                                method="POST" class="d-inline-block"
-                                                onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                                method="POST" onsubmit="return confirm('{{ __('Are you sure?') }}')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger">
+                                                <button type="submit" class="dropdown-item text-danger w-100 text-start">
                                                     <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
                                                 </button>
                                             </form>

@@ -325,6 +325,7 @@
                                 <tr>
                                     <th>{{ __('Code') }}</th>
                                     <th>{{ __('Hotel') }}</th>
+                                    <th>{{ __('Rooms') }}</th>
                                     <th>{{ __('Check In') }}</th>
                                     <th>{{ __('Check Out') }}</th>
                                     <th>{{ __('Nights') }}</th>
@@ -339,6 +340,37 @@
                                     <tr>
                                         <td><strong>{{ $booking->code }}</strong></td>
                                         <td>{{ $booking->hotel->name }}</td>
+                                        <td>
+                                            @if ($booking->rooms && $booking->rooms->count() > 0)
+                                                @php
+                                                    $roomTypes = ['SGL' => 0, 'DBL' => 0, 'TPL' => 0, 'QUD' => 0];
+                                                    $totalRooms = 0;
+                                                    foreach ($booking->rooms as $room) {
+                                                        $roomTypes[$room->room_type] += $room->room_count;
+                                                        $totalRooms += $room->room_count;
+                                                    }
+                                                @endphp
+                                                <div class="text-start">
+                                                    <div class="mb-1">
+                                                        <strong class="text-primary">{{ $totalRooms }}</strong>
+                                                        <small
+                                                            class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
+                                                            @if ($roomTypes[$type] > 0)
+                                                                <span class="badge bg-label-info">
+                                                                    <strong>{{ $type }}</strong>:
+                                                                    {{ $roomTypes[$type] }}
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $booking->check_in->format('Y-m-d') }}</td>
                                         <td>{{ $booking->check_out->format('Y-m-d') }}</td>
                                         <td>{{ $booking->nights }}</td>
@@ -398,11 +430,12 @@
                                                         </li>
                                                         <li>
                                                             <form action="{{ route('bookings.destroy', $booking) }}"
-                                                                method="POST" class="d-inline-block"
+                                                                method="POST"
                                                                 onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                <button type="submit"
+                                                                    class="dropdown-item text-danger w-100 text-start">
                                                                     <i
                                                                         class="ti tabler-trash me-2"></i>{{ __('Delete') }}
                                                                 </button>
@@ -495,7 +528,12 @@
                                     </div>
                                 @empty
                                     <tr>
-                                        <td colspan="10" class="text-center">{{ __('No bookings found') }}</td>
+                                        <td colspan="10" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="ti tabler-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                                <p class="mt-3 text-muted">{{ __('No bookings found') }}</p>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

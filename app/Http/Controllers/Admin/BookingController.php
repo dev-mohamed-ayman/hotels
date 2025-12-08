@@ -14,7 +14,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['customer', 'hotel', 'currency']);
+        $query = Booking::with(['customer', 'hotel', 'currency', 'rooms']);
 
         // Filter by hotel
         if ($request->filled('hotel_id')) {
