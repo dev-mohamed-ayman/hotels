@@ -325,7 +325,6 @@
                                 <tr>
                                     <th>{{ __('Code') }}</th>
                                     <th>{{ __('Hotel') }}</th>
-                                    <th>{{ __('Customer') }}</th>
                                     <th>{{ __('Check In') }}</th>
                                     <th>{{ __('Check Out') }}</th>
                                     <th>{{ __('Nights') }}</th>
@@ -340,7 +339,6 @@
                                     <tr>
                                         <td><strong>{{ $booking->code }}</strong></td>
                                         <td>{{ $booking->hotel->name }}</td>
-                                        <td>{{ $booking->customer->name }}</td>
                                         <td>{{ $booking->check_in->format('Y-m-d') }}</td>
                                         <td>{{ $booking->check_out->format('Y-m-d') }}</td>
                                         <td>{{ $booking->nights }}</td>
@@ -365,31 +363,53 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <div class="d-flex gap-1">
-                                                @if ($booking->check_in >= now())
-                                                    <a href="{{ route('bookings.edit', $booking) }}"
-                                                        class="btn btn-sm btn-success" title="{{ __('Edit') }}">
-                                                        <i class="ti tabler-edit"></i>
-                                                    </a>
-                                                @endif
-
-                                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
-                                                    data-bs-target="#paymentModal{{ $booking->id }}">
-                                                    <i class="ti tabler-currency-dollar"></i>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-icon btn-secondary" type="button"
+                                                    id="actionsDropdown{{ $booking->id }}" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                    <i class="ti tabler-dots-vertical"></i>
                                                 </button>
-
-                                                @if ($booking->check_in >= now())
-                                                    <form action="{{ route('bookings.destroy', $booking) }}"
-                                                        method="POST" class="d-inline-block"
-                                                        onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-danger"
-                                                            title="{{ __('Delete') }}">
-                                                            <i class="ti tabler-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                <ul class="dropdown-menu dropdown-menu-end"
+                                                    aria-labelledby="actionsDropdown{{ $booking->id }}">
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('bookings.show', $booking) }}">
+                                                            <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
+                                                        </a>
+                                                    </li>
+                                                    @if ($booking->check_in >= now())
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('bookings.edit', $booking) }}">
+                                                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                            </a>
+                                                        </li>
+                                                    @endif
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#paymentModal{{ $booking->id }}">
+                                                            <i
+                                                                class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
+                                                        </a>
+                                                    </li>
+                                                    @if ($booking->check_in >= now())
+                                                        <li>
+                                                            <hr class="dropdown-divider">
+                                                        </li>
+                                                        <li>
+                                                            <form action="{{ route('bookings.destroy', $booking) }}"
+                                                                method="POST" class="d-inline-block"
+                                                                onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="dropdown-item text-danger">
+                                                                    <i
+                                                                        class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    @endif
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>

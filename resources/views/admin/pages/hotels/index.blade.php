@@ -154,20 +154,40 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('hotels.edit', $hotel->id) }}"
-                                    class="btn btn-sm btn-icon btn-success text-white" data-bs-toggle="tooltip"
-                                    title="{{ __('Edit') }}">
-                                    <i class="ti tabler-edit ti-sm"></i>
-                                </a>
-                                <form action="{{ route('hotels.destroy', $hotel->id) }}" method="POST"
-                                    class="d-inline-block" onsubmit="return confirm('{{ __('Are you sure?') }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-danger text-white"
-                                        data-bs-toggle="tooltip" title="{{ __('Delete') }}">
-                                        <i class="ti tabler-trash ti-sm"></i>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon btn-secondary" type="button"
+                                        id="actionsDropdown{{ $hotel->id }}" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="ti tabler-dots-vertical"></i>
                                     </button>
-                                </form>
+                                    <ul class="dropdown-menu dropdown-menu-end"
+                                        aria-labelledby="actionsDropdown{{ $hotel->id }}">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('hotels.show', $hotel->id) }}">
+                                                <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('hotels.edit', $hotel->id) }}">
+                                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <form action="{{ route('hotels.destroy', $hotel->id) }}" method="POST"
+                                                class="d-inline-block"
+                                                onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     @empty

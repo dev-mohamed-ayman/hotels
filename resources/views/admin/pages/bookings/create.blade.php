@@ -102,10 +102,10 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label" for="payment_date">{{ __('Payment Date') }}</label>
-                                <input type="date" class="form-control @error('payment_date') is-invalid @enderror"
-                                    id="payment_date" name="payment_date" value="{{ old('payment_date') }}" />
-                                @error('payment_date')
+                                <label class="form-label" for="option_date">{{ __('Option Date') }}</label>
+                                <input type="date" class="form-control @error('option_date') is-invalid @enderror"
+                                    id="option_date" name="option_date" value="{{ old('option_date') }}" />
+                                @error('option_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -133,10 +133,11 @@
                         <h5 class="mb-3">{{ __('Rooms & Guest Details') }}</h5>
 
                         <div id="roomsContainer">
-                            <div class="room-row mb-3 p-3 border rounded">
-                                <div class="row">
+                            <div class="room-row mb-3 p-3 border rounded bg-light">
+                                <div class="row g-2">
                                     <div class="col-md-2">
-                                        <label class="form-label">{{ __('Room Type') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Room Type') }} <span
+                                                class="text-danger">*</span></label>
                                         <select name="rooms[0][room_type]" class="form-select" required>
                                             <option value="">{{ __('Select') }}</option>
                                             <option value="SGL">SGL</option>
@@ -146,36 +147,45 @@
                                         </select>
                                     </div>
                                     <div class="col-md-1">
-                                        <label class="form-label">{{ __('Count') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Count') }} <span
+                                                class="text-danger">*</span></label>
                                         <input type="number" name="rooms[0][room_count]" class="form-control room-count"
                                             value="1" min="1" required />
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label">{{ __('Price') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Price') }} <span
+                                                class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="rooms[0][price]"
                                             class="form-control room-price" required />
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label">{{ __('Category') }}</label>
-                                        <input type="text" name="rooms[0][category]" class="form-control" />
+                                        <label class="form-label fw-semibold">{{ __('Category') }}</label>
+                                        <input type="text" name="rooms[0][category]" class="form-control"
+                                            placeholder="{{ __('Optional') }}" />
                                     </div>
                                     <div class="col-md-1">
-                                        <label class="form-label">{{ __('Margin') }}</label>
+                                        <label class="form-label fw-semibold">{{ __('Margin') }} <span
+                                                class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="rooms[0][margin]"
                                             class="form-control room-margin" required />
                                     </div>
                                     <div class="col-md-1">
-                                        <label class="form-label">{{ __('Children') }}</label>
+                                        <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                                         <input type="number" name="rooms[0][child_count]"
-                                            class="form-control room-child-count" value="0" />
+                                            class="form-control room-child-count" value="0" min="0" />
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">{{ __('Child Margin') }}</label>
+                                    <div class="col-md-1">
+                                        <label class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
+                                        <input type="number" step="0.01" name="rooms[0][child_price]"
+                                            class="form-control room-child-price" value="0" min="0" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
                                         <input type="number" step="0.01" name="rooms[0][child_margin]"
-                                            class="form-control room-child-margin" value="0" />
+                                            class="form-control room-child-margin" value="0" min="0" />
                                     </div>
                                     <div class="col-md-1 d-flex align-items-end">
-                                        <button type="button" class="btn btn-danger btn-sm remove-room" disabled>
+                                        <button type="button" class="btn btn-danger btn-sm remove-room w-100" disabled>
                                             <i class="ti tabler-trash"></i>
                                         </button>
                                     </div>
@@ -363,24 +373,28 @@
                         <input type="number" name="rooms[${roomIndex}][room_count]" class="form-control room-count" value="1" min="1" required />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">{{ __('Price') }}</label>
+                        <label class="form-label fw-semibold">{{ __('Price') }} <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="rooms[${roomIndex}][price]" class="form-control room-price" required />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">{{ __('Category') }}</label>
-                        <input type="text" name="rooms[${roomIndex}][category]" class="form-control" />
+                        <label class="form-label fw-semibold">{{ __('Category') }}</label>
+                        <input type="text" name="rooms[${roomIndex}][category]" class="form-control" placeholder="{{ __('Optional') }}" />
                     </div>
                     <div class="col-md-1">
-                        <label class="form-label">{{ __('Margin') }}</label>
+                        <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" name="rooms[${roomIndex}][margin]" class="form-control room-margin" required />
                     </div>
                     <div class="col-md-1">
-                        <label class="form-label">{{ __('Children') }}</label>
-                        <input type="number" name="rooms[${roomIndex}][child_count]" class="form-control room-child-count" value="0" />
+                        <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
+                        <input type="number" name="rooms[${roomIndex}][child_count]" class="form-control room-child-count" value="0" min="0" />
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">{{ __('Child Margin') }}</label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" />
+                    <div class="col-md-1">
+                        <label class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
                     </div>
                     <div class="col-md-1 d-flex align-items-end">
                         <button type="button" class="btn btn-danger btn-sm remove-room">
@@ -497,11 +511,13 @@
                 const price = parseFloat(row.querySelector('.room-price').value) || 0;
                 const margin = parseFloat(row.querySelector('.room-margin').value) || 0;
                 const childCount = parseFloat(row.querySelector('.room-child-count').value) || 0;
+                const childPrice = parseFloat(row.querySelector('.room-child-price').value) || 0;
                 const childMargin = parseFloat(row.querySelector('.room-child-margin').value) || 0;
 
                 premarginTotal += price * roomCount;
                 marginValue += margin * roomCount;
-                totalChildCost += (childCount * childMargin) * roomCount;
+                // Child price and margin are added once per booking, not multiplied by room count
+                totalChildCost += (childCount * childPrice) + (childCount * childMargin);
             });
 
             // Calculate additions
@@ -532,8 +548,8 @@
 
         function attachCalculationListeners() {
             document.querySelectorAll(
-                '.room-count, .room-price, .room-margin, .room-child-count, .room-child-margin, .addition-amount, .discount-amount'
-                ).forEach(input => {
+                '.room-count, .room-price, .room-margin, .room-child-count, .room-child-price, .room-child-margin, .addition-amount, .discount-amount'
+            ).forEach(input => {
                 input.removeEventListener('input', calculateSummary);
                 input.addEventListener('input', calculateSummary);
             });

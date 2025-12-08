@@ -94,6 +94,12 @@ class BookingController extends Controller
         return view('admin.pages.bookings.index', compact('bookings', 'hotels', 'customers', 'currencies'));
     }
 
+    public function show(string $id)
+    {
+        $booking = Booking::with(['customer', 'hotel', 'currency', 'rooms', 'adjustments'])->findOrFail($id);
+        return view('admin.pages.bookings.show', compact('booking'));
+    }
+
     public function create()
     {
         $customers = Customer::get();
@@ -111,13 +117,15 @@ class BookingController extends Controller
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
-            'payment_date' => 'nullable|date',
+            'option_date' => 'nullable|date',
+            'payment_date' => 'nullable|date', // Keep for backward compatibility
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
             'rooms.*.price' => 'required|numeric|min:0',
             'rooms.*.margin' => 'required|numeric|min:0',
             'rooms.*.child_count' => 'nullable|integer|min:0',
+            'rooms.*.child_price' => 'nullable|numeric|min:0',
             'rooms.*.child_margin' => 'nullable|numeric|min:0',
             'additions' => 'nullable|array',
             'additions.*.amount' => 'required|numeric|min:0',
@@ -138,12 +146,23 @@ class BookingController extends Controller
 
             // Calculate totals
             $totalAmount = 0;
+            $childPrice = 0;
+            $childMargin = 0;
+
             foreach ($request->rooms as $room) {
                 $roomCount = $room['room_count'] ?? 1;
                 $roomTotal = ($room['price'] + $room['margin']) * $roomCount;
-                $childTotal = ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0) * $roomCount;
-                $totalAmount += $roomTotal + $childTotal;
+                $totalAmount += $roomTotal;
+
+                // Child price and margin are added once per booking, not multiplied by room count
+                if (isset($room['child_count']) && $room['child_count'] > 0) {
+                    $childPrice += ($room['child_count'] ?? 0) * ($room['child_price'] ?? 0);
+                    $childMargin += ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0);
+                }
             }
+
+            // Add child totals to total amount
+            $totalAmount += $childPrice + $childMargin;
 
             // Add additions
             if ($request->has('additions')) {
@@ -167,9 +186,11 @@ class BookingController extends Controller
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
                 'nights' => $nights,
-                'payment_date' => $request->payment_date,
+                'option_date' => $request->option_date ?? $request->payment_date,
                 'status' => 'confirmed', // Default to confirmed for now
                 'total_amount' => $totalAmount,
+                'child_price' => $childPrice,
+                'child_margin' => $childMargin,
                 'paid_amount' => $request->paid_amount ?? 0,
                 'notes' => $request->notes,
             ]);
@@ -182,6 +203,7 @@ class BookingController extends Controller
                     'price' => $room['price'],
                     'margin' => $room['margin'],
                     'child_count' => $room['child_count'] ?? 0,
+                    'child_price' => $room['child_price'] ?? 0,
                     'child_margin' => $room['child_margin'] ?? 0,
                 ]);
             }
@@ -248,13 +270,15 @@ class BookingController extends Controller
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
-            'payment_date' => 'nullable|date',
+            'option_date' => 'nullable|date',
+            'payment_date' => 'nullable|date', // Keep for backward compatibility
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
             'rooms.*.price' => 'required|numeric|min:0',
             'rooms.*.margin' => 'required|numeric|min:0',
             'rooms.*.child_count' => 'nullable|integer|min:0',
+            'rooms.*.child_price' => 'nullable|numeric|min:0',
             'rooms.*.child_margin' => 'nullable|numeric|min:0',
             'additions' => 'nullable|array',
             'additions.*.amount' => 'required|numeric|min:0',
@@ -275,12 +299,23 @@ class BookingController extends Controller
 
             // Calculate totals
             $totalAmount = 0;
+            $childPrice = 0;
+            $childMargin = 0;
+
             foreach ($request->rooms as $room) {
                 $roomCount = $room['room_count'] ?? 1;
                 $roomTotal = ($room['price'] + $room['margin']) * $roomCount;
-                $childTotal = ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0) * $roomCount;
-                $totalAmount += $roomTotal + $childTotal;
+                $totalAmount += $roomTotal;
+
+                // Child price and margin are added once per booking, not multiplied by room count
+                if (isset($room['child_count']) && $room['child_count'] > 0) {
+                    $childPrice += ($room['child_count'] ?? 0) * ($room['child_price'] ?? 0);
+                    $childMargin += ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0);
+                }
             }
+
+            // Add child totals to total amount
+            $totalAmount += $childPrice + $childMargin;
 
             // Add additions
             if ($request->has('additions')) {
@@ -304,8 +339,10 @@ class BookingController extends Controller
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
                 'nights' => $nights,
-                'payment_date' => $request->payment_date,
+                'option_date' => $request->option_date ?? $request->payment_date,
                 'total_amount' => $totalAmount,
+                'child_price' => $childPrice,
+                'child_margin' => $childMargin,
                 'paid_amount' => $request->paid_amount ?? $booking->paid_amount,
                 'notes' => $request->notes,
             ]);
@@ -323,6 +360,7 @@ class BookingController extends Controller
                     'price' => $room['price'],
                     'margin' => $room['margin'],
                     'child_count' => $room['child_count'] ?? 0,
+                    'child_price' => $room['child_price'] ?? 0,
                     'child_margin' => $room['child_margin'] ?? 0,
                 ]);
             }

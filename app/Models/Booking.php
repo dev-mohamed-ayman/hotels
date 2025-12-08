@@ -13,7 +13,8 @@ class Booking extends Model
     protected $casts = [
         'check_in' => 'date',
         'check_out' => 'date',
-        'payment_date' => 'date',
+        'option_date' => 'date',
+        'payment_date' => 'date', // Keep for backward compatibility
     ];
 
     public function customer(): BelongsTo
