@@ -87,7 +87,7 @@
                                             <td>
                                                 @if ($account->currency)
                                                     <span
-                                                        class="badge bg-label-primary">{{ $account->currency->code }}</span>
+                                                        class="badge bg-label-primary">{{ $account->currency->symbol }}</span>
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif

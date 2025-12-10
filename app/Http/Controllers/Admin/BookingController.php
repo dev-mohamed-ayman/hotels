@@ -9,6 +9,7 @@ use App\Models\Hotel;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class BookingController extends Controller
 {
@@ -232,10 +233,10 @@ class BookingController extends Controller
 
             DB::commit();
 
-            return redirect()->route('bookings.index')->with('success', 'Booking created successfully.');
+            return redirect()->route('bookings.index')->with('success', __('Booking created successfully'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error creating booking: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('Error creating booking') . ': ' . $e->getMessage())->withInput();
         }
     }
 
@@ -243,7 +244,7 @@ class BookingController extends Controller
     {
         // Check if check_in date has not passed yet
         if ($booking->check_in < now()) {
-            return redirect()->route('bookings.index')->with('error', 'Cannot edit booking. Check-in date has already passed.');
+            return redirect()->route('bookings.index')->with('error', __('Cannot edit booking. Check-in date has already passed.'));
         }
 
         $customers = Customer::get();
@@ -260,7 +261,7 @@ class BookingController extends Controller
     {
         // Check if check_in date has not passed yet
         if ($booking->check_in < now()) {
-            return redirect()->route('bookings.index')->with('error', 'Cannot update booking. Check-in date has already passed.');
+            return redirect()->route('bookings.index')->with('error', __('Cannot update booking. Check-in date has already passed.'));
         }
 
         $request->validate([
@@ -389,10 +390,10 @@ class BookingController extends Controller
 
             DB::commit();
 
-            return redirect()->route('bookings.index')->with('success', 'Booking updated successfully.');
+            return redirect()->route('bookings.index')->with('success', __('Booking updated successfully'));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error updating booking: ' . $e->getMessage())->withInput();
+            return back()->with('error', __('Error updating booking') . ': ' . $e->getMessage())->withInput();
         }
     }
 
@@ -410,7 +411,7 @@ class BookingController extends Controller
             ],
         ], [
             'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-                'amount' => number_format($remainingAmount, 2) . ' ' . $booking->currency->code
+                'amount' => number_format($remainingAmount, 2) . ' ' . $booking->currency->symbol
             ]),
         ]);
 
@@ -425,14 +426,174 @@ class BookingController extends Controller
     {
         // Check if check_in date has not passed yet
         if ($booking->check_in < now()) {
-            return back()->with('error', 'Cannot delete booking. Check-in date has already passed.');
+            return back()->with('error', __('Cannot delete booking. Check-in date has already passed.'));
         }
 
         try {
             $booking->delete();
-            return redirect()->route('bookings.index')->with('success', 'Booking deleted successfully.');
+            return redirect()->route('bookings.index')->with('success', __('Booking deleted successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', 'Error deleting booking: ' . $e->getMessage());
+            return back()->with('error', __('Error deleting booking') . ': ' . $e->getMessage());
         }
+    }
+
+    public function downloadCustomerPdf(Booking $booking)
+    {
+        $booking->load(['customer', 'hotel', 'currency', 'rooms', 'adjustments']);
+
+        // Calculate totals for customer (with margins - full price)
+        $roomsTotal = 0;
+        $roomsData = [];
+        foreach ($booking->rooms as $room) {
+            $roomTotal = ($room->price + $room->margin) * $room->room_count;
+            $roomsTotal += $roomTotal;
+            $roomsData[] = [
+                'room_type' => $room->room_type,
+                'category' => $room->category,
+                'room_count' => $room->room_count,
+                'price' => $room->price + $room->margin, // Full price with margin
+                'subtotal' => $roomTotal,
+            ];
+        }
+
+        $childTotal = $booking->child_price + $booking->child_margin;
+        $additionsTotal = $booking->adjustments->where('type', 'addition')->sum('amount');
+        $discountsTotal = $booking->adjustments->where('type', 'discount')->sum('amount');
+
+        $html = view('admin.pages.bookings.pdf.customer', compact(
+            'booking',
+            'roomsData',
+            'roomsTotal',
+            'childTotal',
+            'additionsTotal',
+            'discountsTotal'
+        ))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'default_font' => 'dejavusans',
+        ]);
+
+        $mpdf->WriteHTML($html);
+        return $mpdf->Output('booking-' . $booking->code . '-customer.pdf', 'D');
+    }
+
+    public function downloadSystemPdf(Booking $booking)
+    {
+        $booking->load(['customer', 'hotel', 'currency', 'rooms', 'adjustments']);
+
+        // Calculate totals for system (all details visible)
+        $roomsTotal = 0;
+        $totalMargin = 0;
+        $roomsData = [];
+        foreach ($booking->rooms as $room) {
+            $roomPriceTotal = $room->price * $room->room_count;
+            $roomMarginTotal = $room->margin * $room->room_count;
+            $roomTotal = $roomPriceTotal + $roomMarginTotal;
+            $roomsTotal += $roomTotal;
+            $totalMargin += $roomMarginTotal;
+            $roomsData[] = [
+                'room_type' => $room->room_type,
+                'category' => $room->category,
+                'room_count' => $room->room_count,
+                'price' => $room->price,
+                'margin' => $room->margin,
+                'price_total' => $roomPriceTotal,
+                'margin_total' => $roomMarginTotal,
+                'subtotal' => $roomTotal,
+            ];
+        }
+
+        $childPriceTotal = $booking->child_price;
+        $childMarginTotal = $booking->child_margin;
+        $childTotal = $childPriceTotal + $childMarginTotal;
+        $additionsTotal = $booking->adjustments->where('type', 'addition')->sum('amount');
+        $discountsTotal = $booking->adjustments->where('type', 'discount')->sum('amount');
+        $totalMargin += $childMarginTotal;
+
+        $html = view('admin.pages.bookings.pdf.system', compact(
+            'booking',
+            'roomsData',
+            'roomsTotal',
+            'totalMargin',
+            'childPriceTotal',
+            'childMarginTotal',
+            'childTotal',
+            'additionsTotal',
+            'discountsTotal'
+        ))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'default_font' => 'dejavusans',
+        ]);
+
+        $mpdf->WriteHTML($html);
+        return $mpdf->Output('booking-' . $booking->code . '-system.pdf', 'D');
+    }
+
+    public function downloadHotelPdf(Booking $booking)
+    {
+        $booking->load(['customer', 'hotel', 'currency', 'rooms', 'adjustments']);
+
+        // Calculate totals for hotel (without margins - base price only)
+        $roomsTotal = 0;
+        $roomsData = [];
+        foreach ($booking->rooms as $room) {
+            $roomTotal = $room->price * $room->room_count; // Price without margin
+            $roomsTotal += $roomTotal;
+            $roomsData[] = [
+                'room_type' => $room->room_type,
+                'category' => $room->category,
+                'room_count' => $room->room_count,
+                'price' => $room->price, // Base price only
+                'subtotal' => $roomTotal,
+            ];
+        }
+
+        $childTotal = $booking->child_price; // Only child price, no margin
+        $additionsTotal = $booking->adjustments->where('type', 'addition')->sum('amount');
+        $discountsTotal = $booking->adjustments->where('type', 'discount')->sum('amount');
+
+        $html = view('admin.pages.bookings.pdf.hotel', compact(
+            'booking',
+            'roomsData',
+            'roomsTotal',
+            'childTotal',
+            'additionsTotal',
+            'discountsTotal'
+        ))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'default_font' => 'dejavusans',
+        ]);
+
+        $mpdf->WriteHTML($html);
+        return $mpdf->Output('booking-' . $booking->code . '-hotel.pdf', 'D');
     }
 }

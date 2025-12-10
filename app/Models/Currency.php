@@ -19,4 +19,9 @@ class Currency extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

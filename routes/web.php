@@ -54,6 +54,9 @@ Route::group(
 
             // Bookings Routes
             Route::post('bookings/{booking}/update-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updatePayment'])->name('bookings.update-payment');
+            Route::get('bookings/{booking}/pdf/customer', [\App\Http\Controllers\Admin\BookingController::class, 'downloadCustomerPdf'])->name('bookings.pdf.customer');
+            Route::get('bookings/{booking}/pdf/system', [\App\Http\Controllers\Admin\BookingController::class, 'downloadSystemPdf'])->name('bookings.pdf.system');
+            Route::get('bookings/{booking}/pdf/hotel', [\App\Http\Controllers\Admin\BookingController::class, 'downloadHotelPdf'])->name('bookings.pdf.hotel');
             Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
 
             // Logout

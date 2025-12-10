@@ -375,9 +375,9 @@
                                         <td>{{ $booking->check_out->format('Y-m-d') }}</td>
                                         <td>{{ $booking->nights }}</td>
                                         <td>{{ number_format($booking->total_amount, 2) }}
-                                            {{ $booking->currency->code }}
+                                            {{ $booking->currency->symbol }}
                                         </td>
-                                        <td>{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->code }}
+                                        <td>{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->symbol }}
                                         </td>
                                         <td>
                                             @if ($booking->paid_amount == 0)
@@ -464,14 +464,14 @@
                                                         <div class="mb-3">
                                                             <label class="form-label">{{ __('Total Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ number_format($booking->total_amount, 2) }} {{ $booking->currency->code }}"
+                                                                value="{{ number_format($booking->total_amount, 2) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
                                                                 class="form-label">{{ __('Current Paid Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->code }}"
+                                                                value="{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -483,7 +483,7 @@
                                                                 class="form-label">{{ __('Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->code }}"
+                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -496,23 +496,23 @@
                                                                     name="payment_amount" min="0.01"
                                                                     max="{{ $remaining }}"
                                                                     data-remaining="{{ $remaining }}"
-                                                                    data-currency="{{ $booking->currency->code }}"
+                                                                    data-currency="{{ $booking->currency->symbol }}"
                                                                     data-booking-id="{{ $booking->id }}"
                                                                     placeholder="{{ __('Enter amount to pay') }}"
                                                                     required>
                                                                 <span
-                                                                    class="input-group-text">{{ $booking->currency->code }}</span>
+                                                                    class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
                                                             <small class="text-muted">{{ __('Maximum') }}:
                                                                 {{ number_format($remaining, 2) }}
-                                                                {{ $booking->currency->code }}</small>
+                                                                {{ $booking->currency->symbol }}</small>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
                                                                 class="form-label">{{ __('New Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="new_remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->code }}"
+                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                     </div>

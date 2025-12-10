@@ -330,13 +330,13 @@
                                     <td>
                                         <strong>{{ number_format($booking->total_amount, 2) }}</strong>
                                         @if ($booking->currency)
-                                            <span class="text-muted small">{{ $booking->currency->code }}</span>
+                                            <span class="text-muted small">{{ $booking->currency->symbol }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         <span class="text-success">{{ number_format($booking->paid_amount, 2) }}</span>
                                         @if ($booking->currency)
-                                            <span class="text-muted small">{{ $booking->currency->code }}</span>
+                                            <span class="text-muted small">{{ $booking->currency->symbol }}</span>
                                         @endif
                                     </td>
                                     <td>
