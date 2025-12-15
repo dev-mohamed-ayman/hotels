@@ -8,9 +8,52 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Bookings List') }}</h5>
-                    <a href="{{ route('bookings.create') }}" class="btn btn-primary">
-                        <i class="ti tabler-plus me-2"></i>{{ __('Add Booking') }}
-                    </a>
+                    <div class="d-flex gap-2 align-items-center">
+                        @if (isset($totalFilteredBookings) && $totalFilteredBookings > 0)
+                            <span class="text-muted small me-2">
+                                {{ __('Total') }}: <strong>{{ $totalFilteredBookings }}</strong> {{ __('booking(s)') }}
+                            </span>
+                        @endif
+                        @can('export bookings')
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="ti tabler-file-download me-2"></i>{{ __('Export PDF') }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.export.bank', request()->query()) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-building-bank me-2"></i>{{ __('Bank Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ route('bookings.export.detailed', request()->query()) }}" target="_blank">
+                                            <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.export.guest', request()->query()) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-user me-2"></i>{{ __('Guest Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ route('bookings.export.netrate', request()->query()) }}" target="_blank">
+                                            <i class="ti tabler-currency-dollar me-2"></i>{{ __('Net Rate Export') }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        @endcan
+                        @can('create bookings')
+                            <a href="{{ route('bookings.create') }}" class="btn btn-primary">
+                                <i class="ti tabler-plus me-2"></i>{{ __('Add Booking') }}
+                            </a>
+                        @endcan
+                    </div>
                 </div>
                 <div class="card-body">
                     <!-- Filters Section -->
@@ -309,7 +352,8 @@
 
                                 @if (request('sort_by'))
                                     <span class="badge bg-label-primary">
-                                        {{ __('Sort By') }}: {{ __(ucfirst(str_replace('_', ' ', request('sort_by')))) }}
+                                        {{ __('Sort By') }}:
+                                        {{ __(ucfirst(str_replace('_', ' ', request('sort_by')))) }}
                                         ({{ request('sort_order') == 'asc' ? __('Ascending') : __('Descending') }})
                                         <a href="{{ request()->fullUrlWithQuery(['sort_by' => null, 'sort_order' => null]) }}"
                                             class="text-white ms-1">×</a>
@@ -319,8 +363,24 @@
                         </div>
                     @endif
 
+                    <!-- Per Page Selector -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label for="per_page" class="form-label mb-0">{{ __('Show') }}:</label>
+                            <select name="per_page" id="per_page" class="form-select form-select-sm"
+                                style="width: auto;">
+                                <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                                <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
+                                <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100
+                                </option>
+                            </select>
+                            <span class="text-muted small">{{ __('entries') }}</span>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
-                        <table class="table table-hover text-center">
+                        <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
                             <thead>
                                 <tr>
                                     <th>{{ __('Code') }}</th>
@@ -331,6 +391,8 @@
                                     <th>{{ __('Nights') }}</th>
                                     <th>{{ __('Total') }}</th>
                                     <th>{{ __('Paid') }}</th>
+                                    <th>{{ __('Remaining') }}</th>
+                                    <th>{{ __('Option Date') }}</th>
                                     <th>{{ __('Status') }}</th>
                                     <th>{{ __('Actions') }}</th>
                                 </tr>
@@ -338,9 +400,9 @@
                             <tbody>
                                 @forelse ($bookings as $booking)
                                     <tr>
-                                        <td><strong>{{ $booking->code }}</strong></td>
-                                        <td>{{ $booking->hotel->name }}</td>
-                                        <td>
+                                        <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                        <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
+                                        <td class="py-2" style="width: 130px;">
                                             @if ($booking->rooms && $booking->rooms->count() > 0)
                                                 @php
                                                     $roomTypes = ['SGL' => 0, 'DBL' => 0, 'TPL' => 0, 'QUD' => 0];
@@ -350,7 +412,7 @@
                                                         $totalRooms += $room->room_count;
                                                     }
                                                 @endphp
-                                                <div class="text-start">
+                                                <div class="text-start" style="line-height: 1.4;">
                                                     <div class="mb-1">
                                                         <strong class="text-primary">{{ $totalRooms }}</strong>
                                                         <small
@@ -359,9 +421,9 @@
                                                     <div class="d-flex flex-wrap gap-1">
                                                         @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
                                                             @if ($roomTypes[$type] > 0)
-                                                                <span class="badge bg-label-info">
-                                                                    <strong>{{ $type }}</strong>:
-                                                                    {{ $roomTypes[$type] }}
+                                                                <span class="badge bg-label-info"
+                                                                    style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
+                                                                    <strong>{{ $type }}</strong>:{{ $roomTypes[$type] }}
                                                                 </span>
                                                             @endif
                                                         @endforeach
@@ -371,35 +433,81 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td>{{ $booking->check_in->format('Y-m-d') }}</td>
-                                        <td>{{ $booking->check_out->format('Y-m-d') }}</td>
-                                        <td>{{ $booking->nights }}</td>
-                                        <td>{{ number_format($booking->total_amount, 2) }}
-                                            {{ $booking->currency->symbol }}
+                                        <td class="text-nowrap py-2">{{ $booking->check_in->format('Y-m-d') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->check_out->format('Y-m-d') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->nights }}</td>
+                                        <td class="text-nowrap py-2">{{ number_format($booking->total_amount, 2) }}
+                                            {{ $booking->currency->symbol }}</td>
+                                        <td class="text-nowrap py-2">
+                                            <span class="fw-semibold text-success">
+                                                {{ number_format($booking->paid_amount, 2) }}
+                                                {{ $booking->currency->symbol }}
+                                            </span>
                                         </td>
-                                        <td>{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->symbol }}
+                                        <td class="text-nowrap py-2">
+                                            @php
+                                                $remaining = $booking->total_amount - $booking->paid_amount;
+                                            @endphp
+                                            @if ($remaining > 0)
+                                                <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-alert-circle me-1"></i>
+                                                    {{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-check me-1"></i>
+                                                    {{ __('Paid') }}
+                                                </span>
+                                            @endif
                                         </td>
-                                        <td>
+                                        <td class="py-2">
+                                            @if ($booking->option_date)
+                                                <div class="d-flex flex-column align-items-center gap-1">
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <i class="ti tabler-calendar-event text-primary"
+                                                            style="font-size: 0.9rem;"></i>
+                                                        <span
+                                                            class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('Y-m-d') }}</span>
+                                                    </div>
+                                                    @if ($booking->option_date->isPast())
+                                                        <span class="badge bg-label-warning"
+                                                            style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                    @elseif ($booking->option_date->isToday())
+                                                        <span class="badge bg-label-info"
+                                                            style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                    @else
+                                                        <span class="badge bg-label-success"
+                                                            style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-nowrap py-2">
                                             @if ($booking->paid_amount == 0)
-                                                <span class="badge bg-danger" title="{{ __('Unpaid') }}">
+                                                <span class="badge bg-danger" title="{{ __('Unpaid') }}"
+                                                    style="font-size: 0.75rem;">
                                                     <i class="ti tabler-x"></i>
                                                 </span>
                                             @elseif ($booking->paid_amount >= $booking->total_amount)
-                                                <span class="badge bg-success" title="{{ __('Paid') }}">
+                                                <span class="badge bg-success" title="{{ __('Paid') }}"
+                                                    style="font-size: 0.75rem;">
                                                     <i class="ti tabler-check"></i>
                                                 </span>
                                             @else
-                                                <span class="badge bg-warning" title="{{ __('Partial Payment') }}">
+                                                <span class="badge bg-warning" title="{{ __('Partial Payment') }}"
+                                                    style="font-size: 0.75rem;">
                                                     <i class="ti tabler-question-mark"></i>
                                                 </span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-nowrap">
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-icon btn-secondary" type="button"
                                                     id="actionsDropdown{{ $booking->id }}" data-bs-toggle="dropdown"
-                                                    aria-expanded="false">
-                                                    <i class="ti tabler-dots-vertical"></i>
+                                                    aria-expanded="false" style="padding: 0.25rem 0.5rem;">
+                                                    <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end"
                                                     aria-labelledby="actionsDropdown{{ $booking->id }}">
@@ -409,39 +517,43 @@
                                                             <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
                                                         </a>
                                                     </li>
-                                                    @if ($booking->check_in >= now())
+                                                    @can('edit bookings')
+                                                        @if ($booking->check_in >= now())
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('bookings.edit', $booking) }}">
+                                                                    <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                </a>
+                                                            </li>
+                                                        @endif
                                                         <li>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('bookings.edit', $booking) }}">
-                                                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#paymentModal{{ $booking->id }}">
+                                                                <i
+                                                                    class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
                                                             </a>
                                                         </li>
-                                                    @endif
-                                                    <li>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                            data-bs-target="#paymentModal{{ $booking->id }}">
-                                                            <i
-                                                                class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
-                                                        </a>
-                                                    </li>
-                                                    @if ($booking->check_in >= now())
-                                                        <li>
-                                                            <hr class="dropdown-divider">
-                                                        </li>
-                                                        <li>
-                                                            <form action="{{ route('bookings.destroy', $booking) }}"
-                                                                method="POST"
-                                                                onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit"
-                                                                    class="dropdown-item text-danger w-100 text-start">
-                                                                    <i
-                                                                        class="ti tabler-trash me-2"></i>{{ __('Delete') }}
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    @endif
+                                                    @endcan
+                                                    @can('delete bookings')
+                                                        @if ($booking->check_in >= now())
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li>
+                                                                <form action="{{ route('bookings.destroy', $booking) }}"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="dropdown-item text-danger w-100 text-start">
+                                                                        <i
+                                                                            class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        @endif
+                                                    @endcan
                                                 </ul>
                                             </div>
                                         </td>
@@ -591,6 +703,17 @@
                     });
                 });
             });
+
+            // Handle per page change
+            const perPageSelect = document.getElementById('per_page');
+            if (perPageSelect) {
+                perPageSelect.addEventListener('change', function() {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('per_page', this.value);
+                    url.searchParams.set('page', '1'); // Reset to first page
+                    window.location.href = url.toString();
+                });
+            }
         </script>
     @endpush
 @endsection

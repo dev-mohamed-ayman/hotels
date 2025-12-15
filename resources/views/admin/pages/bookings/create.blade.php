@@ -3,6 +3,7 @@
 @section('title', __('Add Booking'))
 
 @section('content')
+
     <div class="row">
         <div class="col-md-12">
             <div class="card mb-4">
@@ -40,10 +41,10 @@
                                 <select class="form-select @error('client_type') is-invalid @enderror" id="client_type"
                                     required>
                                     <option value="">{{ __('Select Client Type') }}</option>
-                                    <option value="P2C" {{ old('client_type') == 'P2C' ? 'selected' : '' }}>
-                                        {{ __('P2C (Corporate)') }}</option>
-                                    <option value="P2P" {{ old('client_type') == 'P2P' ? 'selected' : '' }}>
-                                        {{ __('P2P (Individual)') }}</option>
+                                    <option value="B2C" {{ old('client_type') == 'B2C' ? 'selected' : '' }}>
+                                        {{ __('B2C (Individual)') }}</option>
+                                    <option value="B2P" {{ old('client_type') == 'B2P' ? 'selected' : '' }}>
+                                        {{ __('B2B (Corporate)') }}</option>
                                 </select>
                                 @error('client_type')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -57,6 +58,23 @@
                                     <option value="">{{ __('Select Customer') }}</option>
                                 </select>
                                 @error('customer_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="customer_nationality">{{ __('Nationality') }}</label>
+                                <select class="form-select @error('customer_nationality') is-invalid @enderror"
+                                    id="customer_nationality" name="customer_nationality">
+                                    <option value="">{{ __('Select Nationality') }}</option>
+                                    @foreach ($nationalities as $nationality)
+                                        <option value="{{ $nationality['nationality'] }}"
+                                            {{ old('customer_nationality') == $nationality['nationality'] ? 'selected' : '' }}>
+                                            {{ $nationality['nationality'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('customer_nationality')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -81,7 +99,8 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_in">{{ __('Check In Date') }}</label>
                                 <input type="date" class="form-control @error('check_in') is-invalid @enderror"
-                                    id="check_in" name="check_in" value="{{ old('check_in') }}" required />
+                                    id="check_in" name="check_in" value="{{ old('check_in') }}"
+                                    min="{{ now()->format('Y-m-d') }}" required />
                                 @error('check_in')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -90,7 +109,8 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_out">{{ __('Check Out Date') }}</label>
                                 <input type="date" class="form-control @error('check_out') is-invalid @enderror"
-                                    id="check_out" name="check_out" value="{{ old('check_out') }}" required />
+                                    id="check_out" name="check_out" value="{{ old('check_out') }}"
+                                    min="{{ now()->format('Y-m-d') }}" required />
                                 @error('check_out')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -104,7 +124,8 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="option_date">{{ __('Option Date') }}</label>
                                 <input type="date" class="form-control @error('option_date') is-invalid @enderror"
-                                    id="option_date" name="option_date" value="{{ old('option_date') }}" />
+                                    id="option_date" name="option_date" value="{{ old('option_date') }}"
+                                    min="{{ now()->format('Y-m-d') }}" />
                                 @error('option_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -126,6 +147,15 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="meals_plan">{{ __('Meals Plan') }}</label>
+                                <input type="text" class="form-control @error('meals_plan') is-invalid @enderror"
+                                    id="meals_plan" name="meals_plan" value="{{ old('meals_plan') }}" />
+                                @error('meals_plan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Rooms & Guest Details --}}
@@ -135,7 +165,7 @@
                         <div id="roomsContainer">
                             <div class="room-row mb-3 p-3 border rounded bg-light">
                                 <div class="row g-2">
-                                    <div class="col-md-2">
+                                    <div class="col-md-6">
                                         <label class="form-label fw-semibold">{{ __('Room Type') }} <span
                                                 class="text-danger">*</span></label>
                                         <select name="rooms[0][room_type]" class="form-select" required>
@@ -146,48 +176,52 @@
                                             <option value="QUD">QUD</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">{{ __('Category') }}</label>
+                                        <input type="text" name="rooms[0][category]" class="form-control"
+                                            placeholder="{{ __('Optional') }}" />
+                                    </div>
+                                </div>
+                                <div class="row g-2 mt-2">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold">{{ __('Count') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" name="rooms[0][room_count]" class="form-control room-count"
                                             value="1" min="1" required />
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold">{{ __('Price') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="rooms[0][price]"
-                                            class="form-control room-price" required />
+                                            class="form-control room-price" min="0" required />
                                     </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label fw-semibold">{{ __('Category') }}</label>
-                                        <input type="text" name="rooms[0][category]" class="form-control"
-                                            placeholder="{{ __('Optional') }}" />
-                                    </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold">{{ __('Margin') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="rooms[0][margin]"
-                                            class="form-control room-margin" required />
+                                            class="form-control room-margin" min="0" required />
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-3 d-flex align-items-end">
+                                        <button type="button" class="btn btn-danger btn-sm remove-room w-100" disabled>
+                                            <i class="ti tabler-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mt-2">
+                                    <div class="col-md-4">
                                         <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                                         <input type="number" name="rooms[0][child_count]"
                                             class="form-control room-child-count" value="0" min="0" />
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-4">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
                                         <input type="number" step="0.01" name="rooms[0][child_price]"
                                             class="form-control room-child-price" value="0" min="0" />
                                     </div>
-                                    <div class="col-md-1">
+                                    <div class="col-md-4">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
                                         <input type="number" step="0.01" name="rooms[0][child_margin]"
                                             class="form-control room-child-margin" value="0" min="0" />
-                                    </div>
-                                    <div class="col-md-1 d-flex align-items-end">
-                                        <button type="button" class="btn btn-danger btn-sm remove-room w-100" disabled>
-                                            <i class="ti tabler-trash"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -223,76 +257,55 @@
 
                         {{-- Booking Summary --}}
                         <hr class="my-4">
-                        <h5 class="mb-3">{{ __('Booking Summary') }}</h5>
+                        <h4 class="mb-4 fw-bold">{{ __('Booking Summary') }}</h4>
 
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <h6>{{ __('Total Child Cost') }}</h6>
-                                        <h4 id="totalChildCost">0.00</h4>
+                        <div class="row g-3 mb-4">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body text-center p-4">
+                                        <div class="text-muted small mb-2 text-uppercase">{{ __('Total Net Rate') }}
+                                        </div>
+                                        <h3 class="mb-0 fw-bold text-primary" id="premarginTotal">0.00</h3>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <h6>{{ __('Pre-Margin Total') }}</h6>
-                                        <h4 id="premarginTotal">0.00</h4>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body text-center p-4">
+                                        <div class="text-muted small mb-2 text-uppercase">{{ __('Margin Value') }}</div>
+                                        <h3 class="mb-0 fw-bold text-primary" id="marginValue">0.00</h3>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <h6>{{ __('Margin Value') }}</h6>
-                                        <h4 id="marginValue">0.00</h4>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body text-center p-4">
+                                        <div class="text-muted small mb-2 text-uppercase">{{ __('Total Guest Rate') }}
+                                        </div>
+                                        <h3 class="mb-0 fw-bold text-primary" id="finalTotal">0.00</h3>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 mt-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body">
-                                        <h6>{{ __('Total Additions') }}</h6>
-                                        <h4 id="totalAdditions">0.00</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mt-3">
-                                <div class="card bg-warning text-white">
-                                    <div class="card-body">
-                                        <h6>{{ __('Total Discounts') }}</h6>
-                                        <h4 id="totalDiscounts">0.00</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mt-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body">
-                                        <h6>{{ __('Final Total') }}</h6>
-                                        <h4 id="finalTotal">0.00</h4>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mt-3">
-                                <label class="form-label">{{ __('Paid Amount') }}</label>
-                                <input type="number" step="0.01" name="paid_amount" id="paid_amount"
-                                    class="form-control" value="0" />
-                            </div>
-                            <div class="col-md-4 mt-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body">
-                                        <h6>{{ __('Remaining Amount') }}</h6>
-                                        <h4 id="remainingAmount">0.00</h4>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="card border-0 shadow-sm h-100">
+                                    <div class="card-body text-center p-4">
+                                        <div class="text-muted small mb-2 text-uppercase">{{ __('Remaining Amount') }}
+                                        </div>
+                                        <h3 class="mb-0 fw-bold text-primary" id="remainingAmount">0.00</h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-12">
-                                <label class="form-label" for="notes">{{ __('Notes') }}</label>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="notes">{{ __('Notes') }}</label>
                                 <textarea class="form-control" id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
+                                <input type="number" step="0.01" name="paid_amount" id="paid_amount"
+                                    class="form-control form-control-lg" value="0" min="0" />
                             </div>
                         </div>
 
@@ -305,12 +318,69 @@
         </div>
     </div>
 
+    <style>
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+
     <script>
         // Customer data for filtering
         const customers = @json($customers);
         let roomIndex = 1;
         let additionIndex = 0;
         let discountIndex = 0;
+
+        // Prevent negative values in number inputs
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number' && e.target.value < 0) {
+                e.target.value = 0;
+            }
+
+            // Prevent decimal values in integer fields (room-count, child-count)
+            if (e.target.classList.contains('room-count') || e.target.classList.contains('room-child-count')) {
+                const value = e.target.value;
+                if (value.includes('.') || value.includes(',')) {
+                    e.target.value = Math.floor(value);
+                }
+            }
+        });
+
+        // Prevent negative values and decimals on keydown
+        document.addEventListener('keydown', function(e) {
+            if (e.target.type === 'number') {
+                // Prevent negative, e, E, + for all number inputs
+                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+                    e.preventDefault();
+                }
+
+                // Prevent decimal point (.) and comma (,) for integer fields
+                if ((e.target.classList.contains('room-count') || e.target.classList.contains(
+                        'room-child-count')) &&
+                    (e.key === '.' || e.key === ',')) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Prevent paste of non-integer values in integer fields
+        document.addEventListener('paste', function(e) {
+            if (e.target.classList.contains('room-count') || e.target.classList.contains('room-child-count')) {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text');
+                const integerValue = parseInt(paste);
+                if (!isNaN(integerValue) && integerValue >= 0) {
+                    e.target.value = integerValue;
+                }
+            }
+        });
 
         // Client type change handler
         document.getElementById('client_type').addEventListener('change', function() {
@@ -355,11 +425,11 @@
         document.getElementById('addRoom').addEventListener('click', function() {
             const container = document.getElementById('roomsContainer');
             const newRow = document.createElement('div');
-            newRow.className = 'room-row mb-3 p-3 border rounded';
+            newRow.className = 'room-row mb-3 p-3 border rounded bg-light';
             newRow.innerHTML = `
-                <div class="row">
-                    <div class="col-md-2">
-                        <label class="form-label">{{ __('Room Type') }}</label>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">{{ __('Room Type') }} <span class="text-danger">*</span></label>
                         <select name="rooms[${roomIndex}][room_type]" class="form-select" required>
                             <option value="">{{ __('Select') }}</option>
                             <option value="SGL">SGL</option>
@@ -368,38 +438,42 @@
                             <option value="QUD">QUD</option>
                         </select>
                     </div>
-                    <div class="col-md-1">
-                        <label class="form-label">{{ __('Count') }}</label>
-                        <input type="number" name="rooms[${roomIndex}][room_count]" class="form-control room-count" value="1" min="1" required />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-semibold">{{ __('Price') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][price]" class="form-control room-price" required />
-                    </div>
-                    <div class="col-md-2">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">{{ __('Category') }}</label>
                         <input type="text" name="rooms[${roomIndex}][category]" class="form-control" placeholder="{{ __('Optional') }}" />
                     </div>
-                    <div class="col-md-1">
-                        <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][margin]" class="form-control room-margin" required />
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">{{ __('Count') }} <span class="text-danger">*</span></label>
+                        <input type="number" name="rooms[${roomIndex}][room_count]" class="form-control room-count" value="1" min="1" required />
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">{{ __('Price') }} <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger btn-sm remove-room w-100">
+                            <i class="ti tabler-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                         <input type="number" name="rooms[${roomIndex}][child_count]" class="form-control room-child-count" value="0" min="0" />
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
                         <input type="number" step="0.01" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
                         <input type="number" step="0.01" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
-                    </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger btn-sm remove-room">
-                            <i class="ti tabler-trash"></i>
-                        </button>
                     </div>
                 </div>
             `;
@@ -433,12 +507,20 @@
             const newRow = document.createElement('div');
             newRow.className = 'addition-row mb-3 p-3 border rounded';
             newRow.innerHTML = `
-                <div class="row">
-                    <div class="col-md-5">
-                        <label class="form-label">{{ __('Amount') }}</label>
-                        <input type="number" step="0.01" name="additions[${additionIndex}][amount]" class="form-control addition-amount" required />
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label">{{ __('Net Rate') }}</label>
+                        <input type="number" step="0.01" name="additions[${additionIndex}][net_rate]" class="form-control addition-net-rate" required />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
+                        <label class="form-label">{{ __('Guest Rate') }}</label>
+                        <input type="number" step="0.01" name="additions[${additionIndex}][guest_rate]" class="form-control addition-guest-rate" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ __('Margin') }}</label>
+                        <input type="number" step="0.01" name="additions[${additionIndex}][margin]" class="form-control addition-margin" readonly />
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
                         <input type="text" name="additions[${additionIndex}][description]" class="form-control" required />
                     </div>
@@ -469,12 +551,20 @@
             const newRow = document.createElement('div');
             newRow.className = 'discount-row mb-3 p-3 border rounded';
             newRow.innerHTML = `
-                <div class="row">
-                    <div class="col-md-5">
-                        <label class="form-label">{{ __('Amount') }}</label>
-                        <input type="number" step="0.01" name="discounts[${discountIndex}][amount]" class="form-control discount-amount" required />
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label">{{ __('Net Rate') }}</label>
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][net_rate]" class="form-control discount-net-rate" required />
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
+                        <label class="form-label">{{ __('Guest Rate') }}</label>
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][guest_rate]" class="form-control discount-guest-rate" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">{{ __('Margin') }}</label>
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][margin]" class="form-control discount-margin" readonly />
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
                         <input type="text" name="discounts[${discountIndex}][description]" class="form-control" required />
                     </div>
@@ -505,7 +595,11 @@
             let premarginTotal = 0;
             let marginValue = 0;
 
-            // Calculate from rooms (multiplied by room_count)
+            // Get number of nights
+            const nightsInput = document.getElementById('nights');
+            const nights = nightsInput ? parseFloat(nightsInput.value) || 1 : 1;
+
+            // Calculate from rooms (multiplied by room_count and nights)
             document.querySelectorAll('.room-row').forEach(row => {
                 const roomCount = parseFloat(row.querySelector('.room-count').value) || 1;
                 const price = parseFloat(row.querySelector('.room-price').value) || 0;
@@ -514,50 +608,189 @@
                 const childPrice = parseFloat(row.querySelector('.room-child-price').value) || 0;
                 const childMargin = parseFloat(row.querySelector('.room-child-margin').value) || 0;
 
-                premarginTotal += price * roomCount;
-                marginValue += margin * roomCount;
-                // Child price and margin are added once per booking, not multiplied by room count
-                totalChildCost += (childCount * childPrice) + (childCount * childMargin);
+                premarginTotal += price * roomCount * nights;
+                marginValue += margin * roomCount * nights;
+                // Child margin should be added to marginValue (multiplied by nights)
+                marginValue += childCount * childMargin * nights;
+                // Child price is added to totalChildCost (multiplied by nights)
+                totalChildCost += childCount * childPrice * nights;
             });
 
-            // Calculate additions
+            // Calculate additions (using net_rate) - NOT multiplied by nights
             let additionsTotal = 0;
-            document.querySelectorAll('.addition-amount').forEach(input => {
+            document.querySelectorAll('.addition-net-rate').forEach(input => {
                 additionsTotal += parseFloat(input.value) || 0;
             });
 
-            // Calculate discounts
+            // Calculate discounts (using net_rate) - NOT multiplied by nights
             let discountsTotal = 0;
-            document.querySelectorAll('.discount-amount').forEach(input => {
+            document.querySelectorAll('.discount-net-rate').forEach(input => {
                 discountsTotal += parseFloat(input.value) || 0;
             });
 
-            const finalTotal = premarginTotal + marginValue + totalChildCost + additionsTotal - discountsTotal;
-            const paidAmount = parseFloat(document.getElementById('paid_amount').value) || 0;
+            // Calculate additions margin and discounts margin for margin value
+            let additionsMarginTotal = 0;
+            document.querySelectorAll('.addition-margin').forEach(input => {
+                additionsMarginTotal += parseFloat(input.value) || 0;
+            });
+
+            let discountsMarginTotal = 0;
+            document.querySelectorAll('.discount-margin').forEach(input => {
+                discountsMarginTotal += parseFloat(input.value) || 0;
+            });
+
+            // Net Rate includes child cost, additions (net_rate), and discounts (net_rate)
+            const netRateTotal = premarginTotal + totalChildCost + additionsTotal - discountsTotal;
+            // Margin Value includes additions margin and discounts margin
+            const totalMarginValue = marginValue + additionsMarginTotal - discountsMarginTotal;
+            const finalTotal = netRateTotal + totalMarginValue;
+            const paidAmountInput = document.getElementById('paid_amount');
+
+            // Update max attribute for paid_amount input
+            if (paidAmountInput) {
+                paidAmountInput.setAttribute('max', finalTotal);
+            }
+
+            let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
+
+            // Validate paid amount doesn't exceed total guest rate
+            if (paidAmount > finalTotal) {
+                if (paidAmountInput) {
+                    paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
+                    paidAmountInput.value = finalTotal.toFixed(2);
+                }
+                // Use corrected value for calculation
+                paidAmount = finalTotal;
+            } else {
+                if (paidAmountInput) {
+                    paidAmountInput.setCustomValidity('');
+                }
+            }
+
             const remainingAmount = finalTotal - paidAmount;
 
             // Update display
-            document.getElementById('totalChildCost').textContent = totalChildCost.toFixed(2);
-            document.getElementById('premarginTotal').textContent = premarginTotal.toFixed(2);
-            document.getElementById('marginValue').textContent = marginValue.toFixed(2);
-            document.getElementById('totalAdditions').textContent = additionsTotal.toFixed(2);
-            document.getElementById('totalDiscounts').textContent = discountsTotal.toFixed(2);
-            document.getElementById('finalTotal').textContent = finalTotal.toFixed(2);
-            document.getElementById('remainingAmount').textContent = remainingAmount.toFixed(2);
+            const premarginTotalEl = document.getElementById('premarginTotal');
+            const marginValueEl = document.getElementById('marginValue');
+            const finalTotalEl = document.getElementById('finalTotal');
+            const remainingAmountEl = document.getElementById('remainingAmount');
+
+            if (premarginTotalEl) premarginTotalEl.textContent = netRateTotal.toFixed(2);
+            if (marginValueEl) marginValueEl.textContent = totalMarginValue.toFixed(2);
+            if (finalTotalEl) finalTotalEl.textContent = finalTotal.toFixed(2);
+            if (remainingAmountEl) remainingAmountEl.textContent = remainingAmount.toFixed(2);
+        }
+
+        // Calculate addition margin automatically
+        function calculateAdditionMargin(input) {
+            const row = input.closest('.addition-row');
+            if (row) {
+                const netRateInput = row.querySelector('.addition-net-rate');
+                const guestRateInput = row.querySelector('.addition-guest-rate');
+                const marginInput = row.querySelector('.addition-margin');
+
+                if (netRateInput && guestRateInput && marginInput) {
+                    const netRate = parseFloat(netRateInput.value) || 0;
+                    const guestRate = parseFloat(guestRateInput.value) || 0;
+                    const margin = guestRate - netRate;
+                    marginInput.value = margin.toFixed(2);
+                }
+            }
+        }
+
+        // Calculate discount margin automatically
+        function calculateDiscountMargin(input) {
+            const row = input.closest('.discount-row');
+            if (row) {
+                const netRateInput = row.querySelector('.discount-net-rate');
+                const guestRateInput = row.querySelector('.discount-guest-rate');
+                const marginInput = row.querySelector('.discount-margin');
+
+                if (netRateInput && guestRateInput && marginInput) {
+                    const netRate = parseFloat(netRateInput.value) || 0;
+                    const guestRate = parseFloat(guestRateInput.value) || 0;
+                    const margin = guestRate - netRate;
+                    marginInput.value = margin.toFixed(2);
+                }
+            }
         }
 
         function attachCalculationListeners() {
             document.querySelectorAll(
-                '.room-count, .room-price, .room-margin, .room-child-count, .room-child-price, .room-child-margin, .addition-amount, .discount-amount'
+                '.room-count, .room-price, .room-margin, .room-child-count, .room-child-price, .room-child-margin, .addition-net-rate, .addition-guest-rate, .discount-net-rate, .discount-guest-rate, #nights'
             ).forEach(input => {
                 input.removeEventListener('input', calculateSummary);
                 input.addEventListener('input', calculateSummary);
+
+                // Calculate addition margin when net_rate or guest_rate changes
+                if (input.classList.contains('addition-net-rate') || input.classList.contains(
+                        'addition-guest-rate')) {
+                    input.removeEventListener('input', function() {
+                        calculateAdditionMargin(input);
+                    });
+                    input.addEventListener('input', function() {
+                        calculateAdditionMargin(input);
+                        calculateSummary();
+                    });
+                }
+
+                // Calculate discount margin when net_rate or guest_rate changes
+                if (input.classList.contains('discount-net-rate') || input.classList.contains(
+                        'discount-guest-rate')) {
+                    input.removeEventListener('input', function() {
+                        calculateDiscountMargin(input);
+                    });
+                    input.addEventListener('input', function() {
+                        calculateDiscountMargin(input);
+                        calculateSummary();
+                    });
+                }
             });
         }
 
-        document.getElementById('paid_amount').addEventListener('input', calculateSummary);
+        const paidAmountInput = document.getElementById('paid_amount');
+        if (paidAmountInput) {
+            paidAmountInput.addEventListener('input', function() {
+                calculateSummary();
+                // Additional validation on input
+                const finalTotalEl = document.getElementById('finalTotal');
+                if (finalTotalEl) {
+                    const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
+                    const paidAmount = parseFloat(this.value) || 0;
+                    if (paidAmount > finalTotal) {
+                        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                }
+            });
+        }
 
         // Initial setup
         attachCalculationListeners();
+
+        // Open date picker when clicking on date inputs or their labels
+        document.querySelectorAll('input[type="date"]').forEach(dateInput => {
+            // Open picker when clicking on the input
+            dateInput.addEventListener('click', function() {
+                if (this.showPicker) {
+                    this.showPicker();
+                }
+            });
+
+            // Open picker when clicking on associated label
+            if (dateInput.id) {
+                const label = document.querySelector(`label[for="${dateInput.id}"]`);
+                if (label) {
+                    label.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const input = document.getElementById(dateInput.id);
+                        if (input && input.showPicker) {
+                            input.showPicker();
+                        }
+                    });
+                }
+            }
+        });
     </script>
 @endsection

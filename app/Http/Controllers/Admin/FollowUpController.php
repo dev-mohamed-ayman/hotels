@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 
 class FollowUpController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view customers')->only(['index']);
+        $this->middleware('permission:edit customers')->only(['store', 'updateLatest']);
+    }
+
     /**
      * Store a newly created follow-up.
      */

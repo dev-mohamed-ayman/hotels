@@ -84,6 +84,40 @@
                 <div data-i18n="@lang('Bookings')">@lang('Bookings')</div>
             </a>
         </li>
+
+        <!-- Users & Roles -->
+        @canany(['view users', 'view roles', 'view permissions'])
+            <li
+                class="menu-item {{ isOpenMenu(['users.*', 'roles.*', 'permissions.*']) }} {{ isActiveRoute(['users.*', 'roles.*', 'permissions.*']) }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon icon-base ti tabler-shield-lock"></i>
+                    <div data-i18n="@lang('Users & Roles')">@lang('Users & Roles')</div>
+                </a>
+                <ul class="menu-sub">
+                    @can('view users')
+                        <li class="menu-item {{ isActiveRoute('users.*') }}">
+                            <a href="{{ route('users.index') }}" class="menu-link">
+                                <div data-i18n="@lang('Users')">@lang('Users')</div>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('view roles')
+                        <li class="menu-item {{ isActiveRoute('roles.*') }}">
+                            <a href="{{ route('roles.index') }}" class="menu-link">
+                                <div data-i18n="@lang('Roles')">@lang('Roles')</div>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('view permissions')
+                        <li class="menu-item {{ isActiveRoute('permissions.*') }}">
+                            <a href="{{ route('permissions.index') }}" class="menu-link">
+                                <div data-i18n="@lang('Permissions')">@lang('Permissions')</div>
+                            </a>
+                        </li>
+                    @endcan
+                </ul>
+            </li>
+        @endcanany
     </ul>
 </aside>
 

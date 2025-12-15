@@ -54,10 +54,41 @@ Route::group(
 
             // Bookings Routes
             Route::post('bookings/{booking}/update-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updatePayment'])->name('bookings.update-payment');
-            Route::get('bookings/{booking}/pdf/customer', [\App\Http\Controllers\Admin\BookingController::class, 'downloadCustomerPdf'])->name('bookings.pdf.customer');
-            Route::get('bookings/{booking}/pdf/system', [\App\Http\Controllers\Admin\BookingController::class, 'downloadSystemPdf'])->name('bookings.pdf.system');
-            Route::get('bookings/{booking}/pdf/hotel', [\App\Http\Controllers\Admin\BookingController::class, 'downloadHotelPdf'])->name('bookings.pdf.hotel');
+            Route::get('bookings/{booking}/pdf/bank', [\App\Http\Controllers\Admin\BookingController::class, 'downloadBankPdf'])->name('bookings.pdf.bank');
+            Route::get('bookings/{booking}/pdf/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'downloadDetailedPdf'])->name('bookings.pdf.detailed');
+            Route::get('bookings/{booking}/pdf/guest', [\App\Http\Controllers\Admin\BookingController::class, 'downloadGuestPdf'])->name('bookings.pdf.guest');
+            Route::get('bookings/{booking}/pdf/netrate', [\App\Http\Controllers\Admin\BookingController::class, 'downloadNetRatePdf'])->name('bookings.pdf.netrate');
+
+            // Bulk export routes
+            Route::get('bookings/export/bank', [\App\Http\Controllers\Admin\BookingController::class, 'exportBankPdf'])->name('bookings.export.bank');
+            Route::get('bookings/export/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'exportDetailedPdf'])->name('bookings.export.detailed');
+            Route::get('bookings/export/guest', [\App\Http\Controllers\Admin\BookingController::class, 'exportGuestPdf'])->name('bookings.export.guest');
+            Route::get('bookings/export/netrate', [\App\Http\Controllers\Admin\BookingController::class, 'exportNetRatePdf'])->name('bookings.export.netrate');
             Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
+
+            // Users Routes
+            Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+
+            // Roles Routes
+            Route::prefix('roles')->name('roles.')->controller(\App\Http\Controllers\Admin\RolePermissionController::class)->group(function () {
+                Route::get('/', 'rolesIndex')->name('index');
+                Route::get('/create', 'rolesCreate')->name('create');
+                Route::post('/', 'rolesStore')->name('store');
+                Route::get('/{role}', 'rolesShow')->name('show');
+                Route::get('/{role}/edit', 'rolesEdit')->name('edit');
+                Route::put('/{role}', 'rolesUpdate')->name('update');
+                Route::delete('/{role}', 'rolesDestroy')->name('destroy');
+            });
+
+            // Permissions Routes
+            Route::prefix('permissions')->name('permissions.')->controller(\App\Http\Controllers\Admin\RolePermissionController::class)->group(function () {
+                Route::get('/', 'permissionsIndex')->name('index');
+                Route::get('/create', 'permissionsCreate')->name('create');
+                Route::post('/', 'permissionsStore')->name('store');
+                Route::get('/{permission}/edit', 'permissionsEdit')->name('edit');
+                Route::put('/{permission}', 'permissionsUpdate')->name('update');
+                Route::delete('/{permission}', 'permissionsDestroy')->name('destroy');
+            });
 
             // Logout
             Route::get('/logout', [DashboardController::class, 'logout'])->name('logout');

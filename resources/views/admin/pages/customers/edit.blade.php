@@ -208,64 +208,10 @@
                 placeholder: '{{ __('Select Hotels') }}',
                 allowClear: true,
                 width: '100%',
-                tags: true,
                 language: {
                     noResults: function () {
-                        return '{{ __('No hotels found. Type to add a new hotel') }}';
+                        return '{{ __('No hotels found') }}';
                     }
-                },
-                createTag: function (params) {
-                    var term = $.trim(params.term);
-                    if (term === '') {
-                        return null;
-                    }
-                    return {
-                        id: 'new_' + term,
-                        text: term + ' ({{ __('New') }})',
-                        newTag: true
-                    };
-                }
-            });
-
-            // Handle new hotel creation
-            $('#hotels').on('select2:select', function (e) {
-                var data = e.params.data;
-                if (data.newTag) {
-                    var hotelName = data.id.replace('new_', '');
-                    
-                    // Show loading
-                    var $option = $(this).find('option[value="' + data.id + '"]');
-                    $option.text(hotelName + ' ({{ __('Creating...') }})');
-                    $(this).trigger('change');
-                    
-                    // Create hotel via AJAX
-                    $.ajax({
-                        url: '{{ route("hotels.quick-create") }}',
-                        method: 'POST',
-                        data: {
-                            name: hotelName,
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                // Remove the temporary option
-                                $('#hotels option[value="' + data.id + '"]').remove();
-                                
-                                // Add the new hotel option
-                                var newOption = new Option(response.hotel.name, response.hotel.id, true, true);
-                                $('#hotels').append(newOption).trigger('change');
-                            }
-                        },
-                        error: function(xhr) {
-                            // Remove the failed option
-                            $('#hotels option[value="' + data.id + '"]').remove();
-                            $('#hotels').trigger('change');
-                            
-                            // Show error message
-                            var errorMsg = xhr.responseJSON?.message || '{{ __('Failed to create hotel') }}';
-                            alert(errorMsg);
-                        }
-                    });
                 }
             });
         });

@@ -48,63 +48,22 @@ if (!function_exists('isOpenMenu')) {
 
 if (!function_exists('formatDateTime')) {
     /**
-     * Format date and time in a beautiful and user-friendly way
+     * Format a date/time value to a readable format
      *
-     * @param \Carbon\Carbon|string|null $date The date to format
-     * @param bool $showTime Whether to show time or not
-     * @return string Formatted date string
+     * @param \Carbon\Carbon|string|null $dateTime
+     * @param string $format
+     * @return string
      */
-    function formatDateTime($date, $showTime = true)
+    function formatDateTime($dateTime, $format = 'Y-m-d H:i')
     {
-        if (!$date) {
+        if (!$dateTime) {
             return '-';
         }
 
-        if (is_string($date)) {
-            $date = \Carbon\Carbon::parse($date);
+        if (is_string($dateTime)) {
+            $dateTime = \Carbon\Carbon::parse($dateTime);
         }
 
-        $now = \Carbon\Carbon::now();
-        $diffInDays = $date->diffInDays($now);
-        $diffInHours = $date->diffInHours($now);
-        $diffInMinutes = $date->diffInMinutes($now);
-
-        // Today
-        if ($date->isToday()) {
-            if ($showTime) {
-                return __('Today at :time', ['time' => $date->format('H:i')]);
-            }
-            return __('Today');
-        }
-
-        // Yesterday
-        if ($date->isYesterday()) {
-            if ($showTime) {
-                return __('Yesterday at :time', ['time' => $date->format('H:i')]);
-            }
-            return __('Yesterday');
-        }
-
-        // This week
-        if ($diffInDays <= 7) {
-            if ($showTime) {
-                return $date->format('l') . ' ' . __('at') . ' ' . $date->format('H:i');
-            }
-            return $date->format('l');
-        }
-
-        // This year
-        if ($date->isCurrentYear()) {
-            if ($showTime) {
-                return $date->format('M d') . ' ' . __('at') . ' ' . $date->format('H:i');
-            }
-            return $date->format('M d');
-        }
-
-        // Older dates
-        if ($showTime) {
-            return $date->format('M d, Y') . ' ' . __('at') . ' ' . $date->format('H:i');
-        }
-        return $date->format('M d, Y');
+        return $dateTime->format($format);
     }
 }

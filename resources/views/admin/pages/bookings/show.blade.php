@@ -14,35 +14,45 @@
                                 class="fw-semibold text-primary">{{ $booking->code }}</span></p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="ti tabler-file-download me-2"></i>{{ __('Download PDF') }}
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('bookings.pdf.customer', $booking->id) }}"
-                                        target="_blank">
-                                        <i class="ti tabler-user me-2"></i>{{ __('Customer PDF') }}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('bookings.pdf.system', $booking->id) }}"
-                                        target="_blank">
-                                        <i class="ti tabler-settings me-2"></i>{{ __('System PDF') }}
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('bookings.pdf.hotel', $booking->id) }}"
-                                        target="_blank">
-                                        <i class="ti tabler-building me-2"></i>{{ __('Hotel PDF') }}
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-primary btn-sm">
-                            <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
-                        </a>
+                        @can('export bookings')
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="ti tabler-file-download me-2"></i>{{ __('Download PDF') }}
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.pdf.bank', $booking->id) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-building-bank me-2"></i>{{ __('Bank Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.pdf.detailed', $booking->id) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.pdf.guest', $booking->id) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-user me-2"></i>{{ __('Guest Export') }}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('bookings.pdf.netrate', $booking->id) }}"
+                                            target="_blank">
+                                            <i class="ti tabler-currency-dollar me-2"></i>{{ __('Net Rate Export') }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        @endcan
+                        @can('edit bookings')
+                            <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-primary btn-sm">
+                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                            </a>
+                        @endcan
                         <a href="{{ route('bookings.index') }}" class="btn btn-secondary btn-sm">
                             <i class="ti tabler-arrow-left me-2"></i>{{ __('Back') }}
                         </a>
@@ -170,7 +180,8 @@
                                         </div>
                                         <div class="col-6">
                                             <div class="mb-3">
-                                                <label class="form-label text-muted small mb-1">{{ __('Status') }}</label>
+                                                <label
+                                                    class="form-label text-muted small mb-1">{{ __('Status') }}</label>
                                                 <div>
                                                     @if ($booking->status == 'pending')
                                                         <span class="badge bg-label-warning">{{ __('Pending') }}</span>
@@ -236,7 +247,7 @@
                                                 </div>
                                             </div>
                                         @endif
-                                        @if ($booking->option_date || $booking->payment_date)
+                                        @if ($booking->notes && ($booking->option_date || $booking->payment_date))
                                             <div class="col-12">
                                                 <div class="mb-2">
                                                     <label
@@ -252,34 +263,53 @@
                             </div>
                         </div>
 
-                        <!-- Additional Info -->
-                        <div class="col-lg-6 col-md-6">
-                            <div class="card border shadow-none h-100">
-                                <div class="card-header bg-label-secondary">
-                                    <h6 class="mb-0 text-secondary">
-                                        <i class="ti tabler-info-circle me-2"></i>{{ __('Additional Information') }}
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted small mb-1">{{ __('Created At') }}</label>
-                                        <div class="fw-semibold">{{ formatDateTime($booking->created_at) }}</div>
+                        @if ($booking->notes)
+                            <!-- Notes -->
+                            <div class="col-lg-6 col-md-6">
+                                <div class="card border shadow-none h-100">
+                                    <div class="card-header bg-label-info">
+                                        <h6 class="mb-0 text-info">
+                                            <i class="ti tabler-notes me-2"></i>{{ __('Notes') }}
+                                        </h6>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label text-muted small mb-1">{{ __('Updated At') }}</label>
-                                        <div class="fw-semibold">{{ formatDateTime($booking->updated_at) }}</div>
-                                    </div>
-                                    @if ($booking->notes)
-                                        <div>
-                                            <label class="form-label text-muted small mb-2">{{ __('Notes') }}</label>
-                                            <div class="p-3 bg-label-info rounded">
-                                                <p class="mb-0">{{ $booking->notes }}</p>
-                                            </div>
+                                    <div class="card-body">
+                                        <div class="p-3 bg-label-info rounded">
+                                            <p class="mb-0">{{ $booking->notes }}</p>
                                         </div>
-                                    @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @else
+                            <!-- Additional Details -->
+                            <div class="col-lg-6 col-md-6">
+                                <div class="card border shadow-none h-100">
+                                    <div class="card-header bg-label-secondary">
+                                        <h6 class="mb-0 text-secondary">
+                                            <i class="ti tabler-info-circle me-2"></i>{{ __('Additional Details') }}
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        @if ($booking->option_date || $booking->payment_date)
+                                            <div class="mb-3">
+                                                <label
+                                                    class="form-label text-muted small mb-1">{{ __('Option Date') }}</label>
+                                                <div class="fw-semibold">
+                                                    {{ $booking->option_date ? $booking->option_date->format('Y-m-d') : ($booking->payment_date ? $booking->payment_date->format('Y-m-d') : '-') }}
+                                                </div>
+                                            </div>
+                                        @endif
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted small mb-1">{{ __('Created At') }}</label>
+                                            <div class="fw-semibold">{{ formatDateTime($booking->created_at) }}</div>
+                                        </div>
+                                        <div>
+                                            <label class="form-label text-muted small mb-1">{{ __('Updated At') }}</label>
+                                            <div class="fw-semibold">{{ formatDateTime($booking->updated_at) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -352,20 +382,47 @@
                                             <thead>
                                                 <tr>
                                                     <th>{{ __('Description') }}</th>
-                                                    <th>{{ __('Amount') }}</th>
+                                                    <th>{{ __('Net Rate') }}</th>
+                                                    <th>{{ __('Guest Rate') }}</th>
+                                                    <th>{{ __('Margin') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($booking->adjustments->where('type', 'addition') as $addition)
                                                     <tr>
                                                         <td>{{ $addition->description }}</td>
-                                                        <td class="text-success">
-                                                            +{{ number_format($addition->amount, 2) }}
+                                                        <td class="text-muted">
+                                                            {{ number_format($addition->net_rate ?? ($addition->amount ?? 0), 2) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                        <td class="text-success fw-semibold">
+                                                            +{{ number_format($addition->guest_rate ?? ($addition->amount ?? 0), 2) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                        <td class="text-primary">
+                                                            {{ number_format($addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0), 2) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
+                                            <tfoot>
+                                                <tr class="fw-bold table-active border-top border-2 border-dark">
+                                                    <td class="text-uppercase">{{ __('Total') }}</td>
+                                                    <td class="text-muted">
+                                                        {{ number_format($booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                    <td class="text-success">
+                                                        +{{ number_format($booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                    <td class="text-primary">
+                                                        {{ number_format($booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
@@ -380,20 +437,47 @@
                                             <thead>
                                                 <tr>
                                                     <th>{{ __('Description') }}</th>
-                                                    <th>{{ __('Amount') }}</th>
+                                                    <th>{{ __('Net Rate') }}</th>
+                                                    <th>{{ __('Guest Rate') }}</th>
+                                                    <th>{{ __('Margin') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($booking->adjustments->where('type', 'discount') as $discount)
                                                     <tr>
                                                         <td>{{ $discount->description }}</td>
-                                                        <td class="text-danger">
-                                                            -{{ number_format($discount->amount, 2) }}
+                                                        <td class="text-muted">
+                                                            {{ number_format($discount->net_rate ?? ($discount->amount ?? 0), 2) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                        <td class="text-danger fw-semibold">
+                                                            -{{ number_format($discount->guest_rate ?? ($discount->amount ?? 0), 2) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                        <td class="text-primary">
+                                                            {{ number_format($discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0), 2) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
+                                            <tfoot>
+                                                <tr class="fw-bold table-active border-top border-2 border-dark">
+                                                    <td class="text-uppercase">{{ __('Total') }}</td>
+                                                    <td class="text-muted">
+                                                        {{ number_format($booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                    <td class="text-danger">
+                                                        -{{ number_format($booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                    <td class="text-primary">
+                                                        {{ number_format($booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate'), 2) }}
+                                                        {{ $booking->currency->symbol ?? '' }}
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>

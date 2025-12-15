@@ -10,6 +10,14 @@ use Illuminate\Http\Request;
 
 class HotelController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view hotels')->only(['index', 'show']);
+        $this->middleware('permission:create hotels')->only(['create', 'store', 'quickCreate']);
+        $this->middleware('permission:edit hotels')->only(['edit', 'update']);
+        $this->middleware('permission:delete hotels')->only(['destroy']);
+    }
+
     public function index(Request $request)
     {
         $query = Hotel::with('bankAccounts.currency');

@@ -6,9 +6,11 @@
     <div class="card">
         <div class="card-header border-bottom d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">{{ __('Customers List') }}</h5>
-            <a href="{{ route('customers.create') }}" class="btn btn-primary">
-                <i class="ti tabler-plus me-2"></i>{{ __('Add Customer') }}
-            </a>
+            @can('create customers')
+                <a href="{{ route('customers.create') }}" class="btn btn-primary">
+                    <i class="ti tabler-plus me-2"></i>{{ __('Add Customer') }}
+                </a>
+            @endcan
         </div>
         <div class="card-body">
             <!-- Filters Section -->
@@ -341,25 +343,29 @@
                                                 <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                                href="{{ route('customers.edit', $customer->id) }}">
-                                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <hr class="dropdown-divider">
-                                        </li>
-                                        <li>
-                                            <form action="{{ route('customers.destroy', $customer->id) }}"
-                                                method="POST" onsubmit="return confirm('{{ __('Are you sure?') }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger w-100 text-start">
-                                                    <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
-                                                </button>
-                                            </form>
-                                        </li>
+                                        @can('edit customers')
+                                            <li>
+                                                <a class="dropdown-item"
+                                                    href="{{ route('customers.edit', $customer->id) }}">
+                                                    <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                </a>
+                                            </li>
+                                        @endcan
+                                        @can('delete customers')
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <form action="{{ route('customers.destroy', $customer->id) }}"
+                                                    method="POST" onsubmit="return confirm('{{ __('Are you sure?') }}')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger w-100 text-start">
+                                                        <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        @endcan
                                     </ul>
                                 </div>
                             </td>

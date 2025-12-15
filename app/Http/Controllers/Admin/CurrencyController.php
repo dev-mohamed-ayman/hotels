@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 
 class CurrencyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view currencies')->only(['index', 'show']);
+        $this->middleware('permission:create currencies')->only(['create', 'store']);
+        $this->middleware('permission:edit currencies')->only(['edit', 'update']);
+        $this->middleware('permission:delete currencies')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

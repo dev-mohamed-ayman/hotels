@@ -10,9 +10,11 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Customer Information') }}</h5>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-primary btn-sm">
-                            <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
-                        </a>
+                        @can('edit customers')
+                            <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-primary btn-sm">
+                                <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                            </a>
+                        @endcan
                         <a href="{{ route('customers.index') }}" class="btn btn-secondary btn-sm">
                             <i class="ti tabler-arrow-left me-2"></i>{{ __('Back') }}
                         </a>
@@ -362,10 +364,12 @@
                                 <tr>
                                     <td colspan="9" class="text-center py-5">
                                         <p class="mb-0 text-muted">{{ __('No bookings found') }}</p>
-                                        <a href="{{ route('bookings.create', ['customer_id' => $customer->id]) }}"
-                                            class="btn btn-sm btn-primary mt-2">
-                                            <i class="ti tabler-plus me-2"></i>{{ __('Create First Booking') }}
-                                        </a>
+                                        @can('create bookings')
+                                            <a href="{{ route('bookings.create', ['customer_id' => $customer->id]) }}"
+                                                class="btn btn-sm btn-primary mt-2">
+                                                <i class="ti tabler-plus me-2"></i>{{ __('Create First Booking') }}
+                                            </a>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforelse

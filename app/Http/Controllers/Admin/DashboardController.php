@@ -14,73 +14,47 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view dashboard')->only(['index']);
+    }
+
     public function index()
     {
-        // Bookings Statistics
-        $totalBookings = Booking::count();
-        $confirmedBookings = Booking::where('status', 'confirmed')->count();
-        $pendingBookings = Booking::where('status', 'pending')->count();
-        $cancelledBookings = Booking::where('status', 'cancelled')->count();
+        $user = Auth::user();
 
-        // Room Nights Production (عدد الغرف × الليالي)
-        $roomNightsProduction = Booking::with('rooms')
-            ->get()
-            ->sum(function ($booking) {
-                $totalRooms = $booking->rooms->sum('room_count');
-                return $totalRooms * $booking->nights;
-            });
+        // Bookings Statistics (only if user can view bookings)
+        $totalBookings = $user->can('view bookings') ? Booking::count() : 0;
+        $confirmedBookings = $user->can('view bookings') ? Booking::where('status', 'confirmed')->count() : 0;
+        $pendingBookings = $user->can('view bookings') ? Booking::where('status', 'pending')->count() : 0;
+        $cancelledBookings = $user->can('view bookings') ? Booking::where('status', 'cancelled')->count() : 0;
 
-        // Financial Statistics
-        $totalAmount = Booking::sum('total_amount');
-        $paidAmount = Booking::sum('paid_amount');
-        $pendingAmount = $totalAmount - $paidAmount;
+        // Financial Statistics (only if user can view bookings)
+        $totalAmount = $user->can('view bookings') ? Booking::sum('total_amount') : 0;
+        $paidAmount = $user->can('view bookings') ? Booking::sum('paid_amount') : 0;
 
-        // Customers Statistics
-        $totalCustomers = Customer::count();
-        $activeCustomers = Customer::where('status', 'active')->count();
-        $potentialCustomers = Customer::where('status', 'potential')->count();
-        $cancelledCustomers = Customer::where('status', 'cancelled')->count();
-
-        // Hotels Statistics
-        $totalHotels = Hotel::count();
-        $activeHotels = Hotel::where('is_active', true)->count();
-        $inactiveHotels = Hotel::where('is_active', false)->count();
-
-        // Recent Bookings
-        $recentBookings = Booking::with(['customer', 'hotel', 'currency'])
+        // Recent Bookings (only if user can view bookings)
+        $recentBookings = $user->can('view bookings')
+            ? Booking::with(['customer', 'hotel', 'currency'])
             ->latest()
             ->take(5)
-            ->get();
+            ->get()
+            : collect();
 
-        // Monthly Bookings (Last 6 months)
-        $monthlyBookings = Booking::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-                DB::raw('COUNT(*) as count')
-            )
-            ->where('created_at', '>=', now()->subMonths(6))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        // Payment Status Statistics (only if user can view bookings)
+        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount >= total_amount')->count() : 0;
+        $unpaidBookings = $user->can('view bookings') ? Booking::where('paid_amount', 0)->count() : 0;
+        $partialBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > 0 AND paid_amount < total_amount')->count() : 0;
 
-        // Top Hotels by Bookings
-        $topHotels = Hotel::withCount('bookings')
-            ->orderBy('bookings_count', 'desc')
-            ->take(5)
-            ->get();
-
-        // Payment Status Statistics
-        $paidBookings = Booking::whereRaw('paid_amount >= total_amount')->count();
-        $unpaidBookings = Booking::where('paid_amount', 0)->count();
-        $partialBookings = Booking::whereRaw('paid_amount > 0 AND paid_amount < total_amount')->count();
-
-        // Hotels Sales Statistics
-        $hotelsSales = Hotel::get()
-            ->map(function($hotel) {
+        // Hotels Sales Statistics (only if user can view hotels and bookings)
+        $hotelsSales = ($user->can('view hotels') && $user->can('view bookings'))
+            ? Hotel::get()
+            ->map(function ($hotel) {
                 $bookings = Booking::where('hotel_id', $hotel->id)->get();
-                $roomsCount = BookingRoom::whereHas('booking', function($q) use ($hotel) {
+                $roomsCount = BookingRoom::whereHas('booking', function ($q) use ($hotel) {
                     $q->where('hotel_id', $hotel->id);
                 })->sum('room_count');
-                
+
                 return [
                     'id' => $hotel->id,
                     'name' => $hotel->name,
@@ -91,26 +65,23 @@ class DashboardController extends Controller
                 ];
             })
             ->sortByDesc('total_sales')
-            ->take(10);
+            ->take(10)
+            : collect();
 
-        // Total Rooms Statistics
-        $totalRooms = BookingRoom::sum('room_count');
-        $roomsByType = BookingRoom::select('room_type', DB::raw('SUM(room_count) as total'))
-            ->groupBy('room_type')
-            ->get()
-            ->pluck('total', 'room_type');
-
-        // Most Used Booking Codes
-        $mostUsedCodes = Booking::select('code', DB::raw('COUNT(*) as usage_count'))
+        // Most Used Booking Codes (only if user can view bookings)
+        $mostUsedCodes = $user->can('view bookings')
+            ? Booking::select('code', DB::raw('COUNT(*) as usage_count'))
             ->groupBy('code')
             ->orderBy('usage_count', 'desc')
             ->take(10)
-            ->get();
-
-        // Top Customers by Bookings
-        $topCustomers = Customer::withCount('bookings')
             ->get()
-            ->map(function($customer) {
+            : collect();
+
+        // Top Customers by Bookings (only if user can view customers and bookings)
+        $topCustomers = ($user->can('view customers') && $user->can('view bookings'))
+            ? Customer::withCount('bookings')
+            ->get()
+            ->map(function ($customer) {
                 return [
                     'id' => $customer->id,
                     'name' => $customer->name,
@@ -120,11 +91,13 @@ class DashboardController extends Controller
             })
             ->sortByDesc('bookings_count')
             ->take(10)
-            ->values();
+            ->values()
+            : collect();
 
-        // Top Customers by Revenue
-        $topCustomersByRevenue = Customer::get()
-            ->map(function($customer) {
+        // Top Customers by Revenue (only if user can view customers and bookings)
+        $topCustomersByRevenue = ($user->can('view customers') && $user->can('view bookings'))
+            ? Customer::get()
+            ->map(function ($customer) {
                 return [
                     'id' => $customer->id,
                     'name' => $customer->name,
@@ -134,83 +107,50 @@ class DashboardController extends Controller
             })
             ->sortByDesc('total_revenue')
             ->take(10)
-            ->values();
+            ->values()
+            : collect();
 
-        // Currency Statistics
-        $currencyStats = Currency::get()
-            ->map(function($currency) {
-                $bookings = Booking::where('currency_id', $currency->id)->get();
-                return [
-                    'id' => $currency->id,
-                    'code' => $currency->code,
-                    'symbol' => $currency->symbol,
-                    'bookings_count' => $bookings->count(),
-                    'total_amount' => $bookings->sum('total_amount'),
-                    'paid_amount' => $bookings->sum('paid_amount'),
-                ];
-            });
+        // Top Hotels by Room Nights Production (only if user can view hotels and bookings)
+        $topHotelsByRoomNights = ($user->can('view hotels') && $user->can('view bookings'))
+            ? Hotel::get()
+            ->map(function ($hotel) {
+                $bookings = Booking::where('hotel_id', $hotel->id)->get();
+                $roomNightsProduction = 0;
 
-        // Room Type Distribution
-        $roomTypeDistribution = BookingRoom::select('room_type', DB::raw('SUM(room_count) as count'))
-            ->groupBy('room_type')
-            ->get();
+                foreach ($bookings as $booking) {
+                    $rooms = BookingRoom::where('booking_id', $booking->id)->get();
+                    foreach ($rooms as $room) {
+                        $roomNightsProduction += $room->room_count * $booking->nights;
+                    }
+                }
 
-        // Average Booking Value
-        $averageBookingValue = Booking::avg('total_amount') ?? 0;
-
-        // Average Nights per Booking
-        $averageNights = Booking::avg('nights') ?? 0;
-
-        // Total Rooms by Hotel (detailed)
-        $hotelsWithRooms = Hotel::get()
-            ->map(function($hotel) {
-                $roomsCount = BookingRoom::whereHas('booking', function($q) use ($hotel) {
-                    $q->where('hotel_id', $hotel->id);
-                })->sum('room_count');
-                
                 return [
                     'id' => $hotel->id,
                     'name' => $hotel->name,
-                    'rooms_count' => $roomsCount,
-                    'bookings_count' => $hotel->bookings->count(),
+                    'room_nights_production' => $roomNightsProduction,
                 ];
             })
-            ->sortByDesc('rooms_count')
-            ->take(10);
+            ->sortByDesc('room_nights_production')
+            ->take(5)
+            ->values()
+            : collect();
 
         return view('admin.pages.dashboard', compact(
             'totalBookings',
             'confirmedBookings',
             'pendingBookings',
             'cancelledBookings',
-            'roomNightsProduction',
             'totalAmount',
             'paidAmount',
-            'pendingAmount',
-            'totalCustomers',
-            'activeCustomers',
-            'potentialCustomers',
-            'cancelledCustomers',
-            'totalHotels',
-            'activeHotels',
-            'inactiveHotels',
             'recentBookings',
-            'monthlyBookings',
-            'topHotels',
             'paidBookings',
             'unpaidBookings',
             'partialBookings',
             'hotelsSales',
-            'totalRooms',
-            'roomsByType',
             'mostUsedCodes',
             'topCustomers',
             'topCustomersByRevenue',
-            'currencyStats',
-            'roomTypeDistribution',
-            'averageBookingValue',
-            'averageNights',
-            'hotelsWithRooms'
+            'topHotelsByRoomNights',
         ));
     }
 
