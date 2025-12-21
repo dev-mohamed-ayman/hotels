@@ -108,7 +108,7 @@
                                 <label class="form-label" for="check_in">{{ __('Check In Date') }}</label>
                                 <input type="date" class="form-control @error('check_in') is-invalid @enderror"
                                     id="check_in" name="check_in"
-                                    value="{{ old('check_in', $booking->check_in->format('Y-m-d')) }}" 
+                                    value="{{ old('check_in', $booking->check_in->format('Y-m-d')) }}"
                                     min="{{ now()->format('Y-m-d') }}" required />
                                 @error('check_in')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -119,7 +119,7 @@
                                 <label class="form-label" for="check_out">{{ __('Check Out Date') }}</label>
                                 <input type="date" class="form-control @error('check_out') is-invalid @enderror"
                                     id="check_out" name="check_out"
-                                    value="{{ old('check_out', $booking->check_out->format('Y-m-d')) }}" 
+                                    value="{{ old('check_out', $booking->check_out->format('Y-m-d')) }}"
                                     min="{{ now()->format('Y-m-d') }}" required />
                                 @error('check_out')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -136,7 +136,7 @@
                                 <label class="form-label" for="option_date">{{ __('Option Date') }}</label>
                                 <input type="date" class="form-control @error('option_date') is-invalid @enderror"
                                     id="option_date" name="option_date"
-                                    value="{{ old('option_date', $booking->option_date?->format('Y-m-d') ?? $booking->payment_date?->format('Y-m-d')) }}" 
+                                    value="{{ old('option_date', $booking->option_date?->format('Y-m-d') ?? $booking->payment_date?->format('Y-m-d')) }}"
                                     min="{{ now()->format('Y-m-d') }}" />
                                 @error('option_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -163,7 +163,8 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="meals_plan">{{ __('Meals Plan') }}</label>
                                 <input type="text" class="form-control @error('meals_plan') is-invalid @enderror"
-                                    id="meals_plan" name="meals_plan" value="{{ old('meals_plan', $booking->meals_plan) }}" />
+                                    id="meals_plan" name="meals_plan"
+                                    value="{{ old('meals_plan', $booking->meals_plan) }}" />
                                 @error('meals_plan')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -210,16 +211,16 @@
                                                 min="1" required />
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label fw-semibold">{{ __('Price') }} <span
+                                            <label class="form-label fw-semibold">{{ __('Net Rate') }} <span
                                                     class="text-danger">*</span></label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="rooms[{{ $index }}][price]" class="form-control room-price"
                                                 value="{{ $room->price }}" min="0" required />
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label fw-semibold">{{ __('Margin') }} <span
                                                     class="text-danger">*</span></label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="rooms[{{ $index }}][margin]"
                                                 class="form-control room-margin" value="{{ $room->margin }}"
                                                 min="0" required />
@@ -239,8 +240,8 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label
-                                                class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
-                                            <input type="number" step="0.01"
+                                                class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
+                                            <input type="number" step="1"
                                                 name="rooms[{{ $index }}][child_price]"
                                                 class="form-control room-child-price"
                                                 value="{{ $room->child_price ?? 0 }}" min="0" />
@@ -248,7 +249,7 @@
                                         <div class="col-md-4">
                                             <label
                                                 class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="rooms[{{ $index }}][child_margin]"
                                                 class="form-control room-child-margin" value="{{ $room->child_margin }}"
                                                 min="0" />
@@ -277,21 +278,21 @@
                                     <div class="row g-2">
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Net Rate') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="additions[{{ $index }}][net_rate]"
                                                 class="form-control addition-net-rate" value="{{ $netRate }}"
                                                 required />
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Guest Rate') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="additions[{{ $index }}][guest_rate]"
                                                 class="form-control addition-guest-rate" value="{{ $guestRate }}"
                                                 required />
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">{{ __('Margin') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="additions[{{ $index }}][margin]"
                                                 class="form-control addition-margin" value="{{ $margin }}"
                                                 readonly />
@@ -330,21 +331,21 @@
                                     <div class="row g-2">
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Net Rate') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="discounts[{{ $index }}][net_rate]"
                                                 class="form-control discount-net-rate" value="{{ $netRate }}"
                                                 required />
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Guest Rate') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="discounts[{{ $index }}][guest_rate]"
                                                 class="form-control discount-guest-rate" value="{{ $guestRate }}"
                                                 required />
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">{{ __('Margin') }}</label>
-                                            <input type="number" step="0.01"
+                                            <input type="number" step="1"
                                                 name="discounts[{{ $index }}][margin]"
                                                 class="form-control discount-margin" value="{{ $margin }}"
                                                 readonly />
@@ -417,7 +418,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
-                                <input type="number" step="0.01" name="paid_amount" id="paid_amount"
+                                <input type="number" step="1" name="paid_amount" id="paid_amount"
                                     class="form-control form-control-lg"
                                     value="{{ old('paid_amount', $booking->paid_amount) }}" min="0" />
                             </div>
@@ -564,12 +565,12 @@
                         <input type="number" name="rooms[${roomIndex}][room_count]" class="form-control room-count" value="1" min="1" required />
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">{{ __('Price') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
+                        <label class="form-label fw-semibold">{{ __('Net Rate') }} <span class="text-danger">*</span></label>
+                        <input type="number" step="1" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
+                        <input type="number" step="1" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-danger btn-sm remove-room w-100">
@@ -583,12 +584,12 @@
                         <input type="number" name="rooms[${roomIndex}][child_count]" class="form-control room-child-count" value="0" min="0" />
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold text-info">{{ __('Child Price') }}</label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
+                        <label class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
+                        <input type="number" step="1" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
+                        <input type="number" step="1" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
                     </div>
                 </div>
             `;
@@ -625,15 +626,15 @@
                 <div class="row g-2">
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Net Rate') }}</label>
-                        <input type="number" step="0.01" name="additions[${additionIndex}][net_rate]" class="form-control addition-net-rate" required />
+                        <input type="number" step="1" name="additions[${additionIndex}][net_rate]" class="form-control addition-net-rate" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Guest Rate') }}</label>
-                        <input type="number" step="0.01" name="additions[${additionIndex}][guest_rate]" class="form-control addition-guest-rate" required />
+                        <input type="number" step="1" name="additions[${additionIndex}][guest_rate]" class="form-control addition-guest-rate" required />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">{{ __('Margin') }}</label>
-                        <input type="number" step="0.01" name="additions[${additionIndex}][margin]" class="form-control addition-margin" readonly />
+                        <input type="number" step="1" name="additions[${additionIndex}][margin]" class="form-control addition-margin" readonly />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
@@ -669,15 +670,15 @@
                 <div class="row g-2">
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Net Rate') }}</label>
-                        <input type="number" step="0.01" name="discounts[${discountIndex}][net_rate]" class="form-control discount-net-rate" required />
+                        <input type="number" step="1" name="discounts[${discountIndex}][net_rate]" class="form-control discount-net-rate" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Guest Rate') }}</label>
-                        <input type="number" step="0.01" name="discounts[${discountIndex}][guest_rate]" class="form-control discount-guest-rate" required />
+                        <input type="number" step="1" name="discounts[${discountIndex}][guest_rate]" class="form-control discount-guest-rate" required />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">{{ __('Margin') }}</label>
-                        <input type="number" step="0.01" name="discounts[${discountIndex}][margin]" class="form-control discount-margin" readonly />
+                        <input type="number" step="1" name="discounts[${discountIndex}][margin]" class="form-control discount-margin" readonly />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
@@ -760,19 +761,19 @@
             const totalMarginValue = marginValue + additionsMarginTotal - discountsMarginTotal;
             const finalTotal = netRateTotal + totalMarginValue;
             const paidAmountInput = document.getElementById('paid_amount');
-            
+
             // Update max attribute for paid_amount input
             if (paidAmountInput) {
                 paidAmountInput.setAttribute('max', finalTotal);
             }
-            
+
             let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
-            
+
             // Validate paid amount doesn't exceed total guest rate
             if (paidAmount > finalTotal) {
                 if (paidAmountInput) {
-                    paidAmountInput.setCustomValidity('{{ __("Paid amount cannot exceed total guest rate") }}');
-                    paidAmountInput.value = finalTotal.toFixed(2);
+                    paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
+                    paidAmountInput.value = finalTotal.toFixed(0);
                 }
                 // Use corrected value for calculation
                 paidAmount = finalTotal;
@@ -781,7 +782,7 @@
                     paidAmountInput.setCustomValidity('');
                 }
             }
-            
+
             const remainingAmount = finalTotal - paidAmount;
 
             // Update display
@@ -790,10 +791,10 @@
             const finalTotalEl = document.getElementById('finalTotal');
             const remainingAmountEl = document.getElementById('remainingAmount');
 
-            if (premarginTotalEl) premarginTotalEl.textContent = netRateTotal.toFixed(2);
-            if (marginValueEl) marginValueEl.textContent = totalMarginValue.toFixed(2);
-            if (finalTotalEl) finalTotalEl.textContent = finalTotal.toFixed(2);
-            if (remainingAmountEl) remainingAmountEl.textContent = remainingAmount.toFixed(2);
+            if (premarginTotalEl) premarginTotalEl.textContent = netRateTotal.toFixed(0);
+            if (marginValueEl) marginValueEl.textContent = totalMarginValue.toFixed(0);
+            if (finalTotalEl) finalTotalEl.textContent = finalTotal.toFixed(0);
+            if (remainingAmountEl) remainingAmountEl.textContent = remainingAmount.toFixed(0);
         }
 
         // Calculate addition margin automatically
@@ -808,7 +809,7 @@
                     const netRate = parseFloat(netRateInput.value) || 0;
                     const guestRate = parseFloat(guestRateInput.value) || 0;
                     const margin = guestRate - netRate;
-                    marginInput.value = margin.toFixed(2);
+                    marginInput.value = margin.toFixed(0);
                 }
             }
         }
@@ -856,7 +857,7 @@
                     const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
                     const paidAmount = parseFloat(this.value) || 0;
                     if (paidAmount > finalTotal) {
-                        this.setCustomValidity('{{ __("Paid amount cannot exceed total guest rate") }}');
+                        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
                     } else {
                         this.setCustomValidity('');
                     }

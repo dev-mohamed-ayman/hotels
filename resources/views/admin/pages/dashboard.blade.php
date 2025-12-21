@@ -3,35 +3,201 @@
 @section('title', __('Dashboard'))
 
 @section('content')
+    <!-- Upcoming Option Dates -->
+    @if ($upcomingOptionDates->isNotEmpty())
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="mb-0">{{ __('Upcoming Option Dates') }}</h5>
+                            <span class="badge bg-label-warning">{{ __('Next 7 Days') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-nowrap">{{ __('Code') }}</th>
+                                        <th class="text-nowrap">{{ __('Hotel') }}</th>
+                                        <th class="text-nowrap">{{ __('Rooms') }}</th>
+                                        <th class="text-nowrap">{{ __('Check In') }}</th>
+                                        <th class="text-nowrap">{{ __('Check Out') }}</th>
+                                        <th class="text-nowrap">{{ __('Nights') }}</th>
+                                        <th class="text-nowrap">{{ __('Total Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Paid Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Remaining Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Hotel Payment') }}</th>
+                                        <th class="text-nowrap">{{ __('Option Date') }}</th>
+                                        <th class="text-nowrap">{{ __('Status') }}</th>
+                                        <th class="text-nowrap">{{ __('Actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($upcomingOptionDates as $booking)
+                                        <tr>
+                                            <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                            <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
+                                            <td class="py-2" style="width: 130px;">
+                                                @if ($booking->rooms && $booking->rooms->count() > 0)
+                                                    @php
+                                                        $roomTypes = ['SGL' => 0, 'DBL' => 0, 'TPL' => 0, 'QUD' => 0];
+                                                        $totalRooms = 0;
+                                                        foreach ($booking->rooms as $room) {
+                                                            $roomTypes[$room->room_type] += $room->room_count;
+                                                            $totalRooms += $room->room_count;
+                                                        }
+                                                    @endphp
+                                                    <div class="text-start" style="line-height: 1.4;">
+                                                        <div class="mb-1">
+                                                            <strong class="text-primary">{{ $totalRooms }}</strong>
+                                                            <small
+                                                                class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap gap-1">
+                                                            @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
+                                                                @if ($roomTypes[$type] > 0)
+                                                                    <span class="badge bg-label-info"
+                                                                        style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
+                                                                        {{ $roomTypes[$type] }}
+                                                                        <strong>{{ $type }}</strong>
+                                                                    </span>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap py-2">{{ $booking->check_in->format('d-m-Y') }}</td>
+                                            <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
+                                            <td class="text-nowrap py-2">{{ $booking->nights }}</td>
+                                            <td class="text-nowrap py-2">
+                                                {{ $booking->total_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->total_amount, 0) }}
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                <span class="fw-semibold text-success">
+                                                    {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) . ' ' . $booking->currency->symbol }}
+                                                </span>
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                @php
+                                                    $remaining = $booking->total_amount - $booking->paid_amount;
+                                                @endphp
+                                                @if ($remaining > 0)
+                                                    <span class="fw-semibold text-danger">
+                                                        {{ number_format($remaining, 0) }}
+                                                        {{ $booking->currency->symbol }}
+                                                    </span>
+                                                @elseif ($remaining == 0 && $booking->total_amount > 0)
+                                                    <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                        <i class="ti tabler-check me-1"></i>
+                                                        {{ __('Paid') }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                @php
+                                                    $hotelRemaining =
+                                                        $booking->net_amount - $booking->hotel_paid_amount;
+                                                @endphp
+                                                @if ($booking->net_amount == 0)
+                                                    <span class="badge bg-label-secondary" style="font-size: 0.75rem;">
+                                                        {{ __('N/A') }}
+                                                    </span>
+                                                @elseif ($hotelRemaining > 0)
+                                                    <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                        <i class="ti tabler-alert-circle me-1"></i>
+                                                        {{ number_format($hotelRemaining, 0) }}
+                                                        {{ $booking->currency->symbol }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                        <i class="ti tabler-check me-1"></i>
+                                                        {{ __('Paid') }}
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2">
+                                                @if ($booking->option_date)
+                                                    <div class="d-flex flex-column align-items-center gap-1">
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <i class="ti tabler-calendar-event text-warning"
+                                                                style="font-size: 0.9rem;"></i>
+                                                            <span
+                                                                class="fw-semibold text-warning text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
+                                                        </div>
+                                                        @if ($booking->option_date->isToday())
+                                                            <span class="badge bg-label-danger"
+                                                                style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                        @else
+                                                            <span class="badge bg-label-warning"
+                                                                style="font-size: 0.65rem;">{{ $booking->option_date->diffForHumans() }}</span>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                @if ($booking->status == 'confirmed')
+                                                    <span class="badge bg-label-success">{{ __('Confirmed') }}</span>
+                                                @elseif($booking->status == 'pending')
+                                                    <span class="badge bg-label-warning">{{ __('Pending') }}</span>
+                                                @else
+                                                    <span class="badge bg-label-danger">{{ __('Cancelled') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-icon btn-secondary" type="button"
+                                                        id="upcomingActionsDropdown{{ $booking->id }}"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        style="padding: 0.25rem 0.5rem;">
+                                                        <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end"
+                                                        aria-labelledby="upcomingActionsDropdown{{ $booking->id }}">
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('bookings.show', $booking) }}">
+                                                                <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
+                                                            </a>
+                                                        </li>
+                                                        @can('edit bookings')
+                                                            @if ($booking->check_in >= now())
+                                                                <li>
+                                                                    <a class="dropdown-item"
+                                                                        href="{{ route('bookings.edit', $booking) }}">
+                                                                        <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+                                                        @endcan
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-xl-6 col-12 mb-4">
             <div class="row">
-                <!-- View Dashboard -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="d-flex align-items-start row">
-                            <div class="col-7">
-                                <div class="card-body text-nowrap">
-                                    <h5 class="mb-2">Welcome back,<span class="h4"> {{ auth()->user()->name }}
-                                            👋🏻</span></h5>
-                                    {{-- <p class="mb-2">Best seller of the month</p>
-                                    <h4 class="text-primary mb-1">$48.9k</h4>
-                                    <a href="javascript:;" class="btn btn-primary">View Sales</a> --}}
-                                </div>
-                            </div>
-                            <div class="col-5 text-center text-sm-left">
-                                <div class="card-body pb-0 px-0 px-md-4 pt-4">
-                                    <img src="{{ asset('assets/img/illustrations/card-advance-sale.png') }}" height="140"
-                                        alt="Show Dashboard" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- View Dashboard -->
                 <!-- Bar Charts -->
-                <div class="col-12 mt-4">
+                <div class="col-12 mb-4">
                     <div class="card">
                         <div class="card-header header-elements">
                             <h5 class="card-title mb-0">@lang('Room Nights Production')</h5>
@@ -42,57 +208,67 @@
                     </div>
                 </div>
                 <!-- /Bar Charts -->
+                <div class="col-12 mb-4">
+                    <div class="row">
+                        <!-- Top Hotels by Sales -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="mb-0">{{ __('Top Hotels by Sales') }}</h5>
+                                    <a href="{{ route('hotels.index') }}"
+                                        class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>{{ __('Hotel') }}</th>
+                                                    <th>{{ __('Sales') }}</th>
+                                                    <th>{{ __('Paid') }}</th>
+                                                    <th>{{ __('Bookings') }}</th>
+                                                    <th>{{ __('Rooms') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($hotelsSales as $hotel)
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ route('hotels.show', $hotel['id']) }}"
+                                                                class="fw-semibold">
+                                                                {{ $hotel['name'] }}
+                                                            </a>
+                                                        </td>
+                                                        <td>{{ $hotel['total_sales'] == 0 ? '' : number_format($hotel['total_sales'], 0) }}
+                                                        </td>
+                                                        <td>{{ $hotel['paid_sales'] == 0 ? '' : number_format($hotel['paid_sales'], 0) }}
+                                                        </td>
+                                                        <td><span
+                                                                class="badge bg-label-primary">{{ $hotel['bookings_count'] }}</span>
+                                                        </td>
+                                                        <td><span
+                                                                class="badge bg-label-info">{{ $hotel['rooms_count'] }}</span>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="5" class="text-center text-muted">
+                                                            {{ __('No hotels found') }}
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-xl-6 col-12 mb-4">
             <div class="row">
-                <!-- Total Bookings -->
-                <div class="col-xl-6 col-md-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="mb-2">{{ __('Total Bookings') }}</h6>
-                                    <h4 class="mb-0">{{ number_format($totalBookings) }}</h4>
-                                </div>
-                                <div class="avatar avatar-md">
-                                    <div class="avatar-initial bg-label-primary rounded">
-                                        <i class="ti tabler-calendar-check ti-md"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center mt-3 flex-wrap gap-1">
-                                <span class="badge bg-label-success">{{ $confirmedBookings }} {{ __('Confirmed') }}</span>
-                                <span class="badge bg-label-warning">{{ $pendingBookings }} {{ __('Pending') }}</span>
-                                <span class="badge bg-label-danger">{{ $cancelledBookings }} {{ __('Cancelled') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total Revenue -->
-                <div class="col-xl-6 col-md-12 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h6 class="mb-2">{{ __('Total Margin') }}</h6>
-                                    <h4 class="mb-0">{{ number_format($totalAmount, 2) }}</h4>
-                                </div>
-                                <div class="avatar avatar-md">
-                                    <div class="avatar-initial bg-label-success rounded">
-                                        <i class="ti tabler-currency-dollar ti-md"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center mt-3 flex-wrap gap-1">
-                                <span class="badge bg-label-success opacity-0">{{ __('Paid') }}:
-                                    {{ number_format($paidAmount, 2) }}</span>
-                                {{-- <span class="badge bg-label-warning">{{ __('Pending') }}: {{ number_format($pendingAmount, 2) }}</span> --}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <!-- Payment Status -->
                 <div class="col-12 mb-4">
                     <div class="card">
@@ -103,7 +279,8 @@
                             <div class="d-flex justify-content-between mb-3">
                                 <div>
                                     <p class="mb-1">{{ __('Paid') }}</p>
-                                    <h5 class="mb-0 text-success">{{ number_format($paidBookings) }}</h5>
+                                    <h5 class="mb-0 text-success">
+                                        {{ $paidBookings == 0 ? '' : number_format($paidBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-success rounded">
@@ -114,7 +291,8 @@
                             <div class="d-flex justify-content-between mb-3">
                                 <div>
                                     <p class="mb-1">{{ __('Partial Payment') }}</p>
-                                    <h5 class="mb-0 text-warning">{{ number_format($partialBookings) }}</h5>
+                                    <h5 class="mb-0 text-warning">
+                                        {{ $partialBookings == 0 ? '' : number_format($partialBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-warning rounded">
@@ -125,7 +303,8 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <p class="mb-1">{{ __('Unpaid') }}</p>
-                                    <h5 class="mb-0 text-danger">{{ number_format($unpaidBookings) }}</h5>
+                                    <h5 class="mb-0 text-danger">
+                                        {{ $unpaidBookings == 0 ? '' : number_format($unpaidBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-danger rounded">
@@ -138,7 +317,7 @@
                 </div>
 
                 <!-- Booking Status -->
-                <div class="col-12">
+                <div class="col-12 mb-4">
                     <div class="card">
                         <div class="card-header d-flex align-items-center justify-content-between">
                             <h5 class="mb-0">{{ __('Booking Status') }}</h5>
@@ -147,7 +326,8 @@
                             <div class="d-flex justify-content-between mb-3">
                                 <div>
                                     <p class="mb-1">{{ __('Confirmed') }}</p>
-                                    <h5 class="mb-0 text-success">{{ number_format($confirmedBookings) }}</h5>
+                                    <h5 class="mb-0 text-success">
+                                        {{ $confirmedBookings == 0 ? '' : number_format($confirmedBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-success rounded">
@@ -158,7 +338,8 @@
                             <div class="d-flex justify-content-between mb-3">
                                 <div>
                                     <p class="mb-1">{{ __('Pending') }}</p>
-                                    <h5 class="mb-0 text-warning">{{ number_format($pendingBookings) }}</h5>
+                                    <h5 class="mb-0 text-warning">
+                                        {{ $pendingBookings == 0 ? '' : number_format($pendingBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-warning rounded">
@@ -169,7 +350,8 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <p class="mb-1">{{ __('Cancelled') }}</p>
-                                    <h5 class="mb-0 text-danger">{{ number_format($cancelledBookings) }}</h5>
+                                    <h5 class="mb-0 text-danger">
+                                        {{ $cancelledBookings == 0 ? '' : number_format($cancelledBookings) }}</h5>
                                 </div>
                                 <div class="avatar">
                                     <div class="avatar-initial bg-label-danger rounded">
@@ -180,173 +362,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Hotels Sales & Rooms -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
-                <!-- Top Hotels by Sales -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0">{{ __('Top Hotels by Sales') }}</h5>
-                            @can('view hotels')
-                                <a href="{{ route('hotels.index') }}"
-                                    class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
-                            @endcan
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ __('Hotel') }}</th>
-                                            <th>{{ __('Sales') }}</th>
-                                            <th>{{ __('Paid') }}</th>
-                                            <th>{{ __('Bookings') }}</th>
-                                            <th>{{ __('Rooms') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($hotelsSales as $hotel)
-                                            <tr>
-                                                <td>
-                                                    <a href="{{ route('hotels.show', $hotel['id']) }}"
-                                                        class="fw-semibold">
-                                                        {{ $hotel['name'] }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ number_format($hotel['total_sales'], 2) }}</td>
-                                                <td>{{ number_format($hotel['paid_sales'], 2) }}</td>
-                                                <td><span
-                                                        class="badge bg-label-primary">{{ $hotel['bookings_count'] }}</span>
-                                                </td>
-                                                <td><span class="badge bg-label-info">{{ $hotel['rooms_count'] }}</span>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="5" class="text-center text-muted">
-                                                    {{ __('No hotels found') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
-                <!-- Top Hotels by Rooms -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0">{{ __('Top Hotels by Rooms') }}</h5>
-                            @can('view hotels')
-                                <a href="{{ route('hotels.index') }}"
-                                    class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
-                            @endcan
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ __('Hotel') }}</th>
-                                            <th>{{ __('Rooms') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($hotelsSales->sortByDesc('rooms_count')->take(10) as $hotel)
-                                            <tr>
-                                                <td>
-                                                    <a href="{{ route('hotels.show', $hotel['id']) }}"
-                                                        class="fw-semibold">
-                                                        {{ $hotel['name'] }}
-                                                    </a>
-                                                </td>
-                                                <td><span class="badge bg-label-info">{{ $hotel['rooms_count'] }}</span>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="2" class="text-center text-muted">
-                                                    {{ __('No hotels found') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Customers -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
-                <!-- Top Customers by Bookings -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0">{{ __('Top Customers by Bookings') }}</h5>
-                            @can('view customers')
-                                <a href="{{ route('customers.index') }}"
-                                    class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
-                            @endcan
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ __('Customer') }}</th>
-                                            <th>{{ __('Bookings') }}</th>
-                                            <th>{{ __('Total Revenue') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($topCustomers as $customer)
-                                            <tr>
-                                                <td>
-                                                    <a href="{{ route('customers.show', $customer['id']) }}"
-                                                        class="fw-semibold">
-                                                        {{ $customer['name'] }}
-                                                    </a>
-                                                </td>
-                                                <td><span
-                                                        class="badge bg-label-primary">{{ $customer['bookings_count'] }}</span>
-                                                </td>
-                                                <td>{{ number_format($customer['total_revenue'], 2) }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="3" class="text-center text-muted">
-                                                    {{ __('No customers found') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
                 <!-- Top Customers by Revenue -->
                 <div class="col-12">
                     <div class="card">
@@ -375,7 +391,8 @@
                                                     </a>
                                                 </td>
                                                 <td class="text-success fw-semibold">
-                                                    {{ number_format($customer['total_revenue'], 2) }}</td>
+                                                    {{ $customer['total_revenue'] == 0 ? '' : number_format($customer['total_revenue'], 0) }}
+                                                </td>
                                                 <td><span
                                                         class="badge bg-label-primary">{{ $customer['bookings_count'] }}</span>
                                                 </td>
@@ -397,110 +414,392 @@
         </div>
     </div>
 
-    <!-- Most Used Codes & Recent Bookings -->
+    <!-- Recent Bookings -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
-                <!-- Most Used Booking Codes -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0">{{ __('Most Used Booking Codes') }}</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ __('Code') }}</th>
-                                            <th>{{ __('Usage Count') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($mostUsedCodes as $code)
-                                            <tr>
-                                                <td><strong class="text-primary">{{ $code->code }}</strong></td>
-                                                <td><span class="badge bg-label-primary">{{ $code->usage_count }}
-                                                        {{ __('Times') }}</span></td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="2" class="text-center text-muted">
-                                                    {{ __('No codes found') }}</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">{{ __('Recent Bookings') }}</h5>
+                    <a href="{{ route('bookings.index') }}"
+                        class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
                 </div>
-            </div>
-        </div>
-        <div class="col-xl-6 col-12 mb-4">
-            <div class="row">
-                <!-- Recent Bookings -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center justify-content-between">
-                            <h5 class="mb-0">{{ __('Recent Bookings') }}</h5>
-                            @can('view bookings')
-                                <a href="{{ route('bookings.index') }}"
-                                    class="btn btn-sm btn-label-primary">{{ __('View All') }}</a>
-                            @endcan
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ __('Code') }}</th>
-                                            <th>{{ __('Customer') }}</th>
-                                            <th>{{ __('Hotel') }}</th>
-                                            <th>{{ __('Check In') }}</th>
-                                            <th>{{ __('Total') }}</th>
-                                            <th>{{ __('Status') }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($recentBookings as $booking)
-                                            <tr>
-                                                <td>
-                                                    <a href="{{ route('bookings.show', $booking->id) }}"
-                                                        class="fw-semibold">
-                                                        {{ $booking->code }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ $booking->customer->name }}</td>
-                                                <td>{{ $booking->hotel->name }}</td>
-                                                <td>{{ $booking->check_in->format('Y-m-d') }}</td>
-                                                <td>{{ number_format($booking->total_amount, 2) }}
-                                                    {{ $booking->currency->symbol }}</td>
-                                                <td>
-                                                    @if ($booking->status == 'confirmed')
-                                                        <span class="badge bg-label-success">{{ __('Confirmed') }}</span>
-                                                    @elseif($booking->status == 'pending')
-                                                        <span class="badge bg-label-warning">{{ __('Pending') }}</span>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
+                            <thead>
+                                <tr>
+                                    <th class="text-nowrap">{{ __('Code') }}</th>
+                                    <th class="text-nowrap">{{ __('Hotel') }}</th>
+                                    <th class="text-nowrap">{{ __('Rooms') }}</th>
+                                    <th class="text-nowrap">{{ __('Check In') }}</th>
+                                    <th class="text-nowrap">{{ __('Check Out') }}</th>
+                                    <th class="text-nowrap">{{ __('Nights') }}</th>
+                                    <th class="text-nowrap">{{ __('Total Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Paid Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Remaining Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Hotel Payment') }}</th>
+                                    <th class="text-nowrap">{{ __('Option Date') }}</th>
+                                    <th class="text-nowrap">{{ __('Status') }}</th>
+                                    <th class="text-nowrap">{{ __('Actions') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentBookings as $booking)
+                                    <tr>
+                                        <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                        <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
+                                        <td class="py-2" style="width: 130px;">
+                                            @if ($booking->rooms && $booking->rooms->count() > 0)
+                                                @php
+                                                    $roomTypes = ['SGL' => 0, 'DBL' => 0, 'TPL' => 0, 'QUD' => 0];
+                                                    $totalRooms = 0;
+                                                    foreach ($booking->rooms as $room) {
+                                                        $roomTypes[$room->room_type] += $room->room_count;
+                                                        $totalRooms += $room->room_count;
+                                                    }
+                                                @endphp
+                                                <div class="text-start" style="line-height: 1.4;">
+                                                    <div class="mb-1">
+                                                        <strong class="text-primary">{{ $totalRooms }}</strong>
+                                                        <small
+                                                            class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
+                                                            @if ($roomTypes[$type] > 0)
+                                                                <span class="badge bg-label-info"
+                                                                    style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
+                                                                    {{ $roomTypes[$type] }}
+                                                                    <strong>{{ $type }}</strong>
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-nowrap py-2">{{ $booking->check_in->format('d-m-Y') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->nights }}</td>
+                                        <td class="text-nowrap py-2">
+                                            {{ $booking->total_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->total_amount, 0) }}
+                                        </td>
+                                        <td class="text-nowrap py-2">
+                                            <span class="fw-semibold text-success">
+                                                {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) . ' ' . $booking->currency->symbol }}
+                                            </span>
+                                        </td>
+                                        <td class="text-nowrap py-2">
+                                            @php
+                                                $remaining = $booking->total_amount - $booking->paid_amount;
+                                            @endphp
+                                            @if ($remaining > 0)
+                                                <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-alert-circle me-1"></i>
+                                                    {{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-check me-1"></i>
+                                                    {{ __('Paid') }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-nowrap py-2">
+                                            @php
+                                                $hotelRemaining = $booking->net_amount - $booking->hotel_paid_amount;
+                                            @endphp
+                                            @if ($booking->net_amount == 0)
+                                                <span class="badge bg-label-secondary" style="font-size: 0.75rem;">
+                                                    {{ __('N/A') }}
+                                                </span>
+                                            @elseif ($hotelRemaining > 0)
+                                                <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-alert-circle me-1"></i>
+                                                    {{ number_format($hotelRemaining, 0) }}
+                                                    {{ $booking->currency->symbol }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-check me-1"></i>
+                                                    {{ __('Paid') }}
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-2">
+                                            @if ($booking->option_date)
+                                                <div class="d-flex flex-column align-items-center gap-1">
+                                                    <div class="d-flex align-items-center gap-1">
+                                                        <i class="ti tabler-calendar-event text-primary"
+                                                            style="font-size: 0.9rem;"></i>
+                                                        <span
+                                                            class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
+                                                    </div>
+                                                    @if ($booking->option_date->isPast())
+                                                        <span class="badge bg-label-warning"
+                                                            style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                    @elseif ($booking->option_date->isToday())
+                                                        <span class="badge bg-label-info"
+                                                            style="font-size: 0.65rem;">{{ __('Today') }}</span>
                                                     @else
-                                                        <span class="badge bg-label-danger">{{ __('Cancelled') }}</span>
+                                                        <span class="badge bg-label-success"
+                                                            style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
                                                     @endif
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted">
-                                                    {{ __('No bookings found') }}
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-nowrap py-2">
+                                            @if ($booking->paid_amount == 0)
+                                                <span class="badge bg-danger" title="{{ __('Unpaid') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-x"></i>
+                                                </span>
+                                            @elseif ($booking->paid_amount >= $booking->total_amount)
+                                                <span class="badge bg-success" title="{{ __('Paid') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-check"></i>
+                                                </span>
+                                            @else
+                                                <span class="badge bg-warning" title="{{ __('Partial Payment') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-question-mark"></i>
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-nowrap">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-icon btn-secondary" type="button"
+                                                    id="actionsDropdown{{ $booking->id }}" data-bs-toggle="dropdown"
+                                                    aria-expanded="false" style="padding: 0.25rem 0.5rem;">
+                                                    <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end"
+                                                    aria-labelledby="actionsDropdown{{ $booking->id }}">
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('bookings.show', $booking) }}">
+                                                            <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
+                                                        </a>
+                                                    </li>
+                                                    @can('edit bookings')
+                                                        @if ($booking->check_in >= now())
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('bookings.edit', $booking) }}">
+                                                                    <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                </a>
+                                                            </li>
+                                                        @endif
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#paymentModal{{ $booking->id }}">
+                                                                <i
+                                                                    class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#hotelPaymentModal{{ $booking->id }}">
+                                                                <i
+                                                                    class="ti tabler-building me-2"></i>{{ __('Update Hotel Payment') }}
+                                                            </a>
+                                                        </li>
+                                                    @endcan
+                                                    @can('delete bookings')
+                                                        @if ($booking->check_in >= now())
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li>
+                                                                <form action="{{ route('bookings.destroy', $booking) }}"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="dropdown-item text-danger w-100 text-start">
+                                                                        <i
+                                                                            class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                                    </button>
+                                                                </form>
+                                                            </li>
+                                                        @endif
+                                                    @endcan
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Payment Update Modal -->
+                                    <div class="modal fade" id="paymentModal{{ $booking->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('Update Payment') }} -
+                                                        {{ $booking->code }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ route('bookings.update-payment', $booking) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">{{ __('Total Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                value="{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label
+                                                                class="form-label">{{ __('Current Paid Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                value="{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            @php
+                                                                $remaining =
+                                                                    $booking->total_amount - $booking->paid_amount;
+                                                            @endphp
+                                                            <label
+                                                                class="form-label">{{ __('Remaining Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="remaining{{ $booking->id }}"
+                                                                value="{{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label"
+                                                                for="payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                                *</label>
+                                                            <div class="input-group">
+                                                                <input type="number" step="0.01" class="form-control"
+                                                                    id="payment_amount{{ $booking->id }}"
+                                                                    name="payment_amount" min="1"
+                                                                    max="{{ $remaining }}" step="1"
+                                                                    data-remaining="{{ $remaining }}"
+                                                                    data-currency="{{ $booking->currency->symbol }}"
+                                                                    data-booking-id="{{ $booking->id }}"
+                                                                    placeholder="{{ __('Enter amount to pay') }}"
+                                                                    required>
+                                                                <span
+                                                                    class="input-group-text">{{ $booking->currency->symbol }}</span>
+                                                            </div>
+                                                            <small class="text-muted">{{ __('Maximum') }}:
+                                                                {{ number_format($remaining, 0) }}
+                                                                {{ $booking->currency->symbol }}</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label
+                                                                class="form-label">{{ __('New Remaining Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="new_remaining{{ $booking->id }}"
+                                                                value="{{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">{{ __('Close') }}</button>
+                                                        <button type="submit"
+                                                            class="btn btn-primary">{{ __('Update') }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                    </div>
+
+                    <!-- Hotel Payment Update Modal -->
+                    <div class="modal fade" id="hotelPaymentModal{{ $booking->id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{{ __('Update Hotel Payment') }} -
+                                        {{ $booking->code }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ route('bookings.update-hotel-payment', $booking) }}" method="POST">
+                                    @csrf
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('Total Net Amount') }}</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ $booking->net_amount == 0 ? '' : number_format($booking->net_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('Paid to Hotel') }}</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            @php
+                                                $hotelRemaining = $booking->net_amount - $booking->hotel_paid_amount;
+                                            @endphp
+                                            <label class="form-label">{{ __('Remaining Amount') }}</label>
+                                            <input type="text" class="form-control"
+                                                id="hotel_remaining{{ $booking->id }}"
+                                                value="{{ $hotelRemaining == 0 ? '' : number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
+                                                readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label"
+                                                for="hotel_payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                *</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" class="form-control"
+                                                    id="hotel_payment_amount{{ $booking->id }}" name="payment_amount"
+                                                    min="0.01" max="{{ max($hotelRemaining, 0.01) }}"
+                                                    data-remaining="{{ $hotelRemaining }}"
+                                                    data-currency="{{ $booking->currency->symbol }}"
+                                                    data-booking-id="{{ $booking->id }}"
+                                                    placeholder="{{ __('Enter amount to pay') }}" required>
+                                                <span class="input-group-text">{{ $booking->currency->symbol }}</span>
+                                            </div>
+                                            <small class="text-muted">{{ __('Maximum') }}:
+                                                {{ number_format(max($hotelRemaining, 0), 0) }}
+                                                {{ $booking->currency->symbol }}</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ __('New Remaining Amount') }}</label>
+                                            <input type="text" class="form-control"
+                                                id="new_hotel_remaining{{ $booking->id }}"
+                                                value="{{ number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">{{ __('Close') }}</button>
+                                        <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
+                @empty
+                    <tr>
+                        <td colspan="12" class="text-center py-5">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="ti tabler-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                <p class="mt-3 text-muted">{{ __('No bookings found') }}</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                    </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 @endsection
 @section('scripts')
@@ -567,11 +866,6 @@
                                 borderWidth: 1,
                                 borderColor: borderColor,
                                 callbacks: {
-                                    title: function(context) {
-                                        // Show full hotel name in tooltip title
-                                        const index = context[0].dataIndex;
-                                        return hotelLabels[index];
-                                    },
                                     label: function(context) {
                                         return '{{ __('Room Nights') }}: ' + context.parsed.y
                                             .toLocaleString();
@@ -591,18 +885,8 @@
                                 },
                                 ticks: {
                                     color: labelColor,
-                                    maxRotation: 0,
-                                    minRotation: 0,
-                                    autoSkip: true,
-                                    maxTicksLimit: 10,
-                                    callback: function(value, index, ticks) {
-                                        const label = this.getLabelForValue(value);
-                                        // Truncate label if too long
-                                        if (label.length > 15) {
-                                            return label.substring(0, 12) + '...';
-                                        }
-                                        return label;
-                                    }
+                                    maxRotation: 45,
+                                    minRotation: 45
                                 }
                             },
                             y: {
@@ -625,6 +909,40 @@
                     }
                 });
             }
+        });
+
+        // Payment Update Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all payment amount inputs
+            const paymentInputs = document.querySelectorAll('[id^="payment_amount"], [id^="hotel_payment_amount"]');
+
+            paymentInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const remaining = parseFloat(this.getAttribute('data-remaining'));
+                    const currency = this.getAttribute('data-currency');
+                    const paymentAmount = parseFloat(this.value) || 0;
+
+                    // Calculate new remaining
+                    const newRemaining = remaining - paymentAmount;
+
+                    // Update the new remaining field
+                    const newRemainingField = document.getElementById('new_remaining' +
+                        bookingId) || document.getElementById('new_hotel_remaining' + bookingId);
+                    if (newRemainingField) {
+                        newRemainingField.value = newRemaining.toFixed(0) + ' ' + currency;
+
+                        // Add visual feedback
+                        if (paymentAmount > remaining) {
+                            this.classList.add('is-invalid');
+                            newRemainingField.classList.add('text-danger');
+                        } else {
+                            this.classList.remove('is-invalid');
+                            newRemainingField.classList.remove('text-danger');
+                        }
+                    }
+                });
+            });
         });
     </script>
 @endsection

@@ -35,9 +35,17 @@ class DashboardController extends Controller
 
         // Recent Bookings (only if user can view bookings)
         $recentBookings = $user->can('view bookings')
-            ? Booking::with(['customer', 'hotel', 'currency'])
+            ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
             ->latest()
             ->take(5)
+            ->get()
+            : collect();
+
+        // Upcoming Option Dates (Next 7 days)
+        $upcomingOptionDates = $user->can('view bookings')
+            ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
+            ->whereBetween('option_date', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+            ->orderBy('option_date', 'asc')
             ->get()
             : collect();
 
@@ -151,6 +159,7 @@ class DashboardController extends Controller
             'topCustomers',
             'topCustomersByRevenue',
             'topHotelsByRoomNights',
+            'upcomingOptionDates',
         ));
     }
 

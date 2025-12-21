@@ -67,23 +67,23 @@
     <table>
         <thead>
             <tr>
-                <th style="background-color: #fff;">File Code</th>
-                <th style="background-color: #fff;">Hotel Name</th>
-                <th>Meals Plan</th>
-                <th>Chk In Date</th>
-                <th>Chk out Date</th>
-                <th class="text-red">Nights<br>(Dynamic)</th>
-                <th class="header-green">Rooms<br>Qty.</th>
-                <th class="header-green">Room<br>Type</th>
-                <th class="header-green">Category</th>
-                <th class="header-green">Guest Rate<br>(Dynamic)</th>
-                <th class="header-dark-green">Total Guest Rate<br>(Dynamic)</th>
-                <th class="header-green">CHD<br>Qty.</th>
-                <th class="header-green">CHD Guest Rate<br>(Dynamic)</th>
+                <th style="background-color: #fff;">{{ __('File Code') }}</th>
+                <th style="background-color: #fff;">{{ __('Hotel Name') }}</th>
+                <th>{{ __('Meals Plan') }}</th>
+                <th>{{ __('Chk In Date') }}</th>
+                <th>{{ __('Chk out Date') }}</th>
+                <th class="text-red">{{ __('Nights') }}<br>({{ __('Dynamic') }})</th>
+                <th class="header-green">{{ __('Rooms') }}<br>{{ __('Qty.') }}</th>
+                <th class="header-green">{{ __('Room') }}<br>{{ __('Type') }}</th>
+                <th class="header-green">{{ __('Category') }}</th>
+                <th class="header-green">{{ __('Guest Rate') }}<br>({{ __('Dynamic') }})</th>
+                <th class="header-dark-green">{{ __('Total Guest Rate') }}<br>({{ __('Dynamic') }})</th>
+                <th class="header-green">{{ __('CHD') }}<br>{{ __('Qty.') }}</th>
+                <th class="header-green">{{ __('CHD Guest Rate') }}<br>({{ __('Dynamic') }})</th>
 
-                <th class="header-dark-green">Guest<br>Extras</th>
+                <th class="header-dark-green">{{ __('Guest') }}<br>{{ __('Extras') }}</th>
 
-                <th class="header-dark-green">Guest<br>Reducts</th>
+                <th class="header-dark-green">{{ __('Guest') }}<br>{{ __('Reducts') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -91,6 +91,17 @@
                 $firstRow = true;
                 $guestExtras = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
                 $guestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
+            @endphp
+
+            @php
+                // Calculate total for ALL rooms
+                $totalGuestRate = 0;
+                foreach ($booking->rooms as $r) {
+                    $totalGuestRate += ($r->price + $r->margin) * $r->room_count * $booking->nights;
+                    $totalGuestRate +=
+                        (($r->child_price ?? 0) + ($r->child_margin ?? 0)) * ($r->child_count ?? 0) * $booking->nights;
+                }
+                $totalGuestRate += $guestExtras - $guestReducts;
             @endphp
 
             @foreach ($booking->rooms as $room)
@@ -103,52 +114,41 @@
                     $childNetRate = $room->child_price ?? 0;
                     $childMargin = $room->child_margin ?? 0;
                     $childGuestRate = $childNetRate + $childMargin;
-
-                    $nights = $booking->nights;
-                    $roomTotalGuest = $roomGuestRate * $nights * $room->room_count;
-
-                    if ($childQty > 0) {
-                        $roomTotalGuest += $childGuestRate * $childQty * $nights;
-                    }
-
-                    if ($firstRow) {
-                        $roomTotalGuest += $guestExtras;
-                        $roomTotalGuest -= $guestReducts;
-                    }
                 @endphp
                 <tr>
                     <td class="text-red" style="border: 1px solid #000;"><strong>{{ $booking->code }}</strong></td>
                     <td style="border: 1px solid #000;"><strong>{{ $booking->hotel->name }}</strong></td>
                     <td>{{ $booking->meals_plan ?? '-' }}</td>
-                    <td>{{ $booking->check_in->format('d-M-y') }}</td>
-                    <td>{{ $booking->check_out->format('d-M-y') }}</td>
+                    <td>{{ $booking->check_in->format('d-m-Y') }}</td>
+                    <td>{{ $booking->check_out->format('d-m-Y') }}</td>
                     <td>{{ $booking->nights }} nights</td>
                     <td>{{ $room->room_count }}</td>
                     <td>{{ $room->room_type }}</td>
                     <td>{{ $room->category ?? '-' }}</td>
-                    <td>${{ number_format($roomGuestRate, 0) }}</td>
+                    <td>{{ $roomGuestRate == 0 ? '' : $booking->currency->symbol . number_format($roomGuestRate, 0) }}
+                    </td>
 
                     @if ($childQty > 0)
                         <td>{{ $childQty }}</td>
-                        <td>${{ number_format($childGuestRate, 0) }}</td>
+                        <td>{{ $childGuestRate == 0 ? '' : $booking->currency->symbol . number_format($childGuestRate, 0) }}
+                        </td>
                     @else
                         <td></td>
                         <td></td>
                     @endif
 
                     @if ($firstRow)
-                        <td>${{ number_format($guestExtras, 0) }}</td>
+                        <td>{{ $guestExtras == 0 ? '' : $booking->currency->symbol . number_format($guestExtras, 0) }}
+                        </td>
+                        <td>{{ $guestReducts == 0 ? '' : $booking->currency->symbol . number_format($guestReducts, 0) }}
+                        </td>
+                        <td>{{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . number_format($totalGuestRate, 0) }}
+                        </td>
                     @else
                         <td></td>
-                    @endif
-
-                    @if ($firstRow)
-                        <td>${{ number_format($guestReducts, 0) }}</td>
-                    @else
+                        <td></td>
                         <td></td>
                     @endif
-
-                    <td>${{ number_format($roomTotalGuest, 0) }}</td>
                 </tr>
                 @php $firstRow = false; @endphp
             @endforeach
@@ -160,35 +160,37 @@
 
             <tr style="border-top: 2px solid #000;">
 
-                <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Option Date</td>
+                <td colspan="3" style="border: 2px solid #000; font-weight: bold;">{{ __('Option Date') }}</td>
                 <td colspan="2" style="border: 2px solid #000;">
-                    {{ $booking->option_date ? $booking->option_date->format('d-M-y') : '-' }}
+                    {{ $booking->option_date ? $booking->option_date->format('d-m-Y') : '-' }}
                 </td>
 
                 <td colspan="4" style="border: 1px solid #000;"></td>
 
-                <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Total Guest Rate</td>
-                <td style="border: 2px solid #000; font-weight: bold;">${{ number_format($totalGuestRate, 0) }}</td>
+                <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Total Guest Rate') }}</td>
+                <td style="border: 2px solid #000; font-weight: bold;">
+                    {{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . number_format($totalGuestRate, 0) }}
+                </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>
 
             <tr>
 
-                <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Remaining Days</td>
+                <td colspan="3" style="border: 2px solid #000; font-weight: bold;">{{ __('Remaining Days') }}</td>
                 <td colspan="2" style="border: 2px solid #000;">
                     @php
                         $remainingDays = $booking->option_date
                             ? max(0, floor(now()->diffInDays($booking->option_date, false)))
                             : 0;
                     @endphp
-                    {{ $remainingDays > 0 ? $remainingDays . ' Days' : '-' }}
+                    {{ $remainingDays > 0 ? $remainingDays . ' ' . __('Days') : '-' }}
                 </td>
 
                 <td colspan="4" style="border: 1px solid #000;"></td>
 
-                <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Paid Amount</td>
+                <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Paid Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    ${{ number_format($booking->paid_amount, 0) }}
+                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . number_format($booking->paid_amount, 0) }}
                 </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>

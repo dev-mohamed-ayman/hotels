@@ -95,58 +95,54 @@
                 $netReducts = $booking->adjustments->where('type', 'discount')->sum('net_rate');
             @endphp
 
+            @php
+                // Calculate total for ALL rooms
+                $totalNetRate = 0;
+                foreach ($booking->rooms as $r) {
+                    $totalNetRate += $r->price * $r->room_count * $booking->nights;
+                    $totalNetRate += ($r->child_price ?? 0) * ($r->child_count ?? 0) * $booking->nights;
+                }
+                $totalNetRate += $netExtras - $netReducts;
+            @endphp
+
             @foreach ($booking->rooms as $room)
                 @php
                     $roomNetRate = $room->price;
-
                     $childQty = $room->child_count ?? 0;
                     $childNetRate = $room->child_price ?? 0;
-
-                    $nights = $booking->nights;
-                    $roomTotalNet = $roomNetRate * $nights * $room->room_count;
-
-                    if ($childQty > 0) {
-                        $roomTotalNet += $childNetRate * $childQty * $nights;
-                    }
-
-                    if ($firstRow) {
-                        $roomTotalNet += $netExtras;
-                        $roomTotalNet -= $netReducts;
-                    }
                 @endphp
                 <tr>
                     <td class="text-red" style="border: 1px solid #000;"><strong>{{ $booking->code }}</strong></td>
                     <td style="border: 1px solid #000;"><strong>{{ $booking->hotel->name }}</strong></td>
                     <td>{{ $booking->meals_plan ?? '-' }}</td>
-                    <td>{{ $booking->check_in->format('d-M-y') }}</td>
-                    <td>{{ $booking->check_out->format('d-M-y') }}</td>
+                    <td>{{ $booking->check_in->format('d-m-Y') }}</td>
+                    <td>{{ $booking->check_out->format('d-m-Y') }}</td>
                     <td>{{ $booking->nights }} nights</td>
                     <td>{{ $room->room_count }}</td>
                     <td>{{ $room->room_type }}</td>
                     <td>{{ $room->category ?? '-' }}</td>
-                    <td>${{ number_format($roomNetRate, 0) }}</td>
+                    <td>{{ $roomNetRate == 0 ? '' : $booking->currency->symbol . number_format($roomNetRate, 0) }}</td>
 
                     @if ($childQty > 0)
                         <td>{{ $childQty }}</td>
-                        <td>${{ number_format($childNetRate, 0) }}</td>
+                        <td>{{ $childNetRate == 0 ? '' : $booking->currency->symbol . number_format($childNetRate, 0) }}
+                        </td>
                     @else
                         <td></td>
                         <td></td>
                     @endif
 
                     @if ($firstRow)
-                        <td>${{ number_format($netExtras, 0) }}</td>
+                        <td>{{ $netExtras == 0 ? '' : $booking->currency->symbol . number_format($netExtras, 0) }}</td>
+                        <td>{{ $netReducts == 0 ? '' : $booking->currency->symbol . number_format($netReducts, 0) }}
+                        </td>
+                        <td>{{ $totalNetRate == 0 ? '' : $booking->currency->symbol . number_format($totalNetRate, 0) }}
+                        </td>
                     @else
                         <td></td>
-                    @endif
-
-                    @if ($firstRow)
-                        <td>${{ number_format($netReducts, 0) }}</td>
-                    @else
+                        <td></td>
                         <td></td>
                     @endif
-
-                    <td>${{ number_format($roomTotalNet, 0) }}</td>
                 </tr>
                 @php $firstRow = false; @endphp
             @endforeach
@@ -160,13 +156,14 @@
 
                 <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Option Date</td>
                 <td colspan="2" style="border: 2px solid #000;">
-                    {{ $booking->option_date ? $booking->option_date->format('d-M-y') : '-' }}
+                    {{ $booking->option_date ? $booking->option_date->format('d-m-Y') : '-' }}
                 </td>
 
                 <td colspan="4" style="border: 1px solid #000;"></td>
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Total Net Rate</td>
-                <td style="border: 2px solid #000; font-weight: bold;">${{ number_format($totalNetRate, 0) }}</td>
+                <td style="border: 2px solid #000; font-weight: bold;">
+                    {{ $totalNetRate == 0 ? '' : $booking->currency->symbol . number_format($totalNetRate, 0) }}</td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>
 
@@ -186,7 +183,7 @@
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Paid Amount</td>
                 <td style="border: 2px solid #000;">
-                    ${{ number_format($booking->paid_amount, 0) }}
+                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . number_format($booking->paid_amount, 0) }}
                 </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>

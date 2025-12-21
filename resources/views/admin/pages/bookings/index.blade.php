@@ -383,18 +383,19 @@
                         <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Code') }}</th>
-                                    <th>{{ __('Hotel') }}</th>
-                                    <th>{{ __('Rooms') }}</th>
-                                    <th>{{ __('Check In') }}</th>
-                                    <th>{{ __('Check Out') }}</th>
-                                    <th>{{ __('Nights') }}</th>
-                                    <th>{{ __('Total') }}</th>
-                                    <th>{{ __('Paid') }}</th>
-                                    <th>{{ __('Remaining') }}</th>
-                                    <th>{{ __('Option Date') }}</th>
-                                    <th>{{ __('Status') }}</th>
-                                    <th>{{ __('Actions') }}</th>
+                                    <th class="text-nowrap">{{ __('Code') }}</th>
+                                    <th class="text-nowrap">{{ __('Hotel') }}</th>
+                                    <th class="text-nowrap">{{ __('Rooms') }}</th>
+                                    <th class="text-nowrap">{{ __('Check In') }}</th>
+                                    <th class="text-nowrap">{{ __('Check Out') }}</th>
+                                    <th class="text-nowrap">{{ __('Nights') }}</th>
+                                    <th class="text-nowrap">{{ __('Total Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Paid Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Remaining Net') }}</th>
+                                    <th class="text-nowrap">{{ __('Hotel Payment') }}</th>
+                                    <th class="text-nowrap">{{ __('Option Date') }}</th>
+                                    <th class="text-nowrap">{{ __('Status') }}</th>
+                                    <th class="text-nowrap">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -423,7 +424,8 @@
                                                             @if ($roomTypes[$type] > 0)
                                                                 <span class="badge bg-label-info"
                                                                     style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
-                                                                    <strong>{{ $type }}</strong>:{{ $roomTypes[$type] }}
+                                                                    {{ $roomTypes[$type] }}
+                                                                    <strong>{{ $type }}</strong>
                                                                 </span>
                                                             @endif
                                                         @endforeach
@@ -433,15 +435,15 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td class="text-nowrap py-2">{{ $booking->check_in->format('Y-m-d') }}</td>
-                                        <td class="text-nowrap py-2">{{ $booking->check_out->format('Y-m-d') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->check_in->format('d-m-Y') }}</td>
+                                        <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
                                         <td class="text-nowrap py-2">{{ $booking->nights }}</td>
-                                        <td class="text-nowrap py-2">{{ number_format($booking->total_amount, 2) }}
-                                            {{ $booking->currency->symbol }}</td>
+                                        <td class="text-nowrap py-2">
+                                            {{ $booking->total_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->total_amount, 0) }}
+                                        </td>
                                         <td class="text-nowrap py-2">
                                             <span class="fw-semibold text-success">
-                                                {{ number_format($booking->paid_amount, 2) }}
-                                                {{ $booking->currency->symbol }}
+                                                {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) . ' ' . $booking->currency->symbol }}
                                             </span>
                                         </td>
                                         <td class="text-nowrap py-2">
@@ -451,7 +453,29 @@
                                             @if ($remaining > 0)
                                                 <span class="badge bg-label-danger" style="font-size: 0.75rem;">
                                                     <i class="ti tabler-alert-circle me-1"></i>
-                                                    {{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}
+                                                    {{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-check me-1"></i>
+                                                    {{ __('Paid') }}
+                                                </span>
+                                            @endif
+
+                                        </td>
+                                        <td class="text-nowrap py-2">
+                                            @php
+                                                $hotelRemaining = $booking->net_amount - $booking->hotel_paid_amount;
+                                            @endphp
+                                            @if ($booking->net_amount == 0)
+                                                <span class="badge bg-label-secondary" style="font-size: 0.75rem;">
+                                                    {{ __('N/A') }}
+                                                </span>
+                                            @elseif ($hotelRemaining > 0)
+                                                <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-alert-circle me-1"></i>
+                                                    {{ number_format($hotelRemaining, 0) }}
+                                                    {{ $booking->currency->symbol }}
                                                 </span>
                                             @else
                                                 <span class="badge bg-label-success" style="font-size: 0.75rem;">
@@ -467,7 +491,7 @@
                                                         <i class="ti tabler-calendar-event text-primary"
                                                             style="font-size: 0.9rem;"></i>
                                                         <span
-                                                            class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('Y-m-d') }}</span>
+                                                            class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
                                                     </div>
                                                     @if ($booking->option_date->isPast())
                                                         <span class="badge bg-label-warning"
@@ -533,6 +557,13 @@
                                                                     class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
                                                             </a>
                                                         </li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#hotelPaymentModal{{ $booking->id }}">
+                                                                <i
+                                                                    class="ti tabler-building me-2"></i>{{ __('Update Hotel Payment') }}
+                                                            </a>
+                                                        </li>
                                                     @endcan
                                                     @can('delete bookings')
                                                         @if ($booking->check_in >= now())
@@ -576,14 +607,14 @@
                                                         <div class="mb-3">
                                                             <label class="form-label">{{ __('Total Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ number_format($booking->total_amount, 2) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
                                                                 class="form-label">{{ __('Current Paid Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ number_format($booking->paid_amount, 2) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -595,7 +626,7 @@
                                                                 class="form-label">{{ __('Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $remaining == 0 ? '' : number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -616,7 +647,7 @@
                                                                     class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
                                                             <small class="text-muted">{{ __('Maximum') }}:
-                                                                {{ number_format($remaining, 2) }}
+                                                                {{ number_format($remaining, 0) }}
                                                                 {{ $booking->currency->symbol }}</small>
                                                         </div>
                                                         <div class="mb-3">
@@ -624,7 +655,87 @@
                                                                 class="form-label">{{ __('New Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="new_remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 2) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">{{ __('Close') }}</button>
+                                                        <button type="submit"
+                                                            class="btn btn-primary">{{ __('Update') }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hotel Payment Update Modal -->
+                                    <div class="modal fade" id="hotelPaymentModal{{ $booking->id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ __('Update Hotel Payment') }} -
+                                                        {{ $booking->code }}</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ route('bookings.update-hotel-payment', $booking) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label
+                                                                class="form-label">{{ __('Total Net Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                value="{{ $booking->net_amount == 0 ? '' : number_format($booking->net_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">{{ __('Paid to Hotel') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                value="{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            @php
+                                                                $hotelRemaining =
+                                                                    $booking->net_amount - $booking->hotel_paid_amount;
+                                                            @endphp
+                                                            <label
+                                                                class="form-label">{{ __('Remaining Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="hotel_remaining{{ $booking->id }}"
+                                                                value="{{ $hotelRemaining == 0 ? '' : number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                readonly>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label"
+                                                                for="hotel_payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                                *</label>
+                                                            <div class="input-group">
+                                                                <input type="number" step="0.01" class="form-control"
+                                                                    id="hotel_payment_amount{{ $booking->id }}"
+                                                                    name="payment_amount" min="0.01"
+                                                                    max="{{ max($hotelRemaining, 0.01) }}"
+                                                                    data-remaining="{{ $hotelRemaining }}"
+                                                                    data-currency="{{ $booking->currency->symbol }}"
+                                                                    data-booking-id="{{ $booking->id }}"
+                                                                    placeholder="{{ __('Enter amount to pay') }}"
+                                                                    required>
+                                                                <span
+                                                                    class="input-group-text">{{ $booking->currency->symbol }}</span>
+                                                            </div>
+                                                            <small class="text-muted">{{ __('Maximum') }}:
+                                                                {{ number_format(max($hotelRemaining, 0), 0) }}
+                                                                {{ $booking->currency->symbol }}</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label
+                                                                class="form-label">{{ __('New Remaining Amount') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="new_hotel_remaining{{ $booking->id }}"
+                                                                value="{{ number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                     </div>
@@ -674,7 +785,7 @@
                 }
 
                 // Get all payment amount inputs
-                const paymentInputs = document.querySelectorAll('[id^="payment_amount"]');
+                const paymentInputs = document.querySelectorAll('[id^="payment_amount"], [id^="hotel_payment_amount"]');
 
                 paymentInputs.forEach(input => {
                     input.addEventListener('input', function() {
@@ -686,8 +797,11 @@
                         // Calculate new remaining
                         const newRemaining = remaining - paymentAmount;
 
+                        const newRemaining = remaining - paymentAmount;
+
                         // Update the new remaining field
-                        const newRemainingField = document.getElementById('new_remaining' + bookingId);
+                        const newRemainingField = document.getElementById('new_remaining' +
+                            bookingId) || document.getElementById('new_hotel_remaining' + bookingId);
                         if (newRemainingField) {
                             newRemainingField.value = newRemaining.toFixed(2) + ' ' + currency;
 

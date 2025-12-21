@@ -18,7 +18,7 @@ class BookingController extends Controller
     {
         $this->middleware('permission:view bookings')->only(['index', 'show']);
         $this->middleware('permission:create bookings')->only(['create', 'store']);
-        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updatePayment']);
+        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updatePayment', 'updateHotelPayment']);
         $this->middleware('permission:delete bookings')->only(['destroy']);
         $this->middleware('permission:export bookings')->only([
             'downloadBankPdf',
@@ -267,6 +267,8 @@ class BookingController extends Controller
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
                 'paid_amount' => $request->paid_amount ?? 0,
+
+                'net_amount' => $netRate,
                 'notes' => $request->notes,
             ]);
 
@@ -485,6 +487,8 @@ class BookingController extends Controller
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
                 'paid_amount' => $request->paid_amount ?? $booking->paid_amount,
+
+                'net_amount' => $netRate,
                 'notes' => $request->notes,
             ]);
 
@@ -573,7 +577,7 @@ class BookingController extends Controller
             ],
         ], [
             'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-                'amount' => number_format($remainingAmount, 2) . ' ' . $booking->currency->symbol
+                'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol
             ]),
         ]);
 
@@ -582,6 +586,30 @@ class BookingController extends Controller
         ]);
 
         return back()->with('success', __('Payment updated successfully.'));
+    }
+
+    public function updateHotelPayment(Request $request, Booking $booking)
+    {
+        $remainingAmount = $booking->net_amount - $booking->hotel_paid_amount;
+
+        $request->validate([
+            'payment_amount' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                'max:' . max($remainingAmount, 0.01), // Allow payment if > 0, ensuring max is at least min
+            ],
+        ], [
+            'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
+                'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol
+            ]),
+        ]);
+
+        $booking->update([
+            'hotel_paid_amount' => $booking->hotel_paid_amount + $request->payment_amount
+        ]);
+
+        return back()->with('success', __('Hotel payment updated successfully.'));
     }
 
     public function destroy(Booking $booking)
@@ -699,13 +727,13 @@ class BookingController extends Controller
         $discountsNetTotal = $booking->adjustments->where('type', 'discount')->sum('net_rate');
         $discountsGuestTotal = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
 
-        // Net Rates: Rooms Net + Child Net + Additions Net - Discounts Net
+        // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
             return ($room->price * $room->room_count * $booking->nights) +
                 (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
         }) + $additionsNetTotal - $discountsNetTotal;
 
-        // Guest Rates: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
+        // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
             return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
                 ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
@@ -771,7 +799,7 @@ class BookingController extends Controller
         $additionsGuestTotal = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
         $discountsGuestTotal = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
 
-        // Guest Rates
+        // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
             return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
                 ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
@@ -838,7 +866,7 @@ class BookingController extends Controller
         $additionsNetTotal = $booking->adjustments->where('type', 'addition')->sum('net_rate');
         $discountsNetTotal = $booking->adjustments->where('type', 'discount')->sum('net_rate');
 
-        // Net Rates
+        // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
             return ($room->price * $room->room_count * $booking->nights) +
                 (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
@@ -1013,69 +1041,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $bookingsData = [];
-        $totalBookingsCount = $bookings->count();
-
-        foreach ($bookings as $booking) {
-            $roomsData = [];
-            foreach ($booking->rooms as $room) {
-                $roomNetRate = $room->price * $room->room_count * $booking->nights;
-                $roomMargin = $room->margin * $room->room_count * $booking->nights;
-                $roomGuestRate = ($room->price + $room->margin) * $room->room_count * $booking->nights;
-
-                $childCount = $room->child_count ?? 0;
-                $childNetRate = ($room->child_price ?? 0) * $childCount * $booking->nights;
-                $childMargin = ($room->child_margin ?? 0) * $childCount * $booking->nights;
-                $childGuestRate = (($room->child_price ?? 0) + ($room->child_margin ?? 0)) * $childCount * $booking->nights;
-
-                $roomsData[] = [
-                    'room_type' => $room->room_type,
-                    'category' => $room->category,
-                    'room_count' => $room->room_count,
-                    'net_rate' => $roomNetRate,
-                    'margin' => $roomMargin,
-                    'guest_rate' => $roomGuestRate,
-                    'child_count' => $childCount,
-                    'child_net_rate' => $childNetRate,
-                    'child_margin' => $childMargin,
-                    'child_guest_rate' => $childGuestRate,
-                ];
-            }
-
-            $childNetTotal = ($booking->child_price ?? 0) * $booking->nights;
-            $childGuestTotal = (($booking->child_price ?? 0) + ($booking->child_margin ?? 0)) * $booking->nights;
-
-            $additionsNetTotal = $booking->adjustments->where('type', 'addition')->sum('net_rate');
-            $additionsGuestTotal = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
-
-            $discountsNetTotal = $booking->adjustments->where('type', 'discount')->sum('net_rate');
-            $discountsGuestTotal = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
-
-            $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
-
-            $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
-
-            $bookingsData[] = [
-                'booking' => $booking,
-                'roomsData' => $roomsData,
-                'childNetTotal' => $childNetTotal,
-                'childGuestTotal' => $childGuestTotal,
-                'additionsNetTotal' => $additionsNetTotal,
-                'additionsGuestTotal' => $additionsGuestTotal,
-                'discountsNetTotal' => $discountsNetTotal,
-                'discountsGuestTotal' => $discountsGuestTotal,
-                'totalNetRate' => $totalNetRate,
-                'totalGuestRate' => $totalGuestRate,
-            ];
-        }
-
-        $html = view('admin.pages.bookings.pdf.export-detailed', compact('bookingsData', 'totalBookingsCount'))->render();
+        $html = view('admin.pages.bookings.pdf.export-detailed', compact('bookings'))->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -1102,46 +1068,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $bookingsData = [];
-        $totalBookingsCount = $bookings->count();
-
-        foreach ($bookings as $booking) {
-            $roomsData = [];
-            foreach ($booking->rooms as $room) {
-                $roomGuestRate = ($room->price + $room->margin) * $room->room_count * $booking->nights;
-                $childCount = $room->child_count ?? 0;
-                $childGuestRate = (($room->child_price ?? 0) + ($room->child_margin ?? 0)) * $childCount * $booking->nights;
-
-                $roomsData[] = [
-                    'room_type' => $room->room_type,
-                    'category' => $room->category,
-                    'room_count' => $room->room_count,
-                    'guest_rate' => $roomGuestRate,
-                    'child_count' => $childCount,
-                    'child_guest_rate' => $childGuestRate,
-                ];
-            }
-
-            $childGuestTotal = (($booking->child_price ?? 0) + ($booking->child_margin ?? 0)) * $booking->nights;
-            $additionsGuestTotal = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
-            $discountsGuestTotal = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
-
-            $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
-
-            $bookingsData[] = [
-                'booking' => $booking,
-                'roomsData' => $roomsData,
-                'childGuestTotal' => $childGuestTotal,
-                'additionsGuestTotal' => $additionsGuestTotal,
-                'discountsGuestTotal' => $discountsGuestTotal,
-                'totalGuestRate' => $totalGuestRate,
-            ];
-        }
-
-        $html = view('admin.pages.bookings.pdf.export-guest', compact('bookingsData', 'totalBookingsCount'))->render();
+        $html = view('admin.pages.bookings.pdf.export-guest', compact('bookings'))->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -1168,46 +1095,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $bookingsData = [];
-        $totalBookingsCount = $bookings->count();
-
-        foreach ($bookings as $booking) {
-            $roomsData = [];
-            foreach ($booking->rooms as $room) {
-                $roomNetRate = $room->price * $room->room_count * $booking->nights;
-                $childCount = $room->child_count ?? 0;
-                $childNetRate = ($room->child_price ?? 0) * $childCount * $booking->nights;
-
-                $roomsData[] = [
-                    'room_type' => $room->room_type,
-                    'category' => $room->category,
-                    'room_count' => $room->room_count,
-                    'net_rate' => $roomNetRate,
-                    'child_count' => $childCount,
-                    'child_net_rate' => $childNetRate,
-                ];
-            }
-
-            $childNetTotal = ($booking->child_price ?? 0) * $booking->nights;
-            $additionsNetTotal = $booking->adjustments->where('type', 'addition')->sum('net_rate');
-            $discountsNetTotal = $booking->adjustments->where('type', 'discount')->sum('net_rate');
-
-            $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
-
-            $bookingsData[] = [
-                'booking' => $booking,
-                'roomsData' => $roomsData,
-                'childNetTotal' => $childNetTotal,
-                'additionsNetTotal' => $additionsNetTotal,
-                'discountsNetTotal' => $discountsNetTotal,
-                'totalNetRate' => $totalNetRate,
-            ];
-        }
-
-        $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookingsData', 'totalBookingsCount'))->render();
+        $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookings'))->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',

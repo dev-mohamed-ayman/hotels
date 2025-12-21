@@ -89,7 +89,7 @@
                 <td>{{ $booking->hotel->name }}</td>
                 <td>{{ $bankAccount ? $bankAccount->bank_name : '-' }}</td>
                 <td>{{ $bankAccount ? $bankAccount->account_number : '-' }}</td>
-                <td>{{ $booking->currency->symbol }}{{ number_format($totalAmount, 0) }}</td>
+                <td>{{ $totalAmount == 0 ? '' : $booking->currency->symbol . number_format($totalAmount, 0) }}</td>
             </tr>
         </tbody>
     </table>

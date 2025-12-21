@@ -143,11 +143,11 @@
                                     <div class="mb-2">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="text-muted small">{{ __('Check In') }}:</span>
-                                            <span class="fw-semibold">{{ $booking->check_in->format('Y-m-d') }}</span>
+                                            <span class="fw-semibold">{{ $booking->check_in->format('d-m-Y') }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="text-muted small">{{ __('Check Out') }}:</span>
-                                            <span class="fw-semibold">{{ $booking->check_out->format('Y-m-d') }}</span>
+                                            <span class="fw-semibold">{{ $booking->check_out->format('d-m-Y') }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted small">{{ __('Nights') }}:</span>
@@ -191,7 +191,7 @@
                                                         <span class="badge bg-label-danger">{{ __('Cancelled') }}</span>
                                                     @else
                                                         <span
-                                                            class="badge bg-label-secondary">{{ ucfirst($booking->status) }}</span>
+                                                            class="badge bg-label-secondary">{{ __(ucfirst($booking->status)) }}</span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -202,7 +202,7 @@
                                                 <div>
                                                     <span class="text-muted small d-block">{{ __('Total Amount') }}</span>
                                                     <span
-                                                        class="fw-bold fs-5 text-success">{{ number_format($booking->total_amount, 2) }}
+                                                        class="fw-bold fs-5 text-success">{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}</span>
                                                 </div>
                                                 <div class="avatar">
@@ -217,7 +217,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
                                                 <span class="text-muted small">{{ __('Paid') }}</span>
                                                 <span
-                                                    class="fw-semibold text-primary">{{ number_format($booking->paid_amount, 2) }}</span>
+                                                    class="fw-semibold text-primary">{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }}</span>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -225,15 +225,16 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ number_format($booking->total_amount - $booking->paid_amount, 2) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : number_format($booking->total_amount - $booking->paid_amount, 0) }}</span>
                                             </div>
                                         </div>
                                         @if ($booking->child_price > 0 || $booking->child_margin > 0)
                                             <div class="col-6">
                                                 <div class="mb-2">
                                                     <label
-                                                        class="form-label text-muted small mb-1">{{ __('Child Price') }}</label>
-                                                    <div class="fw-semibold">{{ number_format($booking->child_price, 2) }}
+                                                        class="form-label text-muted small mb-1">{{ __('Child Net Rate') }}</label>
+                                                    <div class="fw-semibold">
+                                                        {{ $booking->child_price == 0 ? '' : number_format($booking->child_price, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}</div>
                                                 </div>
                                             </div>
@@ -242,7 +243,7 @@
                                                     <label
                                                         class="form-label text-muted small mb-1">{{ __('Child Margin') }}</label>
                                                     <div class="fw-semibold">
-                                                        {{ number_format($booking->child_margin, 2) }}
+                                                        {{ $booking->child_margin == 0 ? '' : number_format($booking->child_margin, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}</div>
                                                 </div>
                                             </div>
@@ -253,11 +254,60 @@
                                                     <label
                                                         class="form-label text-muted small mb-1">{{ __('Option Date') }}</label>
                                                     <div class="fw-semibold">
-                                                        {{ $booking->option_date ? $booking->option_date->format('Y-m-d') : ($booking->payment_date ? $booking->payment_date->format('Y-m-d') : '-') }}
+                                                        {{ $booking->option_date ? $booking->option_date->format('d-m-Y') : ($booking->payment_date ? $booking->payment_date->format('d-m-Y') : '-') }}
                                                     </div>
                                                 </div>
                                             </div>
                                         @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Financial Info -->
+                        <div class="col-lg-6 col-md-6">
+                            <div class="card border shadow-none">
+                                <div class="card-header bg-label-secondary">
+                                    <h6 class="mb-0 text-secondary">
+                                        <i
+                                            class="ti tabler-building-bank me-2"></i>{{ __('Hotel Financial Information') }}
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <div
+                                                class="d-flex justify-content-between align-items-center p-3 bg-label-secondary rounded mb-2">
+                                                <div>
+                                                    <span
+                                                        class="text-muted small d-block">{{ __('Total Net Amount') }}</span>
+                                                    <span
+                                                        class="fw-bold fs-5 text-secondary">{{ $booking->net_amount == 0 ? '' : number_format($booking->net_amount, 0) }}
+                                                        {{ $booking->currency->symbol ?? '' }}</span>
+                                                </div>
+                                                <div class="avatar">
+                                                    <span class="avatar-initial rounded bg-secondary">
+                                                        <i class="ti tabler-building-bank"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div
+                                                class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
+                                                <span class="text-muted small">{{ __('Paid to Hotel') }}</span>
+                                                <span
+                                                    class="fw-semibold text-primary">{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div
+                                                class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
+                                                <span class="text-muted small">{{ __('Pending') }}</span>
+                                                <span
+                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->hotel_paid_amount == 0 ? '' : number_format($booking->net_amount - $booking->hotel_paid_amount, 0) }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -294,7 +344,7 @@
                                                 <label
                                                     class="form-label text-muted small mb-1">{{ __('Option Date') }}</label>
                                                 <div class="fw-semibold">
-                                                    {{ $booking->option_date ? $booking->option_date->format('Y-m-d') : ($booking->payment_date ? $booking->payment_date->format('Y-m-d') : '-') }}
+                                                    {{ $booking->option_date ? $booking->option_date->format('d-m-Y') : ($booking->payment_date ? $booking->payment_date->format('d-m-Y') : '-') }}
                                                 </div>
                                             </div>
                                         @endif
@@ -330,10 +380,10 @@
                                         <th>{{ __('Room Type') }}</th>
                                         <th>{{ __('Category') }}</th>
                                         <th>{{ __('Room Count') }}</th>
-                                        <th>{{ __('Price') }}</th>
+                                        <th>{{ __('Net Rate') }}</th>
                                         <th>{{ __('Margin') }}</th>
                                         <th>{{ __('Child Count') }}</th>
-                                        <th>{{ __('Child Price') }}</th>
+                                        <th>{{ __('Child Net Rate') }}</th>
                                         <th>{{ __('Child Margin') }}</th>
                                         <th>{{ __('Subtotal') }}</th>
                                     </tr>
@@ -344,14 +394,15 @@
                                             <td>{{ $room->room_type }}</td>
                                             <td>{{ $room->category ?? '-' }}</td>
                                             <td>{{ $room->room_count }}</td>
-                                            <td>{{ number_format($room->price, 2) }}</td>
-                                            <td>{{ number_format($room->margin, 2) }}</td>
-                                            <td>{{ $room->child_count ?? 0 }}</td>
-                                            <td>{{ $room->child_price ? number_format($room->child_price, 2) : '-' }}</td>
-                                            <td>{{ $room->child_margin ? number_format($room->child_margin, 2) : '-' }}
+                                            <td>{{ $room->price == 0 ? '' : number_format($room->price, 0) }}</td>
+                                            <td>{{ $room->margin == 0 ? '' : number_format($room->margin, 0) }}</td>
+                                            <td>{{ $room->child_count == 0 ? '' : $room->child_count }}</td>
+                                            <td>{{ $room->child_price ? ($room->child_price == 0 ? '' : number_format($room->child_price, 0)) : '-' }}
+                                            </td>
+                                            <td>{{ $room->child_margin ? ($room->child_margin == 0 ? '' : number_format($room->child_margin, 0)) : '-' }}
                                             </td>
                                             <td>
-                                                {{ number_format(($room->price + $room->margin) * $room->room_count, 2) }}
+                                                {{ ($room->price + $room->margin) * $room->room_count * $booking->nights == 0 ? '' : number_format(($room->price + $room->margin) * $room->room_count * $booking->nights, 0) }}
                                                 {{ $booking->currency->symbol ?? '' }}
                                             </td>
                                         </tr>
@@ -369,7 +420,7 @@
             <div class="col-md-12 mb-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">{{ __('Adjustments') }}</h5>
+                        <h5 class="mb-0">{{ __('Extras') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -392,15 +443,15 @@
                                                     <tr>
                                                         <td>{{ $addition->description }}</td>
                                                         <td class="text-muted">
-                                                            {{ number_format($addition->net_rate ?? ($addition->amount ?? 0), 2) }}
+                                                            {{ ($val = $addition->net_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         <td class="text-success fw-semibold">
-                                                            +{{ number_format($addition->guest_rate ?? ($addition->amount ?? 0), 2) }}
+                                                            +{{ ($val = $addition->guest_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         <td class="text-primary">
-                                                            {{ number_format($addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0), 2) }}
+                                                            {{ ($val = $addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     </tr>
@@ -410,15 +461,15 @@
                                                 <tr class="fw-bold table-active border-top border-2 border-dark">
                                                     <td class="text-uppercase">{{ __('Total') }}</td>
                                                     <td class="text-muted">
-                                                        {{ number_format($booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount'), 2) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     <td class="text-success">
-                                                        +{{ number_format($booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount'), 2) }}
+                                                        +{{ ($val = $booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     <td class="text-primary">
-                                                        {{ number_format($booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate'), 2) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                 </tr>
@@ -447,15 +498,15 @@
                                                     <tr>
                                                         <td>{{ $discount->description }}</td>
                                                         <td class="text-muted">
-                                                            {{ number_format($discount->net_rate ?? ($discount->amount ?? 0), 2) }}
+                                                            {{ ($val = $discount->net_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         <td class="text-danger fw-semibold">
-                                                            -{{ number_format($discount->guest_rate ?? ($discount->amount ?? 0), 2) }}
+                                                            -{{ ($val = $discount->guest_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         <td class="text-primary">
-                                                            {{ number_format($discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0), 2) }}
+                                                            {{ ($val = $discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     </tr>
@@ -465,15 +516,15 @@
                                                 <tr class="fw-bold table-active border-top border-2 border-dark">
                                                     <td class="text-uppercase">{{ __('Total') }}</td>
                                                     <td class="text-muted">
-                                                        {{ number_format($booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount'), 2) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     <td class="text-danger">
-                                                        -{{ number_format($booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount'), 2) }}
+                                                        -{{ ($val = $booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     <td class="text-primary">
-                                                        {{ number_format($booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate'), 2) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                 </tr>
@@ -501,7 +552,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Total Amount') }}</h6>
                                     <h4 class="mb-0 text-success">
-                                        {{ number_format($booking->total_amount, 2) }}<br>
+                                        {{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>
@@ -512,7 +563,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Paid Amount') }}</h6>
                                     <h4 class="mb-0 text-primary">
-                                        {{ number_format($booking->paid_amount, 2) }}<br>
+                                        {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>
@@ -523,7 +574,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Pending Amount') }}</h6>
                                     <h4 class="mb-0 text-warning">
-                                        {{ number_format($booking->total_amount - $booking->paid_amount, 2) }}<br>
+                                        {{ $booking->total_amount - $booking->paid_amount == 0 ? '' : number_format($booking->total_amount - $booking->paid_amount, 0) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>

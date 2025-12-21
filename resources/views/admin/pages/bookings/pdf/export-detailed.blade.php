@@ -27,6 +27,9 @@
         td {
             border: 1px solid #000;
             padding: 3px;
+        }
+
+        .nowrap {
             white-space: nowrap;
         }
 
@@ -36,8 +39,34 @@
             vertical-align: middle;
         }
 
+        .bg-light-blush {
+            background-color: #fbe5d6;
+        }
+
         .header-green {
             background-color: #e2efda;
+        }
+
+        .bg-light-green {
+            background-color: #e2f0d9;
+        }
+
+        .bg-light-blue {
+            background-color: #bdd7ee;
+        }
+
+        .bg-red {
+            background-color: #c00000;
+            color: white;
+        }
+
+        .bg-dark-green {
+            background-color: #385724;
+            color: white;
+        }
+
+        .bg-light-green-total {
+            background-color: #a9d18e;
         }
 
         .header-red {
@@ -59,207 +88,97 @@
             color: #ff0000;
             font-weight: bold;
         }
-
-        .booking-separator {
-            background-color: #d0d0d0;
-            height: 10px;
-        }
     </style>
 </head>
 
 <body>
 
     <div style="margin-bottom: 15px; text-align: center; font-size: 9pt;">
-        <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
+        <strong>{{ __('Total Bookings') }}: {{ count($bookings) }}</strong>
     </div>
+    {{-- @dd($bookings) --}}
 
     <table>
         <thead>
-            <tr>
-                <th rowspan="2" style="background-color: #fff;">File Code</th>
-                <th rowspan="2" style="background-color: #fff;">Hotel Name</th>
-                <th rowspan="2">Meals Plan</th>
-                <th rowspan="2">Chk In Date</th>
-                <th rowspan="2">Chk out Date</th>
-                <th rowspan="2" class="text-red">Nights<br>(Dynamic)</th>
-                <th rowspan="2" class="header-green">Rooms<br>Qty.</th>
-                <th rowspan="2" class="header-green">Room<br>Type</th>
-                <th rowspan="2" class="header-green">Category</th>
-                <th rowspan="2" class="header-green">Net Rate</th>
-                <th rowspan="2" class="header-green">Margin $</th>
-                <th rowspan="2" class="header-green">Guest Rate<br>(Dynamic)</th>
-                <th rowspan="2" class="header-dark-green">Total Net Rate<br>(Dynamic)</th>
-                <th rowspan="2" class="header-dark-green">Total Guest Rate<br>(Dynamic)</th>
-            </tr>
-            <tr>
-                <th class="header-green">CHD<br>Qty.</th>
-                <th class="header-green">CHD Rate</th>
-                <th class="header-green">CHD Margin</th>
-                <th class="header-green">CHD Guest Rate<br>(Dynamic)</th>
-
-                <th class="header-red">Net<br>Extras</th>
-                <th class="header-dark-green">Guest<br>Extras</th>
-
-                <th class="header-red">Net<br>Reducts</th>
-                <th class="header-dark-green">Guest<br>Reducts</th>
+            <tr class="border">
+                <th class="bg-light-blush nowrap">@lang('File Code')</th>
+                <th class="bg-light-blush nowrap">@lang('Hotel Name')</th>
+                <th class="bg-light-blush">@lang('Meals Plan')</th>
+                <th class="bg-light-blush nowrap">@lang('Check In Date')</th>
+                <th class="bg-light-blush nowrap">@lang('Check Out Date')</th>
+                <th class="bg-light-blush nowrap">@lang('Nights')</th>
+                <th class="bg-light-green">@lang('Rooms Qty')</th>
+                <th class="bg-light-green">@lang('Roome Type')</th>
+                <th class="bg-light-green nowrap">@lang('Category')</th>
+                <th class="bg-light-green nowrap">@lang('Net Rate')</th>
+                <th class="bg-light-green">@lang('Margin')</th>
+                <th class="bg-light-green">@lang('Guest Rate')</th>
+                <th class="bg-light-blue">@lang('CHD Qty')</th>
+                <th class="bg-light-blue">@lang('CHD Rate')</th>
+                <th class="bg-light-blue">@lang('CHD Margin')</th>
+                <th class="bg-light-blue">@lang('CHD Guest Rate')</th>
+                <th class="bg-red">@lang('Net Extras')</th>
+                <th class="bg-red">@lang('Net Reducts')</th>
+                <th class="bg-dark-green">@lang('Guest Extra')</th>
+                <th class="bg-dark-green">@lang('Guest Reducts')</th>
+                <th class="bg-light-green-total">@lang('Total Net Rate')</th>
+                <th class="bg-light-green-total">@lang('Total Guest Rate')</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($bookingsData as $bookingIndex => $data)
-                @php
-                    $booking = $data['booking'];
-                    $firstRow = true;
-                @endphp
-
-                @foreach ($data['roomsData'] as $room)
+            @foreach ($bookings as $booking)
+                @foreach ($booking->rooms as $room)
                     <tr>
-                        <td class="text-red" style="border: 1px solid #000;">
-                            @if ($firstRow)
-                                <strong>{{ $booking->code }}</strong>
-                            @endif
-                        </td>
-                        <td style="border: 1px solid #000;">
-                            @if ($firstRow)
-                                <strong>{{ $booking->hotel->name }}</strong>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($firstRow)
-                                {{ $booking->meals_plan ?? '-' }}
-                            @endif
-                        </td>
-                        <td>
-                            @if ($firstRow)
-                                {{ $booking->check_in->format('d-M-y') }}
-                            @endif
-                        </td>
-                        <td>
-                            @if ($firstRow)
-                                {{ $booking->check_out->format('d-M-y') }}
-                            @endif
-                        </td>
-                        <td>
-                            @if ($firstRow)
-                                {{ $booking->nights }} nights
-                            @endif
-                        </td>
-                        <td>{{ $room['room_count'] }}</td>
-                        <td>{{ $room['room_type'] }}</td>
-                        <td>{{ $room['category'] ?? '-' }}</td>
+                        @if ($loop->first)
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->code }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->hotel->name }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->meals_plan }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->check_in->format('d-M-y') }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->check_out->format('d-M-y') }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->nights }}</td>
+                        @endif
+                        <td>{{ $room->room_count }}</td>
+                        <td>{{ $room->room_type }}</td>
+                        <td>{{ $room->category }}</td>
+                        <td>{{ number_format($room->price) }}</td>
+                        <td>{{ number_format($room->margin) }}</td>
+                        <td>{{ number_format($room->price + $room->margin) }}</td>
+                        <td>{{ $room->child_count }}</td>
+                        <td>{{ number_format($room->child_price) }}</td>
+                        <td>{{ number_format($room->child_margin) }}</td>
+                        <td>{{ number_format($room->child_price + $room->child_margin) }}</td>
                         @php
-                            // Calculate per night rates (divide by room_count and nights)
-                            $roomNetRatePerNight = $room['net_rate'] / ($room['room_count'] * $booking->nights);
-                            $roomMarginPerNight = $room['margin'] / ($room['room_count'] * $booking->nights);
-                            $roomGuestRatePerNight = $room['guest_rate'] / ($room['room_count'] * $booking->nights);
-                            
-                            // Calculate room totals for this row
-                            $roomTotalNet = $room['net_rate'];
-                            $roomTotalGuest = $room['guest_rate'];
-                            
-                            if ($room['child_count'] > 0) {
-                                $roomTotalNet += $room['child_net_rate'];
-                                $roomTotalGuest += $room['child_guest_rate'];
+                            $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
+                            $netReducts = $booking->adjustments->where('type', 'discount')->sum('net_rate');
+                            $guestExtras = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
+                            $guestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
+
+                            // Calculate totals for ALL rooms in the booking
+                            $totalNetRate = 0;
+                            $totalGuestRate = 0;
+                            foreach ($booking->rooms as $r) {
+                                $totalNetRate += $r->price * $r->room_count * $booking->nights;
+                                $totalNetRate += $r->child_price * $r->child_count * $booking->nights;
+                                $totalGuestRate += ($r->price + $r->margin) * $r->room_count * $booking->nights;
+                                $totalGuestRate +=
+                                    ($r->child_price + $r->child_margin) * $r->child_count * $booking->nights;
                             }
-                            
-                            if ($firstRow) {
-                                $roomTotalNet += $data['additionsNetTotal'];
-                                $roomTotalNet -= $data['discountsNetTotal'];
-                                $roomTotalGuest += $data['additionsGuestTotal'];
-                                $roomTotalGuest -= $data['discountsGuestTotal'];
-                            }
+                            $totalNetRate += $netExtras - $netReducts;
+                            $totalGuestRate += $guestExtras - $guestReducts;
                         @endphp
-                        <td>${{ number_format($roomNetRatePerNight, 0) }}</td>
-                        <td>${{ number_format($roomMarginPerNight, 0) }}</td>
-                        <td>${{ number_format($roomGuestRatePerNight, 0) }}</td>
-
-                        @if ($room['child_count'] > 0)
-                            <td>{{ $room['child_count'] }}</td>
-                            @php
-                                $childNetRatePerNight = $room['child_net_rate'] / ($room['child_count'] * $booking->nights);
-                                $childMarginPerNight = $room['child_margin'] / ($room['child_count'] * $booking->nights);
-                                $childGuestRatePerNight = $room['child_guest_rate'] / ($room['child_count'] * $booking->nights);
-                            @endphp
-                            <td>${{ number_format($childNetRatePerNight, 0) }}</td>
-                            <td>${{ number_format($childMarginPerNight, 0) }}</td>
-                            <td>${{ number_format($childGuestRatePerNight, 0) }}</td>
-                        @else
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                        @if ($loop->first)
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($netExtras) }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($netReducts) }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($guestExtras) }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($guestReducts) }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($totalNetRate) }}</td>
+                            <td rowspan="{{ count($booking->rooms) }}">{{ number_format($totalGuestRate) }}</td>
                         @endif
-
-                        @if ($firstRow)
-                            <td>${{ number_format($data['additionsNetTotal'], 0) }}</td>
-                            <td>${{ number_format($data['additionsGuestTotal'], 0) }}</td>
-                        @else
-                            <td></td>
-                            <td></td>
-                        @endif
-
-                        @if ($firstRow)
-                            <td>${{ number_format($data['discountsNetTotal'], 0) }}</td>
-                            <td>${{ number_format($data['discountsGuestTotal'], 0) }}</td>
-                        @else
-                            <td></td>
-                            <td></td>
-                        @endif
-
-                        <td>${{ number_format($roomTotalNet, 0) }}</td>
-                        <td>${{ number_format($roomTotalGuest, 0) }}</td>
                     </tr>
-
-                    @php $firstRow = false; @endphp
                 @endforeach
-
-                <!-- Footer Section for each booking -->
-                <tr style="border-top: 2px solid #000;">
-                    <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Option Date</td>
-                    <td colspan="2" style="border: 2px solid #000;">
-                        {{ $booking->option_date ? $booking->option_date->format('d-M-y') : '-' }}
-                    </td>
-                    <td colspan="3" style="border: 1px solid #000;"></td>
-                    <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Total Net Rate</td>
-                    <td style="border: 2px solid #000; font-weight: bold;">
-                        ${{ number_format($data['totalNetRate'], 0) }}
-                    </td>
-                    <td colspan="3" style="border: 1px solid #000;"></td>
-                    <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Total Guest Rate</td>
-                    <td style="border: 2px solid #000; font-weight: bold;">
-                        ${{ number_format($data['totalGuestRate'], 0) }}
-                    </td>
-                    <td colspan="4" style="border: 1px solid #000;"></td>
+                <tr class="bg-gray">
+                    <td colspan="22"></td>
                 </tr>
-
-                <tr>
-                    <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Remaining Days</td>
-                    <td colspan="2" style="border: 2px solid #000;">
-                        @php
-                            $remainingDays = $booking->option_date
-                                ? max(0, floor(now()->diffInDays($booking->option_date, false)))
-                                : 0;
-                        @endphp
-                        {{ $remainingDays > 0 ? $remainingDays . ' Days' : '-' }}
-                    </td>
-                    <td colspan="3" style="border: 1px solid #000;"></td>
-                    <td colspan="2" style="border: 2px solid #000; font-weight: bold;">Paid Amount</td>
-                    <td style="border: 2px solid #000;">
-                        ${{ number_format($booking->paid_amount, 0) }}
-                    </td>
-                    <td colspan="3" style="border: 1px solid #000;"></td>
-                    <td colspan="3" style="border: 2px solid #000; font-weight: bold;">Remaining Amount</td>
-                    <td style="border: 2px solid #000;">
-                        ${{ number_format($booking->total_amount - $booking->paid_amount, 0) }}
-                    </td>
-                    <td colspan="4" style="border: 1px solid #000;"></td>
-                </tr>
-
-                <!-- Empty row between bookings -->
-                @if ($bookingIndex < count($bookingsData) - 1)
-                    <tr class="bg-gray">
-                        <td colspan="22" style="border:1px solid #000; height: 20px;"></td>
-                    </tr>
-                @endif
             @endforeach
 
         </tbody>
@@ -268,4 +187,3 @@
 </body>
 
 </html>
-
