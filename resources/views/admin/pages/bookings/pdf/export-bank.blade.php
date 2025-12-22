@@ -10,8 +10,8 @@
         }
 
         body {
-            font-family: 'DejaVu Sans', sans-serif;
-            font-size: 10pt;
+            font-family: 'Aptos', sans-serif;
+            font-size: 12pt;
         }
 
         .logo-container {
@@ -27,7 +27,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9pt;
+            font-size: 12pt;
         }
 
         th {

@@ -768,29 +768,5 @@
 
         // Initial setup
         attachCalculationListeners();
-
-        // Open date picker when clicking on date inputs or their labels
-        document.querySelectorAll('input[type="date"]').forEach(dateInput => {
-            // Open picker when clicking on the input
-            dateInput.addEventListener('click', function() {
-                if (this.showPicker) {
-                    this.showPicker();
-                }
-            });
-
-            // Open picker when clicking on associated label
-            if (dateInput.id) {
-                const label = document.querySelector(`label[for="${dateInput.id}"]`);
-                if (label) {
-                    label.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const input = document.getElementById(dateInput.id);
-                        if (input && input.showPicker) {
-                            input.showPicker();
-                        }
-                    });
-                }
-            }
-        });
     </script>
 @endsection

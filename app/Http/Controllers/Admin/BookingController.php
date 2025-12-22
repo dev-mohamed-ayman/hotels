@@ -989,18 +989,16 @@ class BookingController extends Controller
         $totalBookingsCount = $bookings->count();
 
         foreach ($bookings as $booking) {
-            $roomsTotal = 0;
+            $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
+            $netReducts = $booking->adjustments->where('type', 'discount')->sum('net_rate');
+
+            // Calculate totals for ALL rooms in the booking (same as export-netrate)
+            $bookingTotal = 0;
             foreach ($booking->rooms as $room) {
-                $roomPrice = ($room->price + $room->margin) * $booking->nights;
-                $roomTotal = $roomPrice * $room->room_count;
-                $roomsTotal += $roomTotal;
+                $bookingTotal += $room->price * $room->room_count * $booking->nights;
+                $bookingTotal += $room->child_price * $room->child_count * $booking->nights;
             }
-
-            $childTotal = ($booking->child_price + $booking->child_margin) * $booking->nights;
-            $additionsTotal = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
-            $discountsTotal = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
-
-            $bookingTotal = $roomsTotal + $childTotal + $additionsTotal - $discountsTotal;
+            $bookingTotal += $netExtras - $netReducts;
             $totalAmount += $bookingTotal;
 
             $bankAccount = \App\Models\HotelBankAccount::where('hotel_id', $booking->hotel_id)
@@ -1026,7 +1024,7 @@ class BookingController extends Controller
             'margin_bottom' => 15,
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'default_font' => 'dejavusans',
+            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1053,7 +1051,7 @@ class BookingController extends Controller
             'margin_bottom' => 10,
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'default_font' => 'dejavusans',
+            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1080,7 +1078,7 @@ class BookingController extends Controller
             'margin_bottom' => 10,
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'default_font' => 'dejavusans',
+            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1107,7 +1105,7 @@ class BookingController extends Controller
             'margin_bottom' => 10,
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'default_font' => 'dejavusans',
+            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);

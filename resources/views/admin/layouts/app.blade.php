@@ -55,6 +55,9 @@
     <!-- Page CSS -->
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
 
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+
     @yield('styles')
 
     <!-- Helpers -->
@@ -165,6 +168,37 @@
     <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Flatpickr JS -->
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script>
+        // Initialize all date inputs with Flatpickr (DD-MM-YYYY display, YYYY-MM-DD submit)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[type="date"]').forEach(function(input) {
+                // Get current value and min date before converting
+                const currentValue = input.value;
+                const minDate = input.getAttribute('min');
+
+                // Change input type to text for Flatpickr
+                input.type = 'text';
+                input.classList.add('flatpickr-date');
+
+                // Initialize Flatpickr with altInput for proper display and submission
+                flatpickr(input, {
+                    dateFormat: 'Y-m-d', // Value sent to server (Laravel format)
+                    altInput: true, // Enable alternative input
+                    altFormat: 'd-m-Y', // Display format (DD-MM-YYYY)
+                    allowInput: true,
+                    defaultDate: currentValue ? currentValue : null,
+                    minDate: minDate ? minDate : null,
+                    locale: {
+                        firstDayOfWeek: 6 // Saturday
+                    }
+                });
+            });
+        });
+    </script>
+
     @include('admin.layouts.toast')
     @yield('scripts')
 </body>

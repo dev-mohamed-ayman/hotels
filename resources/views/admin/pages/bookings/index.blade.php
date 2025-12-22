@@ -384,7 +384,6 @@
                             <thead>
                                 <tr>
                                     <th class="text-nowrap">{{ __('Code') }}</th>
-                                    <th class="text-nowrap">{{ __('Hotel') }}</th>
                                     <th class="text-nowrap">{{ __('Rooms') }}</th>
                                     <th class="text-nowrap">{{ __('Check In') }}</th>
                                     <th class="text-nowrap">{{ __('Check Out') }}</th>
@@ -392,7 +391,6 @@
                                     <th class="text-nowrap">{{ __('Total Net') }}</th>
                                     <th class="text-nowrap">{{ __('Paid Net') }}</th>
                                     <th class="text-nowrap">{{ __('Remaining Net') }}</th>
-                                    <th class="text-nowrap">{{ __('Hotel Payment') }}</th>
                                     <th class="text-nowrap">{{ __('Option Date') }}</th>
                                     <th class="text-nowrap">{{ __('Status') }}</th>
                                     <th class="text-nowrap">{{ __('Actions') }}</th>
@@ -402,7 +400,6 @@
                                 @forelse ($bookings as $booking)
                                     <tr>
                                         <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
-                                        <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
                                         <td class="py-2" style="width: 130px;">
                                             @if ($booking->rooms && $booking->rooms->count() > 0)
                                                 @php
@@ -439,51 +436,32 @@
                                         <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
                                         <td class="text-nowrap py-2">{{ $booking->nights }}</td>
                                         <td class="text-nowrap py-2">
-                                            {{ $booking->total_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->total_amount, 0) }}
+                                            {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->net_amount, 0) }}
                                         </td>
                                         <td class="text-nowrap py-2">
                                             <span class="fw-semibold text-success">
-                                                {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) . ' ' . $booking->currency->symbol }}
+                                                {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->hotel_paid_amount, 0) }}
                                             </span>
                                         </td>
                                         <td class="text-nowrap py-2">
                                             @php
-                                                $remaining = $booking->total_amount - $booking->paid_amount;
+                                                $remaining = $booking->net_amount - $booking->hotel_paid_amount;
                                             @endphp
                                             @if ($remaining > 0)
                                                 <span class="badge bg-label-danger" style="font-size: 0.75rem;">
                                                     <i class="ti tabler-alert-circle me-1"></i>
-                                                    {{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}
+                                                    {{ $booking->currency->symbol }} {{ number_format($remaining, 0) }}
                                                 </span>
-                                            @else
+                                            @elseif ($booking->net_amount > 0)
                                                 <span class="badge bg-label-success" style="font-size: 0.75rem;">
                                                     <i class="ti tabler-check me-1"></i>
                                                     {{ __('Paid') }}
                                                 </span>
+                                            @else
+                                                <span class="text-muted">-</span>
                                             @endif
+                                        </td>
 
-                                        </td>
-                                        <td class="text-nowrap py-2">
-                                            @php
-                                                $hotelRemaining = $booking->net_amount - $booking->hotel_paid_amount;
-                                            @endphp
-                                            @if ($booking->net_amount == 0)
-                                                <span class="badge bg-label-secondary" style="font-size: 0.75rem;">
-                                                    {{ __('N/A') }}
-                                                </span>
-                                            @elseif ($hotelRemaining > 0)
-                                                <span class="badge bg-label-danger" style="font-size: 0.75rem;">
-                                                    <i class="ti tabler-alert-circle me-1"></i>
-                                                    {{ number_format($hotelRemaining, 0) }}
-                                                    {{ $booking->currency->symbol }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-label-success" style="font-size: 0.75rem;">
-                                                    <i class="ti tabler-check me-1"></i>
-                                                    {{ __('Paid') }}
-                                                </span>
-                                            @endif
-                                        </td>
                                         <td class="py-2">
                                             @if ($booking->option_date)
                                                 <div class="d-flex flex-column align-items-center gap-1">
@@ -493,37 +471,44 @@
                                                         <span
                                                             class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
                                                     </div>
-                                                    @if ($booking->option_date->isPast())
-                                                        <span class="badge bg-label-warning"
-                                                            style="font-size: 0.65rem;">{{ __('Past') }}</span>
-                                                    @elseif ($booking->option_date->isToday())
-                                                        <span class="badge bg-label-info"
-                                                            style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                    @if ($remaining <= 0)
+
                                                     @else
-                                                        <span class="badge bg-label-success"
-                                                            style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                        @if ($booking->option_date->isPast())
+                                                            <span class="badge bg-label-warning"
+                                                                style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                        @elseif ($booking->option_date->isToday())
+                                                            <span class="badge bg-label-info"
+                                                                style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                        @else
+                                                            <span class="badge bg-label-success"
+                                                                style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                        @endif
                                                     @endif
+
                                                 </div>
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td class="text-nowrap py-2">
-                                            @if ($booking->paid_amount == 0)
+                                            @if ($booking->hotel_paid_amount == 0)
                                                 <span class="badge bg-danger" title="{{ __('Unpaid') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-x"></i>
                                                 </span>
-                                            @elseif ($booking->paid_amount >= $booking->total_amount)
+                                            @elseif ($booking->hotel_paid_amount >= $booking->net_amount && $booking->net_amount > 0)
                                                 <span class="badge bg-success" title="{{ __('Paid') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-check"></i>
                                                 </span>
-                                            @else
+                                            @elseif ($booking->net_amount > 0)
                                                 <span class="badge bg-warning" title="{{ __('Partial Payment') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-question-mark"></i>
                                                 </span>
+                                            @else
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                         <td class="text-nowrap">
@@ -550,13 +535,13 @@
                                                                 </a>
                                                             </li>
                                                         @endif
-                                                        <li>
+                                                        {{-- <li>
                                                             <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                 data-bs-target="#paymentModal{{ $booking->id }}">
                                                                 <i
                                                                     class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
                                                             </a>
-                                                        </li>
+                                                        </li> --}}
                                                         <li>
                                                             <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                 data-bs-target="#hotelPaymentModal{{ $booking->id }}">
