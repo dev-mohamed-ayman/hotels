@@ -46,7 +46,7 @@
                                                     <div class="col-md-4 mb-2">
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox"
-                                                                name="permissions[]" value="{{ $permission->id }}"
+                                                                name="permissions[]" value="{{ $permission->name }}"
                                                                 id="permission_{{ $permission->id }}"
                                                                 {{ in_array($permission->id, $rolePermissionIds) ? 'checked' : '' }}>
                                                             <label class="form-check-label"
@@ -105,6 +105,7 @@
     </script>
 @endsection
 @endsection
+
 
 
 

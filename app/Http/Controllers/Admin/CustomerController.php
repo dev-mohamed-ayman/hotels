@@ -190,7 +190,7 @@ class CustomerController extends Controller
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
-            'type' => 'required|in:individual,corporate',
+            'type' => 'required|in:B2B,B2C',
             'status' => 'required|in:potential,cancelled,active',
             'priority' => 'required|in:low,medium,high,urgent',
             'source' => 'nullable|in:phone,website,social_media,referral,direct_visit',

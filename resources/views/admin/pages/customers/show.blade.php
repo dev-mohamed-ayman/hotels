@@ -67,11 +67,7 @@
                             <div class="mb-3">
                                 <label class="form-label text-muted small">{{ __('Type') }}</label>
                                 <p class="mb-0">
-                                    @if ($customer->type == 'individual')
-                                        <span class="badge bg-label-primary">{{ __('Individual') }}</span>
-                                    @else
-                                        <span class="badge bg-label-info">{{ __('Corporate') }}</span>
-                                    @endif
+
                                 </p>
                             </div>
                             <div class="mb-3">

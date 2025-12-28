@@ -41,9 +41,9 @@
                                 <select class="form-select @error('client_type') is-invalid @enderror" id="client_type"
                                     required>
                                     <option value="">{{ __('Select Client Type') }}</option>
-                                    <option value="B2C" {{ old('client_type') == 'B2C' ? 'selected' : '' }}>
+                                    <option value="individual" {{ old('client_type') == 'individual' ? 'selected' : '' }}>
                                         {{ __('B2C (Individual)') }}</option>
-                                    <option value="B2P" {{ old('client_type') == 'B2P' ? 'selected' : '' }}>
+                                    <option value="corporate" {{ old('client_type') == 'corporate' ? 'selected' : '' }}>
                                         {{ __('B2B (Corporate)') }}</option>
                                 </select>
                                 @error('client_type')
@@ -391,9 +391,7 @@
 
             if (clientType) {
                 customerSelect.disabled = false;
-                const filterType = clientType === 'P2C' ? 'corporate' : 'individual';
-
-                customers.filter(c => c.type === filterType).forEach(customer => {
+                customers.filter(c => c.type === clientType).forEach(customer => {
                     const option = document.createElement('option');
                     option.value = customer.id;
                     option.textContent = customer.name;
@@ -709,7 +707,7 @@
                 if (netRateInput && guestRateInput && marginInput) {
                     const netRate = parseFloat(netRateInput.value) || 0;
                     const guestRate = parseFloat(guestRateInput.value) || 0;
-                    const margin = guestRate - netRate;
+                    const margin = netRate - guestRate;
                     marginInput.value = margin.toFixed(0);
                 }
             }

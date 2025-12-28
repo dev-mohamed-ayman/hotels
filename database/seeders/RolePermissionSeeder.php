@@ -63,6 +63,8 @@ class RolePermissionSeeder extends Seeder
             'edit bookings',
             'delete bookings',
             'export bookings',
+            'view booking margins',
+            'view booking guest rates',
         ];
 
         foreach ($permissions as $permission) {
@@ -98,6 +100,8 @@ class RolePermissionSeeder extends Seeder
             'edit bookings',
             'delete bookings',
             'export bookings',
+            'view booking margins',
+            'view booking guest rates',
         ]);
 
         // Assign permissions to Manager (view and create/edit, no delete)
@@ -114,6 +118,7 @@ class RolePermissionSeeder extends Seeder
             'create bookings',
             'edit bookings',
             'export bookings',
+            'view booking margins',
         ]);
 
         // Assign basic permissions to User (view only)
@@ -132,6 +137,7 @@ class RolePermissionSeeder extends Seeder
         }
     }
 }
+
 
 
 

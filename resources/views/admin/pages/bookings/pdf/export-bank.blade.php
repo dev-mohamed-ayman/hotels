@@ -57,9 +57,9 @@
             border: 1px solid #fff;
         }
 
-        .total-row td {
-            background-color: #0d3c47;
-            color: white;
+        tfoot tr.total-row td {
+            background-color: #0d3c47 !important;
+            color: white !important;
             font-weight: bold;
             padding: 15px 10px;
         }
@@ -67,52 +67,68 @@
 </head>
 
 <body>
-    <div class="logo-container">
-        <img src="{{ public_path('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="AZHA Travel Logo"
-            class="logo-img" />
-    </div>
+<div class="logo-container">
+    <img src="{{ public_path('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="AZHA Travel Logo"
+         class="logo-img"/>
+</div>
 
-    <div style="margin-bottom: 15px; text-align: center;">
-        <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
-    </div>
+<div style="margin-bottom: 15px; text-align: center;">
+    <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
+</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>No.</th>
-                <th>File Code</th>
-                <th>Hotel Name</th>
-                <th>Bank Name</th>
-                <th>Bank Account</th>
-                <th>Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($bookingsData as $index => $data)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $data['booking']->code }}</td>
-                    <td>{{ $data['booking']->hotel->name }}</td>
-                    <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
-                    <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
-                    <td>{{ $data['booking']->currency->symbol }}{{ number_format($data['total'], 0) }}</td>
-                </tr>
-            @endforeach
-            <tr class="empty-row">
-                <td colspan="6"></td>
-            </tr>
-            <tr class="total-row">
-                <td colspan="5" style="text-align: right;">{{ __('Total') }}:</td>
-                <td>
-                    @if (count($bookingsData) > 0)
-                        {{ $bookingsData[0]['booking']->currency->symbol }}{{ number_format($totalAmount, 0) }}
-                    @else
-                        -
-                    @endif
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<table>
+    <thead>
+    <tr>
+        <th>No.</th>
+        <th>File Code</th>
+        <th>Hotel Name</th>
+        <th>Bank Name</th>
+        <th>Bank Account</th>
+        <th>Amount</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach ($bookingsData as $index => $data)
+        <tr>
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $data['booking']->code }}</td>
+            <td>{{ $data['booking']->hotel->name }}</td>
+            <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
+            <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
+            <td>{{ $data['booking']->currency->symbol }}{{ number_format($data['total'], 0) }}</td>
+        </tr>
+    @endforeach
+    @php
+        $currencyTotals = [];
+        foreach ($bookingsData as $data) {
+            $booking = $data['booking'];
+            $currencyId = $booking->currency_id;
+            $currencySymbol = $booking->currency->symbol;
+
+            if (!isset($currencyTotals[$currencyId])) {
+                $currencyTotals[$currencyId] = [
+                    'symbol' => $currencySymbol,
+                    'amount' => 0,
+                ];
+            }
+            $currencyTotals[$currencyId]['amount'] += $data['total'];
+        }
+    @endphp
+
+    </tbody>
+    <tfoot>
+    @foreach ($currencyTotals as $currencyTotal)
+        <tr class="total-row">
+            <td colspan="5" style="text-align: center;">{{ __('Total') }}
+                ({{ $currencyTotal['symbol'] }})
+            </td>
+            <td>
+                {{ $currencyTotal['symbol'] }}{{ number_format($currencyTotal['amount'], 0) }}
+            </td>
+        </tr>
+    @endforeach
+    </tfoot>
+</table>
 
 </body>
 

@@ -238,15 +238,17 @@
                                                         {{ $booking->currency->symbol ?? '' }}</div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="mb-2">
-                                                    <label
-                                                        class="form-label text-muted small mb-1">{{ __('Child Margin') }}</label>
-                                                    <div class="fw-semibold">
-                                                        {{ $booking->child_margin == 0 ? '' : number_format($booking->child_margin, 0) }}
-                                                        {{ $booking->currency->symbol ?? '' }}</div>
+                                            @can('view booking margins')
+                                                <div class="col-6">
+                                                    <div class="mb-2">
+                                                        <label
+                                                            class="form-label text-muted small mb-1">{{ __('Child Margin') }}</label>
+                                                        <div class="fw-semibold">
+                                                            {{ $booking->child_margin == 0 ? '' : number_format($booking->child_margin, 0) }}
+                                                            {{ $booking->currency->symbol ?? '' }}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            @endcan
                                         @endif
                                         @if ($booking->notes && ($booking->option_date || $booking->payment_date))
                                             <div class="col-12">
@@ -381,11 +383,17 @@
                                         <th>{{ __('Category') }}</th>
                                         <th>{{ __('Room Count') }}</th>
                                         <th>{{ __('Net Rate') }}</th>
-                                        <th>{{ __('Margin') }}</th>
+                                        @can('view booking margins')
+                                            <th>{{ __('Margin') }}</th>
+                                        @endcan
                                         <th>{{ __('Child Count') }}</th>
                                         <th>{{ __('Child Net Rate') }}</th>
-                                        <th>{{ __('Child Margin') }}</th>
-                                        <th>{{ __('Subtotal') }}</th>
+                                        @can('view booking margins')
+                                            <th>{{ __('Child Margin') }}</th>
+                                        @endcan
+                                        @can('view booking guest rates')
+                                            <th>{{ __('Subtotal') }}</th>
+                                        @endcan
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -395,16 +403,22 @@
                                             <td>{{ $room->category ?? '-' }}</td>
                                             <td>{{ $room->room_count }}</td>
                                             <td>{{ $room->price == 0 ? '' : number_format($room->price, 0) }}</td>
-                                            <td>{{ $room->margin == 0 ? '' : number_format($room->margin, 0) }}</td>
+                                            @can('view booking margins')
+                                                <td>{{ $room->margin == 0 ? '' : number_format($room->margin, 0) }}</td>
+                                            @endcan
                                             <td>{{ $room->child_count == 0 ? '' : $room->child_count }}</td>
                                             <td>{{ $room->child_price ? ($room->child_price == 0 ? '' : number_format($room->child_price, 0)) : '-' }}
                                             </td>
-                                            <td>{{ $room->child_margin ? ($room->child_margin == 0 ? '' : number_format($room->child_margin, 0)) : '-' }}
-                                            </td>
-                                            <td>
-                                                {{ ($room->price + $room->margin) * $room->room_count * $booking->nights == 0 ? '' : number_format(($room->price + $room->margin) * $room->room_count * $booking->nights, 0) }}
-                                                {{ $booking->currency->symbol ?? '' }}
-                                            </td>
+                                            @can('view booking margins')
+                                                <td>{{ $room->child_margin ? ($room->child_margin == 0 ? '' : number_format($room->child_margin, 0)) : '-' }}
+                                                </td>
+                                            @endcan
+                                            @can('view booking guest rates')
+                                                <td>
+                                                    {{ ($room->price + $room->margin) * $room->room_count * $booking->nights == 0 ? '' : number_format(($room->price + $room->margin) * $room->room_count * $booking->nights, 0) }}
+                                                    {{ $booking->currency->symbol ?? '' }}
+                                                </td>
+                                            @endcan
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -434,8 +448,12 @@
                                                 <tr>
                                                     <th>{{ __('Description') }}</th>
                                                     <th>{{ __('Net Rate') }}</th>
-                                                    <th>{{ __('Guest Rate') }}</th>
-                                                    <th>{{ __('Margin') }}</th>
+                                                    @can('view booking guest rates')
+                                                        <th>{{ __('Guest Rate') }}</th>
+                                                    @endcan
+                                                    @can('view booking margins')
+                                                        <th>{{ __('Margin') }}</th>
+                                                    @endcan
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -446,14 +464,18 @@
                                                             {{ ($val = $addition->net_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
-                                                        <td class="text-success fw-semibold">
-                                                            +{{ ($val = $addition->guest_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
-                                                            {{ $booking->currency->symbol ?? '' }}
-                                                        </td>
-                                                        <td class="text-primary">
-                                                            {{ ($val = $addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
-                                                            {{ $booking->currency->symbol ?? '' }}
-                                                        </td>
+                                                        @can('view booking guest rates')
+                                                            <td class="text-success fw-semibold">
+                                                                +{{ ($val = $addition->guest_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ $booking->currency->symbol ?? '' }}
+                                                            </td>
+                                                        @endcan
+                                                        @can('view booking margins')
+                                                            <td class="text-primary">
+                                                                {{ ($val = $addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ $booking->currency->symbol ?? '' }}
+                                                            </td>
+                                                        @endcan
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -464,14 +486,18 @@
                                                         {{ ($val = $booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
-                                                    <td class="text-success">
-                                                        +{{ ($val = $booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
-                                                        {{ $booking->currency->symbol ?? '' }}
-                                                    </td>
-                                                    <td class="text-primary">
-                                                        {{ ($val = $booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
-                                                        {{ $booking->currency->symbol ?? '' }}
-                                                    </td>
+                                                    @can('view booking guest rates')
+                                                        <td class="text-success">
+                                                            +{{ ($val = $booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                    @endcan
+                                                    @can('view booking margins')
+                                                        <td class="text-primary">
+                                                            {{ ($val = $booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                    @endcan
                                                 </tr>
                                             </tfoot>
                                         </table>
@@ -489,8 +515,12 @@
                                                 <tr>
                                                     <th>{{ __('Description') }}</th>
                                                     <th>{{ __('Net Rate') }}</th>
-                                                    <th>{{ __('Guest Rate') }}</th>
-                                                    <th>{{ __('Margin') }}</th>
+                                                    @can('view booking guest rates')
+                                                        <th>{{ __('Guest Rate') }}</th>
+                                                    @endcan
+                                                    @can('view booking margins')
+                                                        <th>{{ __('Margin') }}</th>
+                                                    @endcan
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -501,14 +531,18 @@
                                                             {{ ($val = $discount->net_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
-                                                        <td class="text-danger fw-semibold">
-                                                            -{{ ($val = $discount->guest_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
-                                                            {{ $booking->currency->symbol ?? '' }}
-                                                        </td>
-                                                        <td class="text-primary">
-                                                            {{ ($val = $discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
-                                                            {{ $booking->currency->symbol ?? '' }}
-                                                        </td>
+                                                        @can('view booking guest rates')
+                                                            <td class="text-danger fw-semibold">
+                                                                -{{ ($val = $discount->guest_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ $booking->currency->symbol ?? '' }}
+                                                            </td>
+                                                        @endcan
+                                                        @can('view booking margins')
+                                                            <td class="text-primary">
+                                                                {{ ($val = $discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ $booking->currency->symbol ?? '' }}
+                                                            </td>
+                                                        @endcan
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -519,14 +553,18 @@
                                                         {{ ($val = $booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
-                                                    <td class="text-danger">
-                                                        -{{ ($val = $booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
-                                                        {{ $booking->currency->symbol ?? '' }}
-                                                    </td>
-                                                    <td class="text-primary">
-                                                        {{ ($val = $booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
-                                                        {{ $booking->currency->symbol ?? '' }}
-                                                    </td>
+                                                    @can('view booking guest rates')
+                                                        <td class="text-danger">
+                                                            -{{ ($val = $booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                    @endcan
+                                                    @can('view booking margins')
+                                                        <td class="text-primary">
+                                                            {{ ($val = $booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ $booking->currency->symbol ?? '' }}
+                                                        </td>
+                                                    @endcan
                                                 </tr>
                                             </tfoot>
                                         </table>

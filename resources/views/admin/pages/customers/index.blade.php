@@ -60,13 +60,11 @@
                                             <label class="form-label">{{ __('Type') }}</label>
                                             <select name="type" class="form-select">
                                                 <option value="">{{ __('All') }}</option>
-                                                <option value="individual"
-                                                    {{ request('type') == 'individual' ? 'selected' : '' }}>
-                                                    {{ __('Individual') }}
+                                                <option value="B2C" {{ request('type') == 'B2C' ? 'selected' : '' }}>
+                                                    {{ __('B2C (Individual)') }}
                                                 </option>
-                                                <option value="corporate"
-                                                    {{ request('type') == 'corporate' ? 'selected' : '' }}>
-                                                    {{ __('Corporate') }}
+                                                <option value="B2B" {{ request('type') == 'B2B' ? 'selected' : '' }}>
+                                                    {{ __('B2B (Corporate)') }}
                                                 </option>
                                             </select>
                                         </div>
@@ -276,10 +274,10 @@
                             <td>{{ $customer->phone_1 }}</td>
                             <td>{{ $customer->email ?? '-' }}</td>
                             <td>
-                                @if ($customer->type == 'individual')
-                                    <span class="badge bg-label-primary">{{ __('Individual') }}</span>
+                                @if ($customer->type == 'B2C')
+                                    <span class="badge bg-label-primary">{{ __('B2C (Individual)') }}</span>
                                 @else
-                                    <span class="badge bg-label-info">{{ __('Corporate') }}</span>
+                                    <span class="badge bg-label-info">{{ __('B2B (Corporate)') }}</span>
                                 @endif
                             </td>
                             <td>

@@ -76,7 +76,7 @@ class RolePermissionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
+            'permissions.*' => 'exists:permissions,name',
         ]);
 
         $role = Role::create(['name' => $validated['name']]);
@@ -126,7 +126,7 @@ class RolePermissionController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('roles')->ignore($role->id)],
             'permissions' => 'nullable|array',
-            'permissions.*' => 'exists:permissions,id',
+            'permissions.*' => 'exists:permissions,name',
         ]);
 
         $role->update(['name' => $validated['name']]);
@@ -239,6 +239,7 @@ class RolePermissionController extends Controller
             ->with('success', __('Permission deleted successfully'));
     }
 }
+
 
 
 

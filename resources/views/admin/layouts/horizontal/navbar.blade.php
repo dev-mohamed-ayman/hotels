@@ -1,21 +1,21 @@
 <nav class="layout-navbar navbar navbar-expand-xl align-items-center" id="layout-navbar">
     <div class="container-xxl">
         <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4 ms-0">
-            <a href="index.html" class="app-brand-link">
+            <a href="{{route('dashboard.index')}}" class="app-brand-link">
                 <span class="app-brand-logo demo">
                     <span class="text-primary">
                         <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
+                             xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
-                                fill="currentColor" />
+                                  d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
+                                  fill="currentColor"/>
                             <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
-                                d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
+                                  d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616"/>
                             <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
-                                d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
+                                  d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616"/>
                             <path fill-rule="evenodd" clip-rule="evenodd"
-                                d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
-                                fill="currentColor" />
+                                  d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
+                                  fill="currentColor"/>
                         </svg>
                     </span>
                 </span>
@@ -47,9 +47,9 @@
                         @foreach (LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
                             <li>
                                 <a class="dropdown-item {{ app()->getLocale() == $localeCode ? 'active' : '' }}"
-                                    rel="alternate" hreflang="{{ $localeCode }}"
-                                    href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"
-                                    data-text-direction="{{ $localeCode == 'ar' ? 'rtl' : 'ltr' }}">
+                                   rel="alternate" hreflang="{{ $localeCode }}"
+                                   href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"
+                                   data-text-direction="{{ $localeCode == 'ar' ? 'rtl' : 'ltr' }}">
                                     <span>{{ $properties['native'] }}</span>
                                 </a>
                             </li>
@@ -61,20 +61,20 @@
                 <!-- Layout Toggle (Visual Only) -->
                 <li class="nav-item dropdown me-2 me-xl-0">
                     <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
-                        href="javascript:void(0);" data-bs-toggle="dropdown" title="Sidebar Layout">
+                       href="javascript:void(0);" data-bs-toggle="dropdown" title="Sidebar Layout">
                         <i class="icon-base icon-22px text-heading" id="layout-icon"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <button type="button" class="dropdown-item align-items-center"
-                                data-layout-value="vertical">
+                                    data-layout-value="vertical">
                                 <span><i class="icon-base ti tabler-layout-sidebar icon-22px me-3"></i>Vertical
                                     Sidebar</span>
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item align-items-center"
-                                data-layout-value="horizontal">
+                                    data-layout-value="horizontal">
                                 <span><i class="icon-base ti tabler-layout-navbar icon-22px me-3"></i>Horizontal
                                     Sidebar</span>
                             </button>
@@ -86,30 +86,30 @@
                 <!-- Style Switcher -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
-                        id="nav-theme" href="javascript:void(0);" data-bs-toggle="dropdown">
+                       id="nav-theme" href="javascript:void(0);" data-bs-toggle="dropdown">
                         <i class="icon-base ti tabler-sun icon-22px theme-icon-active text-heading"></i>
                         <span class="d-none ms-2" id="nav-theme-text">{{ __('Toggle theme') }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                         <li>
                             <button type="button" class="dropdown-item align-items-center active"
-                                data-bs-theme-value="light" aria-pressed="false">
+                                    data-bs-theme-value="light" aria-pressed="false">
                                 <span><i class="icon-base ti tabler-sun icon-22px me-3"
-                                        data-icon="sun"></i>{{ __('Light') }}</span>
+                                         data-icon="sun"></i>{{ __('Light') }}</span>
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark"
-                                aria-pressed="true">
+                                    aria-pressed="true">
                                 <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"
-                                        data-icon="moon-stars"></i>{{ __('Dark') }}</span>
+                                         data-icon="moon-stars"></i>{{ __('Dark') }}</span>
                             </button>
                         </li>
                         <li>
                             <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="system"
-                                aria-pressed="false">
+                                    aria-pressed="false">
                                 <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"
-                                        data-icon="device-desktop-analytics"></i>{{ __('System') }}</span>
+                                         data-icon="device-desktop-analytics"></i>{{ __('System') }}</span>
                             </button>
                         </li>
                     </ul>
@@ -118,7 +118,7 @@
 
                 <script>
                     // Sidebar Layout Toggle (Cookie Only)
-                    document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('DOMContentLoaded', function () {
                         const layoutButtons = document.querySelectorAll('[data-layout-value]');
 
                         // Helper function to get cookie value
@@ -157,7 +157,7 @@
 
                         // Handle click events
                         layoutButtons.forEach(button => {
-                            button.addEventListener('click', function() {
+                            button.addEventListener('click', function () {
                                 const layout = this.getAttribute('data-layout-value');
 
                                 // Save to Cookie only
@@ -171,14 +171,14 @@
                 </script>
 
 
-
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown ms-3">
                     <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
-                        data-bs-toggle="dropdown">
+                       data-bs-toggle="dropdown">
                         <div class="avatar avatar-online">
-                            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
-                                alt class="rounded-circle" />
+                            <img
+                                src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
+                                alt class="rounded-circle"/>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -187,8 +187,9 @@
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-2">
                                         <div class="avatar avatar-online">
-                                            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
-                                                alt class="rounded-circle" />
+                                            <img
+                                                src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/avatars/1.png') }}"
+                                                alt class="rounded-circle"/>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">

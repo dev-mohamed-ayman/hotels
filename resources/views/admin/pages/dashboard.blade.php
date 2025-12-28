@@ -20,6 +20,7 @@
                                 <thead>
                                     <tr>
                                         <th class="text-nowrap">{{ __('Code') }}</th>
+                                        <th class="text-nowrap">{{ __('Hotel') }}</th>
                                         <th class="text-nowrap">{{ __('Rooms') }}</th>
                                         <th class="text-nowrap">{{ __('Check In') }}</th>
                                         <th class="text-nowrap">{{ __('Check Out') }}</th>
@@ -36,6 +37,7 @@
                                     @foreach ($upcomingOptionDates as $booking)
                                         <tr>
                                             <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                            <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
                                             <td class="py-2" style="width: 130px;">
                                                 @if ($booking->rooms && $booking->rooms->count() > 0)
                                                     @php
@@ -100,35 +102,36 @@
 
                                             <td class="py-2">
                                                 @if ($booking->option_date)
-                                                <div class="d-flex flex-column align-items-center gap-1">
-                                                    <div class="d-flex align-items-center gap-1">
-                                                        <i class="ti tabler-calendar-event text-primary"
-                                                            style="font-size: 0.9rem;"></i>
-                                                        <span
-                                                            class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
-                                                    </div>
-                                                    @if ($remaining <= 0)
-                                                        <span class="badge bg-label-success" style="font-size: 0.75rem;">
-                                                            <i class="ti tabler-check me-1"></i>
-                                                            {{ __('Paid') }}
-                                                        </span>
-                                                    @else
-                                                        @if ($booking->option_date->isPast())
-                                                            <span class="badge bg-label-warning"
-                                                                style="font-size: 0.65rem;">{{ __('Past') }}</span>
-                                                        @elseif ($booking->option_date->isToday())
-                                                            <span class="badge bg-label-info"
-                                                                style="font-size: 0.65rem;">{{ __('Today') }}</span>
-                                                        @else
+                                                    <div class="d-flex flex-column align-items-center gap-1">
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <i class="ti tabler-calendar-event text-primary"
+                                                                style="font-size: 0.9rem;"></i>
+                                                            <span
+                                                                class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
+                                                        </div>
+                                                        @if ($remaining <= 0)
                                                             <span class="badge bg-label-success"
-                                                                style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                                style="font-size: 0.75rem;">
+                                                                <i class="ti tabler-check me-1"></i>
+                                                                {{ __('Paid') }}
+                                                            </span>
+                                                        @else
+                                                            @if ($booking->option_date->isPast())
+                                                                <span class="badge bg-label-warning"
+                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                            @elseif ($booking->option_date->isToday())
+                                                                <span class="badge bg-label-info"
+                                                                    style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                            @else
+                                                                <span class="badge bg-label-success"
+                                                                    style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                            @endif
                                                         @endif
-                                                    @endif
 
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
                                             </td>
                                             <td class="text-nowrap py-2">
                                                 @if ($booking->status == 'confirmed')
@@ -306,6 +309,7 @@
                             <thead>
                                 <tr>
                                     <th class="text-nowrap">{{ __('Code') }}</th>
+                                    <th class="text-nowrap">{{ __('Hotel') }}</th>
                                     <th class="text-nowrap">{{ __('Rooms') }}</th>
                                     <th class="text-nowrap">{{ __('Check In') }}</th>
                                     <th class="text-nowrap">{{ __('Check Out') }}</th>
@@ -322,6 +326,7 @@
                                 @forelse ($recentBookings as $booking)
                                     <tr>
                                         <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                        <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
                                         <td class="py-2" style="width: 130px;">
                                             @if ($booking->rooms && $booking->rooms->count() > 0)
                                                 @php

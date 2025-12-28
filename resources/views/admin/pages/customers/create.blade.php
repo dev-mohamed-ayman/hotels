@@ -73,10 +73,10 @@
                                 <label class="form-label" for="type">{{ __('Type') }} *</label>
                                 <select class="form-select @error('type') is-invalid @enderror" id="type"
                                     name="type" required>
-                                    <option value="individual" {{ old('type') == 'individual' ? 'selected' : '' }}>
-                                        {{ __('Individual') }}</option>
-                                    <option value="corporate" {{ old('type') == 'corporate' ? 'selected' : '' }}>
-                                        {{ __('Corporate') }}</option>
+                                    <option value="B2C" {{ old('type') == 'B2C' ? 'selected' : '' }}>
+                                        {{ __('B2C (Individual)') }}</option>
+                                    <option value="B2B" {{ old('type') == 'B2B' ? 'selected' : '' }}>
+                                        {{ __('B2B (Corporate)') }}</option>
                                 </select>
                                 @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -177,13 +177,19 @@
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
-          rel="stylesheet" />
+        rel="stylesheet" />
 
     <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         $(document).ready(function() {
+            $('#type, #status, #priority, #source').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: '{{ __('Select') }}',
+            });
+
             $('#hotels').select2({
                 theme: 'bootstrap-5',
                 placeholder: '{{ __('Select Hotels') }}',
@@ -195,7 +201,7 @@
                         return '{{ __('No hotels found. Type to add a new hotel') }}';
                     }
                 },
-                createTag: function (params) {
+                createTag: function(params) {
                     var term = $.trim(params.term);
                     if (term === '') {
                         return null;
@@ -209,19 +215,19 @@
             });
 
             // Handle new hotel creation
-            $('#hotels').on('select2:select', function (e) {
+            $('#hotels').on('select2:select', function(e) {
                 var data = e.params.data;
                 if (data.newTag) {
                     var hotelName = data.id.replace('new_', '');
-                    
+
                     // Show loading
                     var $option = $(this).find('option[value="' + data.id + '"]');
                     $option.text(hotelName + ' ({{ __('Creating...') }})');
                     $(this).trigger('change');
-                    
+
                     // Create hotel via AJAX
                     $.ajax({
-                        url: '{{ route("hotels.quick-create") }}',
+                        url: '{{ route('hotels.quick-create') }}',
                         method: 'POST',
                         data: {
                             name: hotelName,
@@ -231,9 +237,10 @@
                             if (response.success) {
                                 // Remove the temporary option
                                 $('#hotels option[value="' + data.id + '"]').remove();
-                                
+
                                 // Add the new hotel option
-                                var newOption = new Option(response.hotel.name, response.hotel.id, true, true);
+                                var newOption = new Option(response.hotel.name, response.hotel
+                                    .id, true, true);
                                 $('#hotels').append(newOption).trigger('change');
                             }
                         },
@@ -241,9 +248,10 @@
                             // Remove the failed option
                             $('#hotels option[value="' + data.id + '"]').remove();
                             $('#hotels').trigger('change');
-                            
+
                             // Show error message
-                            var errorMsg = xhr.responseJSON?.message || '{{ __('Failed to create hotel') }}';
+                            var errorMsg = xhr.responseJSON?.message ||
+                                '{{ __('Failed to create hotel') }}';
                             alert(errorMsg);
                         }
                     });
@@ -256,9 +264,9 @@
     <style>
         .select2-container--bootstrap-5 .select2-selection {
             background-color: transparent !important;
-            border: var(--bs-border-width) solid
-            color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg)) !important;
+            border: var(--bs-border-width) solid color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg)) !important;
         }
+
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
             color: #fff !important;
         }
