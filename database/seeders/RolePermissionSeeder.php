@@ -65,6 +65,11 @@ class RolePermissionSeeder extends Seeder
             'export bookings',
             'view booking margins',
             'view booking guest rates',
+
+            // Activity Log permissions
+            'view activity log',
+            'delete activity log',
+            'export activity log',
         ];
 
         foreach ($permissions as $permission) {
@@ -102,6 +107,8 @@ class RolePermissionSeeder extends Seeder
             'export bookings',
             'view booking margins',
             'view booking guest rates',
+            'view activity log',
+            'export activity log',
         ]);
 
         // Assign permissions to Manager (view and create/edit, no delete)

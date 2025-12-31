@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 
 Route::group(
@@ -89,6 +90,15 @@ Route::group(
                 Route::get('/{permission}/edit', 'permissionsEdit')->name('edit');
                 Route::put('/{permission}', 'permissionsUpdate')->name('update');
                 Route::delete('/{permission}', 'permissionsDestroy')->name('destroy');
+            });
+
+            // Activity Log Routes
+            Route::prefix('activity-log')->name('activity-log.')->controller(\App\Http\Controllers\Admin\ActivityLogController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{activity}', 'show')->name('show');
+                Route::delete('/{activity}', 'destroy')->name('destroy');
+                Route::post('/bulk-delete', 'bulkDelete')->name('bulk-delete');
+                Route::get('/export/csv', 'export')->name('export');
             });
 
             // Logout

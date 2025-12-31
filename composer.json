@@ -15,6 +15,7 @@
         "livewire/livewire": "^3.7",
         "mcamara/laravel-localization": "^2.3",
         "mpdf/mpdf": "^8.2",
+        "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.23"
     },
     "require-dev": {

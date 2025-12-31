@@ -670,6 +670,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Recent Activities Widget -->
+    @can('view activity log')
+        <div class="row g-4 mt-4">
+            <div class="col-md-6">
+                @include('admin.components.recent-activities')
+            </div>
+        </div>
+    @endcan
     </div>
 @endsection
 @section('scripts')

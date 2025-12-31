@@ -11,6 +11,7 @@ use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Facades\LogActivity;
 
 class DashboardController extends Controller
 {
@@ -165,6 +166,17 @@ class DashboardController extends Controller
 
     public function logout()
     {
+        $user = Auth::user();
+        
+        // Log logout activity
+        activity()
+            ->causedBy($user)
+            ->withProperties([
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ])
+            ->log(__('activity.logout_by', ['name' => $user->name]));
+
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();

@@ -50,13 +50,13 @@ class BookingController extends Controller
         if ($request->filled('payment_status')) {
             switch ($request->payment_status) {
                 case 'paid':
-                    $query->whereRaw('paid_amount >= total_amount');
+                    $query->whereRaw('hotel_paid_amount >= net_amount');
                     break;
                 case 'unpaid':
-                    $query->where('paid_amount', 0);
+                    $query->where('hotel_paid_amount', 0);
                     break;
                 case 'partial':
-                    $query->whereRaw('paid_amount > 0 AND paid_amount < total_amount');
+                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
                     break;
             }
         }
@@ -239,7 +239,7 @@ class BookingController extends Controller
             if ($request->has('discounts')) {
                 foreach ($request->discounts as $discount) {
                     $netRate -= $discount['net_rate'] ?? 0;
-                    $totalMargin -= $discount['margin'] ?? 0; // Subtract discount margin
+                    $totalMargin += $discount['margin'] ?? 0; // Add discount margin (positive value)
                 }
             }
 
@@ -316,7 +316,7 @@ class BookingController extends Controller
                 foreach ($request->discounts as $discount) {
                     $netRate = $discount['net_rate'] ?? 0;
                     $guestRate = $discount['guest_rate'] ?? 0;
-                    $margin = $guestRate - $netRate;
+                    $margin = $netRate - $guestRate;
 
                     $booking->adjustments()->create([
                         'type' => 'discount',
@@ -460,7 +460,7 @@ class BookingController extends Controller
             if ($request->has('discounts')) {
                 foreach ($request->discounts as $discount) {
                     $netRate -= $discount['net_rate'] ?? 0;
-                    $totalMargin -= $discount['margin'] ?? 0; // Subtract discount margin
+                    $totalMargin += $discount['margin'] ?? 0; // Add discount margin (positive value)
                 }
             }
 
@@ -541,7 +541,7 @@ class BookingController extends Controller
                 foreach ($request->discounts as $discount) {
                     $netRate = $discount['net_rate'] ?? 0;
                     $guestRate = $discount['guest_rate'] ?? 0;
-                    $margin = $guestRate - $netRate;
+                    $margin = $netRate - $guestRate;
 
                     $booking->adjustments()->create([
                         'type' => 'discount',
@@ -729,15 +729,15 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
+            return ($room->price * $room->room_count * $booking->nights) +
+                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsNetTotal - $discountsNetTotal;
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
+            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsGuestTotal - $discountsGuestTotal;
 
         // Use calculated totals
         $totalAmount = $totalGuestRate; // For backward compat variable name if needed, but view should use specific ones
@@ -801,9 +801,9 @@ class BookingController extends Controller
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
+            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsGuestTotal - $discountsGuestTotal;
 
         $totalAmount = $totalGuestRate;
 
@@ -868,9 +868,9 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
+            return ($room->price * $room->room_count * $booking->nights) +
+                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsNetTotal - $discountsNetTotal;
 
         $html = view('admin.pages.bookings.pdf.netrate', compact(
             'booking',
