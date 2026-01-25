@@ -340,10 +340,6 @@ class BookingController extends Controller
 
     public function edit(Booking $booking)
     {
-        // Check if check_in date has not passed yet
-        if ($booking->check_in < now()) {
-            return redirect()->route('bookings.index')->with('error', __('Cannot edit booking. Check-in date has already passed.'));
-        }
 
         $customers = Customer::get();
         $hotels = Hotel::query()->where('is_active', true)->orderBy('name', 'asc')->get();
@@ -375,10 +371,6 @@ class BookingController extends Controller
 
     public function update(Request $request, Booking $booking)
     {
-        // Check if check_in date has not passed yet
-        if ($booking->check_in < now()) {
-            return redirect()->route('bookings.index')->with('error', __('Cannot update booking. Check-in date has already passed.'));
-        }
 
         $request->validate([
             'code' => 'required',
