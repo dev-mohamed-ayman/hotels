@@ -35,10 +35,16 @@ class DashboardController extends Controller
         $paidAmount = $user->can('view bookings') ? Booking::sum('paid_amount') : 0;
 
         // Recent Bookings (only if user can view bookings)
+        // Show bookings starting within 2 days and exclude fully paid ones
         $recentBookings = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
-            ->latest()
-            ->take(5)
+            ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
+            ->where(function ($query) {
+                $query->where('hotel_paid_amount', 0)
+                      ->orWhereRaw('hotel_paid_amount < net_amount');
+            })
+            ->orderBy('check_in', 'asc')
+            ->take(10)
             ->get()
             : collect();
 
@@ -46,6 +52,10 @@ class DashboardController extends Controller
         $upcomingOptionDates = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
             ->whereBetween('option_date', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+            ->where(function ($query) {
+                $query->where('hotel_paid_amount', 0)
+                      ->orWhereRaw('hotel_paid_amount < net_amount');
+            })
             ->orderBy('option_date', 'asc')
             ->get()
             : collect();

@@ -3,6 +3,9 @@
 return [
     // Page titles
     'activity_log' => 'سجل الأنشطة',
+    'activity_log booking' => 'سجل الأنشطة للحجز',
+
+
     'activity_details' => 'تفاصيل النشاط',
     'recent_activities' => 'آخر الأنشطة',
 

@@ -8,9 +8,16 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Edit Booking') }} - {{ $booking->code }}</h5>
-                    <a href="{{ route('bookings.index') }}" class="btn btn-secondary">
-                        <i class="ti tabler-arrow-left me-2"></i>{{ __('Back') }}
-                    </a>
+                    <div class="d-flex gap-2">
+                        @can('delete bookings')
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                            </button>
+                        @endcan
+                        <a href="{{ route('bookings.index', request()->query()) }}" class="btn btn-secondary">
+                            <i class="ti tabler-arrow-left me-2"></i>{{ __('Back') }}
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if (session('error'))
@@ -169,6 +176,39 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                         <div class="col-md-4 mb-3">
+                            <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
+                            <select class="form-select @error('payment_status') is-invalid @enderror" id="payment_status"
+                                name="payment_status">
+                                <option value="paid" {{ old('payment_status', $booking->payment_status ?? '') == 'paid' ? 'selected' : '' }}>
+                                    {{ __('Paid') }}
+                                </option>
+                                <option value="unpaid" {{ old('payment_status', $booking->payment_status ?? 'unpaid') == 'unpaid' ? 'selected' : '' }}>
+                                    {{ __('Unpaid') }}
+                                </option>
+                                <option value="partial" {{ old('payment_status', $booking->payment_status ?? '') == 'partial' ? 'selected' : '' }}>
+                                    {{ __('Partial') }}
+                                </option>
+                                <option value="revised" {{ old('payment_status', $booking->payment_status ?? '') == 'revised' ? 'selected' : '' }}>
+                                    {{ __('Revised') }}
+                                </option>
+                            </select>
+                            <small class="text-muted" id="paymentStatusHint">
+                                @if ($booking->hotel_paid_amount == 0)
+                                    {{ __('No payments recorded') }}
+                                @elseif ($booking->hotel_paid_amount >= $booking->net_amount)
+                                    {{ __('Fully paid based on recorded payments') }}
+                                @else
+                                    {{ __('Partially paid based on recorded payments') }}
+                                @endif
+                            </small>
+                            @error('payment_status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+
+                            
                         </div>
 
                         {{-- Rooms & Guest Details --}}
@@ -913,4 +953,29 @@
             }
         });
     </script>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">{{ __('Delete Booking') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ __('Are you sure you want to delete this booking?') }}</p>
+                    <p class="text-danger"><strong>{{ __('This action cannot be undone.') }}</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <form action="{{ route('bookings.destroy', $booking) }}" method="POST" style="display: inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">{{ __('Delete') }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+

@@ -17,7 +17,9 @@ class Booking extends Model
         'check_in' => 'date',
         'check_out' => 'date',
         'option_date' => 'date',
-        'payment_date' => 'date', // Keep for backward compatibility
+        'payment_date' => 'date',
+        
+         // Keep for backward compatibility
     ];
 
     public function customer(): BelongsTo
@@ -43,5 +45,10 @@ class Booking extends Model
     public function adjustments(): HasMany
     {
         return $this->hasMany(BookingAdjustment::class);
+    }
+
+    public function history(): HasMany
+    {
+        return $this->hasMany(BookingHistory::class)->orderBy('created_at', 'desc');
     }
 }

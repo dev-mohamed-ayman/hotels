@@ -25,11 +25,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             /**** ACTIVITY LOG MIDDLEWARE ****/
             'log.activity' => \App\Http\Middleware\LogUserActivity::class,
+            /**** TIMEZONE MIDDLEWARE ****/
+            'timezone' => \App\Http\Middleware\SetTimezone::class,
         ]);
 
         // Add global middleware for authenticated users
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\LogUserActivity::class,
+            \App\Http\Middleware\SetTimezone::class,
         ]);
     })
     ->withSchedule(function ($schedule) {

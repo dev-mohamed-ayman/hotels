@@ -201,6 +201,28 @@
 
     @include('admin.layouts.toast')
     @yield('scripts')
+
+    <!-- Timezone Search Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timezoneSearch = document.getElementById('timezone-search');
+            if (timezoneSearch) {
+                timezoneSearch.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const timezoneForms = document.querySelectorAll('.timezone-form');
+                    
+                    timezoneForms.forEach(function(form) {
+                        const label = form.getAttribute('data-timezone-label');
+                        if (label.includes(searchTerm)) {
+                            form.style.display = 'block';
+                        } else {
+                            form.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

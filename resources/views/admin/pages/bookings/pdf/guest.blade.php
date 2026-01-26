@@ -190,7 +190,7 @@
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Paid Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . number_format($booking->paid_amount, 0) }}
+                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->paid_amount) }}
                 </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>

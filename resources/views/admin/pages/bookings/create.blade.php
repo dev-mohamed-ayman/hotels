@@ -21,6 +21,18 @@
                         </div>
                     @endif
 
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>{{ __('Whoops! Something went wrong.') }}</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+
                     <form action="{{ route('bookings.store') }}" method="POST" id="bookingForm">
                         @csrf
 
@@ -54,8 +66,14 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="customer_id">{{ __('Customer') }}</label>
                                 <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id"
-                                    name="customer_id" required disabled>
+                                    name="customer_id" required>
                                     <option value="">{{ __('Select Customer') }}</option>
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}"
+                                            {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                            {{ $customer->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                                 @error('customer_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -153,6 +171,28 @@
                                 <input type="text" class="form-control @error('meals_plan') is-invalid @enderror"
                                     id="meals_plan" name="meals_plan" value="{{ old('meals_plan') }}" />
                                 @error('meals_plan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
+                                <select class="form-select @error('payment_status') is-invalid @enderror" id="payment_status"
+                                    name="payment_status" required>
+                                    <option value="unpaid" {{ old('payment_status', 'unpaid') == 'unpaid' ? 'selected' : '' }}>
+                                        {{ __('Unpaid') }}
+                                    </option>
+                                    <option value="partial" {{ old('payment_status') == 'partial' ? 'selected' : '' }}>
+                                        {{ __('Partial') }}
+                                    </option>
+                                    <option value="paid" {{ old('payment_status') == 'paid' ? 'selected' : '' }}>
+                                        {{ __('Paid') }}
+                                    </option>
+                                    <option value="revised" {{ old('payment_status') == 'revised' ? 'selected' : '' }}>
+                                        {{ __('Revised') }}
+                                    </option>
+                                </select>
+                                @error('payment_status')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

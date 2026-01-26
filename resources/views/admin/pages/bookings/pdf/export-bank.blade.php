@@ -98,6 +98,7 @@
             <td>{{ $data['booking']->currency->symbol }}{{ number_format($data['total'], 0) }}</td>
         </tr>
     @endforeach
+    </tbody>
     @php
         $currencyTotals = [];
         foreach ($bookingsData as $data) {
@@ -114,8 +115,6 @@
             $currencyTotals[$currencyId]['amount'] += $data['total'];
         }
     @endphp
-
-    </tbody>
     <tfoot>
     @foreach ($currencyTotals as $currencyTotal)
         <tr class="total-row">

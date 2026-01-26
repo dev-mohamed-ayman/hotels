@@ -73,10 +73,10 @@
                                 <label class="form-label" for="type">{{ __('Type') }} *</label>
                                 <select class="form-select @error('type') is-invalid @enderror" id="type"
                                     name="type" required>
-                                    <option value="B2C" {{ old('type') == 'B2C' ? 'selected' : '' }}>
-                                        {{ __('B2C (Individual)') }}</option>
-                                    <option value="B2B" {{ old('type') == 'B2B' ? 'selected' : '' }}>
-                                        {{ __('B2B (Corporate)') }}</option>
+                                    <option value="individual" {{ old('type') == 'individual' ? 'selected' : '' }}>
+                                        {{ __('Individual') }}</option>
+                                    <option value="corporate" {{ old('type') == 'corporate' ? 'selected' : '' }}>
+                                        {{ __('Corporate') }}</option>
                                 </select>
                                 @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>

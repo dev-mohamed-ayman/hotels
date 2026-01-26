@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center" style="overflow: visible;">
                     <h5 class="mb-0">{{ __('Bookings List') }}</h5>
                     <div class="d-flex gap-2 align-items-center">
                         @if (isset($totalFilteredBookings) && $totalFilteredBookings > 0)
@@ -17,14 +17,14 @@
                         @can('export bookings')
                             <div class="btn-group" role="group">
                                 <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
-                                        aria-expanded="false">
+                                        aria-expanded="true">
                                     <i class="ti tabler-file-download me-2"></i>{{ __('Export PDF') }}
                                 </button>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     @can('export Bank')
                                         <li>
                                             <a class="dropdown-item"
-                                               href="{{ route('bookings.export.bank', request()->query()) }}"
+                                               href="{{ route('bookings.export.bank') }}?{{ http_build_query(request()->query()) }}"
                                                target="_blank">
                                                 <i class="ti tabler-building-bank me-2"></i>{{ __('Bank Export') }}
                                             </a>
@@ -33,7 +33,7 @@
                                     @can('export Detailed')
                                         <li>
                                             <a class="dropdown-item"
-                                               href="{{ route('bookings.export.detailed', request()->query()) }}"
+                                               href="{{ route('bookings.export.detailed') }}?{{ http_build_query(request()->query()) }}"
                                                target="_blank">
                                                 <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
                                             </a>
@@ -42,7 +42,7 @@
                                     @can('export Guest')
                                         <li>
                                             <a class="dropdown-item"
-                                               href="{{ route('bookings.export.guest', request()->query()) }}"
+                                               href="{{ route('bookings.export.guest') }}?{{ http_build_query(request()->query()) }}"
                                                target="_blank">
                                                 <i class="ti tabler-user me-2"></i>{{ __('Guest Export') }}
                                             </a>
@@ -51,7 +51,7 @@
                                     @can('export Net Rate')
                                         <li>
                                             <a class="dropdown-item"
-                                               href="{{ route('bookings.export.netrate', request()->query()) }}"
+                                               href="{{ route('bookings.export.netrate') }}?{{ http_build_query(request()->query()) }}"
                                                target="_blank">
                                                 <i class="ti tabler-currency-dollar me-2"></i>{{ __('Net Rate Export') }}
                                             </a>
@@ -71,10 +71,10 @@
                     <!-- Filters Section -->
                     <div class="mb-3">
                         <div class="accordion" id="filterAccordion">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="filterHeading">
+                            <div class="accordion-item ">
+                                <h2 class="accordion-header active" id="filterHeading">
                                     <button
-                                        class="accordion-button {{ request()->hasAny(['hotel_id', 'customer_id', 'payment_status', 'check_in_from', 'check_in_to', 'check_out_from', 'check_out_to', 'currency_id', 'search']) ? '' : 'collapsed' }}"
+                                        class="accordion-button"
                                         type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
                                         <i class="ti tabler-filter me-2"></i>
                                         {{ __('Filter Bookings') }}
@@ -107,10 +107,7 @@
                                         @endif
                                     </button>
                                 </h2>
-                                <div id="filterCollapse"
-                                     class="accordion-collapse collapse {{ request()->hasAny(['hotel_id', 'customer_id', 'payment_status', 'check_in_from', 'check_in_to', 'check_out_from', 'check_out_to', 'currency_id', 'search']) ? 'show' : '' }}"
-                                     data-bs-parent="#filterAccordion">
-                                    <div class="accordion-body">
+                               <div id="filterCollapse" class="accordion-collapse collapse show" data-bs-parent="#filterAccordion"> <div class="accordion-body">
                                         <form method="GET" action="{{ route('bookings.index') }}" id="filterForm">
                                             <div class="row g-3">
                                                 <!-- Search -->
@@ -391,8 +388,8 @@
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
+                    <div class="table-responsive" style="overflow-x: auto; overflow-y: visible; max-height: 70vh;">
+                        <table class="table table-hover text-center table-sm table-bordered" style="font-size: 0.875rem;">
                             <thead>
                             <tr>
                                 <th class="text-nowrap">{{ __('Code') }}</th>
@@ -505,30 +502,33 @@
                                         @endif
                                     </td>
                                     <td class="text-nowrap py-2">
-                                        @if ($booking->hotel_paid_amount == 0)
+                                        @if (empty($booking->payment_status) || $booking->payment_status == 'unpaid')
                                             <span class="badge bg-danger" title="{{ __('Unpaid') }}"
                                                   style="font-size: 0.75rem;">
-                                                    <i class="ti tabler-x"></i>
+                                                    <i class="ti tabler-x"></i> {{ __('Unpaid') }}
                                                 </span>
-                                        @elseif ($booking->hotel_paid_amount >= $booking->net_amount && $booking->net_amount > 0)
+                                        @elseif ($booking->payment_status == 'paid')
                                             <span class="badge bg-success" title="{{ __('Paid') }}"
                                                   style="font-size: 0.75rem;">
-                                                    <i class="ti tabler-check"></i>
+                                                    <i class="ti tabler-check"></i> {{ __('Paid') }}
                                                 </span>
-                                        @elseif ($booking->net_amount > 0)
-                                            <span class="badge bg-warning" title="{{ __('Partial Payment') }}"
+                                        @elseif ($booking->payment_status == 'partial')
+                                            <span class="badge bg-warning" title="{{ __('Partial') }}"
                                                   style="font-size: 0.75rem;">
-                                                    <i class="ti tabler-question-mark"></i>
+                                                    <i class="ti tabler-question-mark"></i> {{ __('Partial') }}
                                                 </span>
-                                        @else
-                                            <span class="text-muted">-</span>
+                                        @elseif ($booking->payment_status == 'revised')
+                                            <span class="badge bg-info" title="{{ __('Revised') }}"
+                                                  style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-refresh"></i> {{ __('Revised') }}
+                                                </span>
                                         @endif
                                     </td>
                                     <td class="text-nowrap">
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-icon btn-secondary" type="button"
                                                     id="actionsDropdown{{ $booking->id }}" data-bs-toggle="dropdown"
-                                                    aria-expanded="false" style="padding: 0.25rem 0.5rem;">
+                                                    aria-expanded="true" style="padding: 0.25rem 0.5rem;">
                                                 <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end"
@@ -539,10 +539,16 @@
                                                         <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
                                                     </a>
                                                 </li>
+                                                <li>
+                                                    <a class="dropdown-item"
+                                                       href="{{ route('activity-log.booking-history', $booking->id) }}">
+                                                        <i class="ti tabler-history me-2"></i>{{ __('History') }}
+                                                    </a>
+                                                </li>
                                                 @can('edit bookings')
                                                     <li>
                                                         <a class="dropdown-item"
-                                                           href="{{ route('bookings.edit', $booking) }}">
+                                                           href="{{ route('bookings.edit', $booking->id) }}">
                                                             <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
                                                         </a>
                                                     </li>
@@ -607,9 +613,15 @@
                                                     <div class="mb-3">
                                                         <label
                                                             class="form-label">{{ __('Current Paid Amount') }}</label>
-                                                        <input type="text" class="form-control"
-                                                               value="{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }} {{ $booking->currency->symbol }}"
-                                                               readonly>
+                                                       <input type="text" class="form-control"
+                                                                value="{{ $booking->paid_amount == 0 
+                                                                            ? '' 
+                                                                            : (fmod($booking->paid_amount,1) == 0 
+                                                                                    ? intval($booking->paid_amount) 
+                                                                                    : number_format($booking->paid_amount, 2)) . ' ' . $booking->currency->symbol }}"
+                                                                readonly>
+
+ 
                                                     </div>
                                                     <div class="mb-3">
                                                         @php
@@ -618,10 +630,16 @@
                                                         @endphp
                                                         <label
                                                             class="form-label">{{ __('Remaining Amount') }}</label>
-                                                        <input type="text" class="form-control"
-                                                               id="remaining{{ $booking->id }}"
-                                                               value="{{ $remaining == 0 ? '' : number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
-                                                               readonly>
+                                                      <input type="text" class="form-control"
+                                                                id="remaining{{ $booking->id }}"
+                                                                value="{{ $remaining == 0 
+                                                                            ? '0 ' . $booking->currency->symbol 
+                                                                            : (fmod($remaining, 1) == 0 
+                                                                                    ? intval($remaining) . ' ' . $booking->currency->symbol 
+                                                                                    : number_format($remaining, 2) . ' ' . $booking->currency->symbol) }}"
+                                                                readonly>
+
+
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label"
@@ -686,51 +704,43 @@
                                                                readonly>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label class="form-label">{{ __('Paid to Hotel') }}</label>
-                                                        <input type="text" class="form-control"
-                                                               value="{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }} {{ $booking->currency->symbol }}"
-                                                               readonly>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        @php
-                                                            $hotelRemaining =
-                                                                $booking->net_amount - $booking->hotel_paid_amount;
-                                                        @endphp
-                                                        <label
-                                                            class="form-label">{{ __('Remaining Amount') }}</label>
-                                                        <input type="text" class="form-control"
-                                                               id="hotel_remaining{{ $booking->id }}"
-                                                               value="{{ $hotelRemaining == 0 ? '' : number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
-                                                               readonly>
+                                                        <label class="form-label">{{ __('Current Paid to Hotel') }}</label>
+                                                     <input type="text" class="form-control"
+                                                            value="{{ $booking->hotel_paid_amount == 0 
+                                                                        ? '' 
+                                                                        : number_format($booking->hotel_paid_amount, fmod($booking->hotel_paid_amount,1) == 0 ? 0 : 2) . ' ' . $booking->currency->symbol }}"
+                                                            readonly>
+
+
                                                     </div>
                                                     <div class="mb-3">
                                                         <label class="form-label"
-                                                               for="hotel_payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                               for="hotel_paid_amount{{ $booking->id }}">{{ __('Set New Paid to Hotel Amount') }}
                                                             *</label>
                                                         <div class="input-group">
                                                             <input type="number" step="0.01" class="form-control"
-                                                                   id="hotel_payment_amount{{ $booking->id }}"
-                                                                   name="payment_amount" min="0.01"
-                                                                   max="{{ max($hotelRemaining, 0.01) }}"
-                                                                   data-remaining="{{ $hotelRemaining }}"
+                                                                   id="hotel_paid_amount{{ $booking->id }}"
+                                                                   name="hotel_paid_amount"
+                                                                   data-net-amount="{{ $booking->net_amount }}"
                                                                    data-currency="{{ $booking->currency->symbol }}"
                                                                    data-booking-id="{{ $booking->id }}"
-                                                                   placeholder="{{ __('Enter amount to pay') }}"
+                                                                   value="{{ $booking->hotel_paid_amount }}"
+                                                                   placeholder="{{ __('Enter total paid amount') }}"
                                                                    required>
                                                             <span
                                                                 class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                         </div>
-                                                        <small class="text-muted">{{ __('Maximum') }}:
-                                                            {{ number_format(max($hotelRemaining, 0), 0) }}
-                                                            {{ $booking->currency->symbol }}</small>
+                                                        <small class="text-muted">{{ __('Enter the total amount paid to the hotel. This will replace the current paid amount.') }}</small>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label
                                                             class="form-label">{{ __('New Remaining Amount') }}</label>
-                                                        <input type="text" class="form-control"
-                                                               id="new_hotel_remaining{{ $booking->id }}"
-                                                               value="{{ number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
-                                                               readonly>
+                                                      <input type="text" class="form-control"
+                                                                    id="new_hotel_remaining{{ $booking->id }}"
+                                                                    value="{{ number_format($booking->net_amount - $booking->hotel_paid_amount, 2) . ' ' . $booking->currency->symbol }}"
+                                                                    readonly>
+
+
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
@@ -778,50 +788,45 @@
                     });
                 }
 
-                // Get all payment amount inputs
-                const paymentInputs = document.querySelectorAll('[id^="payment_amount"], [id^="hotel_payment_amount"]');
+                // Get all hotel paid amount inputs
+                const hotelPaidInputs = document.querySelectorAll('[id^="hotel_paid_amount"]');
 
-                paymentInputs.forEach(input => {
+                hotelPaidInputs.forEach(input => {
                     input.addEventListener('input', function () {
                         const bookingId = this.getAttribute('data-booking-id');
-                        const remaining = parseFloat(this.getAttribute('data-remaining'));
+                        const netAmount = parseFloat(this.getAttribute('data-net-amount'));
                         const currency = this.getAttribute('data-currency');
-                        const paymentAmount = parseFloat(this.value) || 0;
+                        const paidAmount = parseFloat(this.value) || 0;
 
                         // Calculate new remaining
-                        const newRemaining = remaining - paymentAmount;
-
-                        const newRemaining = remaining - paymentAmount;
+                        const newRemaining = netAmount - paidAmount;
 
                         // Update the new remaining field
-                        const newRemainingField = document.getElementById('new_remaining' +
-                            bookingId) || document.getElementById('new_hotel_remaining' + bookingId);
+                        const newRemainingField = document.getElementById('new_hotel_remaining' + bookingId);
                         if (newRemainingField) {
                             newRemainingField.value = newRemaining.toFixed(2) + ' ' + currency;
 
                             // Add visual feedback
-                            if (paymentAmount > remaining) {
-                                this.classList.add('is-invalid');
+                            if (newRemaining < 0) {
                                 newRemainingField.classList.add('text-danger');
                             } else {
-                                this.classList.remove('is-invalid');
                                 newRemainingField.classList.remove('text-danger');
                             }
                         }
                     });
                 });
-            });
 
-            // Handle per page change
-            const perPageSelect = document.getElementById('per_page');
-            if (perPageSelect) {
-                perPageSelect.addEventListener('change', function () {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('per_page', this.value);
-                    url.searchParams.set('page', '1'); // Reset to first page
-                    window.location.href = url.toString();
-                });
-            }
+                // Handle per page change
+                const perPageSelect = document.getElementById('per_page');
+                if (perPageSelect) {
+                    perPageSelect.addEventListener('change', function () {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('per_page', this.value);
+                        url.searchParams.set('page', '1'); // Reset to first page
+                        window.location.href = url.toString();
+                    });
+                }
+            });
         </script>
     @endpush
 @endsection

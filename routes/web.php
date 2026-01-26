@@ -36,6 +36,9 @@ Route::group(
                 Route::post('/password', 'updatePassword')->name('password');
             });
 
+            // Timezone Routes
+            Route::post('timezone/change', [\App\Http\Controllers\Admin\TimezoneController::class, 'change'])->name('timezone.change');
+
             // Currencies Routes
             Route::resource('currencies', \App\Http\Controllers\Admin\CurrencyController::class);
 
@@ -68,6 +71,15 @@ Route::group(
             Route::get('bookings/export/netrate', [\App\Http\Controllers\Admin\BookingController::class, 'exportNetRatePdf'])->name('bookings.export.netrate');
             Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
 
+            // Booking History Routes
+            Route::prefix('booking-history')->name('booking-history.')->controller(\App\Http\Controllers\Admin\BookingHistoryController::class)->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/{booking}', 'show')->name('show');
+                Route::delete('/{id}', 'destroy')->name('destroy');
+                Route::post('bulk-delete', 'bulkDelete')->name('bulk-delete');
+                Route::delete('booking/{booking}/all', 'deleteAllForBooking')->name('delete-all');
+            });
+
             // Users Routes
             Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
 
@@ -96,6 +108,7 @@ Route::group(
             Route::prefix('activity-log')->name('activity-log.')->controller(\App\Http\Controllers\Admin\ActivityLogController::class)->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::get('/{activity}', 'show')->name('show');
+                Route::get('/booking/{bookingId}', 'showBookingHistory')->name('booking-history');
                 Route::delete('/{activity}', 'destroy')->name('destroy');
                 Route::post('/bulk-delete', 'bulkDelete')->name('bulk-delete');
                 Route::get('/export/csv', 'export')->name('export');

@@ -41,6 +41,14 @@
                 </a>
             </li>
 
+            <!-- Booking History -->
+            <li class="menu-item {{ isActiveRoute('booking-history.*') }}">
+                <a href="{{ route('booking-history.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-calendar-history"></i>
+                    <div data-i18n="@lang('Booking History')">@lang('Booking History')</div>
+                </a>
+            </li>
+
             <!-- Users & Roles -->
         @canany(['view users', 'view roles', 'view permissions'])
         <li

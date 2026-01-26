@@ -58,6 +58,40 @@
                 </li>
                 <!--/ Language -->
 
+                <!-- Timezone Selector -->
+                <li class="nav-item dropdown me-2 me-xl-0">
+                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown" title="{{ __('Timezone') }}">
+                        <i class="icon-base ti tabler-clock icon-22px text-heading"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end timezone-dropdown">
+                        <li>
+                            <h6 class="dropdown-header">{{ __('Select Timezone') }}</h6>
+                        </li>
+                        <li>
+                            <div class="dropdown-item">
+                                <input type="text" class="form-control form-control-sm" id="timezone-search" placeholder="{{ __('Search timezone...') }}">
+                            </div>
+                        </li>
+                        <li>
+                            <div class="dropdown-divider"></div>
+                        </li>
+                        <li>
+                            <div class="timezone-list" style="max-height: 300px; overflow-y: auto;">
+                                @foreach(config('timezones.supported') as $timezone => $label)
+                                    <form action="{{ route('timezone.change') }}" method="POST" class="timezone-form" data-timezone-label="{{ strtolower($label) }}">
+                                        @csrf
+                                        <input type="hidden" name="timezone" value="{{ $timezone }}">
+                                        <button type="submit" class="dropdown-item {{ (request()->cookie('timezone', config('timezones.default')) == $timezone) ? 'active' : '' }}">
+                                            <span>{{ $label }}</span>
+                                        </button>
+                                    </form>
+                                @endforeach
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!--/ Timezone Selector -->
+
                 <!-- Layout Toggle (Visual Only) -->
                 <li class="nav-item dropdown me-2 me-xl-0">
                     <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"

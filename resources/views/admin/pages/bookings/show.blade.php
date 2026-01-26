@@ -28,7 +28,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('bookings.pdf.detailed', $booking->id) }}"
+                                        <a class="dropdown-item " href="{{ route('bookings.pdf.detailed', $booking->id) }}"
                                             target="_blank">
                                             <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
                                         </a>
@@ -217,7 +217,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
                                                 <span class="text-muted small">{{ __('Paid') }}</span>
                                                 <span
-                                                    class="fw-semibold text-primary">{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }}</span>
+                                                    class="fw-semibold text-primary">{{ $booking->paid_amount == 0 ? '' : @formatNumber($booking->paid_amount) }}</span>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -225,7 +225,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : number_format($booking->total_amount - $booking->paid_amount, 0) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : @formatNumber($booking->total_amount - $booking->paid_amount) }}</span>
                                             </div>
                                         </div>
                                         @if ($booking->child_price > 0 || $booking->child_margin > 0)
@@ -299,7 +299,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
                                                 <span class="text-muted small">{{ __('Paid to Hotel') }}</span>
                                                 <span
-                                                    class="fw-semibold text-primary">{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }}</span>
+                                                    class="fw-semibold text-primary">{{ $booking->hotel_paid_amount == 0 ? '' : @formatNumber($booking->hotel_paid_amount) }}</span>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -307,7 +307,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->hotel_paid_amount == 0 ? '' : number_format($booking->net_amount - $booking->hotel_paid_amount, 0) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->hotel_paid_amount == 0 ? '' : @formatNumber($booking->net_amount - $booking->hotel_paid_amount) }}</span>
                                             </div>
                                         </div>
                                     </div>

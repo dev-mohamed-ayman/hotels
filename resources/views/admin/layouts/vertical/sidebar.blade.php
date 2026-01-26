@@ -84,6 +84,24 @@
             </a>
         </li>
 
+        <!-- Activity Log Bookings -->
+        <li class="menu-item {{ isActiveRoute('booking-history.*') }}">
+            <a href="{{ route('booking-history.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-history"></i>
+                <div data-i18n="@lang('Activity Log Bookings')">@lang('Activity Log Bookings')</div>
+            </a>
+        </li>
+
+        <!-- Activity Log -->
+        @can('view activity log')
+            <li class="menu-item {{ isActiveRoute('activity-log.*') }}">
+                <a href="{{ route('activity-log.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-history"></i>
+                    <div data-i18n="@lang('Activity Log')">@lang('Activity Log')</div>
+                </a>
+            </li>
+        @endcan
+
         <!-- Users & Roles -->
         @canany(['view users', 'view roles', 'view permissions'])
             <li
@@ -118,15 +136,6 @@
             </li>
         @endcanany
 
-        <!-- Activity Log -->
-        @can('view activity log')
-            <li class="menu-item {{ isActiveRoute('activity-log.*') }}">
-                <a href="{{ route('activity-log.index') }}" class="menu-link">
-                    <i class="menu-icon icon-base ti tabler-history"></i>
-                    <div data-i18n="{{ __('activity.activity_log') }}">{{ __('activity.activity_log') }}</div>
-                </a>
-            </li>
-        @endcan
     </ul>
 </aside>
 

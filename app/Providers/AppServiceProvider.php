@@ -21,5 +21,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrap();
+
+        // Custom directive to format numbers without trailing zeros
+        \Blade::directive('formatNumber', function ($expression) {
+            return "<?php echo preg_replace('/\.0+$|\.00+$/', '', number_format($expression, 2)); ?>";
+        });
     }
 }

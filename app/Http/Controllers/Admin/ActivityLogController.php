@@ -164,4 +164,18 @@ class ActivityLogController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Display activity logs for a specific booking.
+     */
+    public function showBookingHistory($bookingId)
+    {
+        $booking = \App\Models\Booking::findOrFail($bookingId);
+        $activities = $booking->activities()
+            ->with('causer')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.pages.activity-log.booking-history', compact('booking', 'activities'));
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\BookingHistory;
 use App\Models\Customer;
 use App\Models\Hotel;
 use App\Models\Currency;
@@ -34,6 +35,7 @@ class BookingController extends Controller
 
     public function index(Request $request)
     {
+        
         $query = Booking::with(['customer', 'hotel', 'currency', 'rooms']);
 
         // Filter by hotel
@@ -45,21 +47,28 @@ class BookingController extends Controller
         if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->customer_id);
         }
+// Filter by payment status
+if ($request->filled('payment_status')) {
+    switch ($request->payment_status) {
+        case 'paid':
+            $query->whereRaw('hotel_paid_amount >= net_amount');
+            break;
 
-        // Filter by payment status
-        if ($request->filled('payment_status')) {
-            switch ($request->payment_status) {
-                case 'paid':
-                    $query->whereRaw('hotel_paid_amount >= net_amount');
-                    break;
-                case 'unpaid':
-                    $query->where('hotel_paid_amount', 0);
-                    break;
-                case 'partial':
-                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
-                    break;
-            }
-        }
+        case 'unpaid':
+            $query->where('hotel_paid_amount', 0);
+            break;
+
+        case 'partial':
+            $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
+            break;
+
+        case 'revised':
+            // هنا بنعتبر إن المدفوع أكبر من الصافي (زيادة أو تعديل)
+            $query->whereRaw('hotel_paid_amount > net_amount');
+            break;
+    }
+}
+
 
         // Filter by check-in date range
         if ($request->filled('check_in_from')) {
@@ -102,7 +111,7 @@ class BookingController extends Controller
             $sortOrder = 'desc';
         }
 
-        $query->orderBy($sortBy, $sortOrder);
+        $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
 
         // Get total count before pagination for export
         $totalFilteredBookings = (clone $query)->count();
@@ -188,8 +197,11 @@ class BookingController extends Controller
             'discounts.*.guest_rate' => 'required|numeric',
             'discounts.*.margin' => 'nullable|numeric',
             'discounts.*.description' => 'required|string',
-            'paid_amount' => 'nullable|numeric|min:0',
-        ]);
+           
+            'payment_status' => 'required|in:paid,unpaid,partial,revised',
+]);
+
+       
 
         try {
             DB::beginTransaction();
@@ -383,6 +395,7 @@ class BookingController extends Controller
             'option_date' => 'nullable|date',
             'payment_date' => 'nullable|date', // Keep for backward compatibility
             'meals_plan' => 'nullable|string|max:255',
+            'payment_status' => 'nullable|in:paid,unpaid,partial,revised',
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
@@ -475,6 +488,7 @@ class BookingController extends Controller
                 'nights' => $nights,
                 'option_date' => $request->option_date ?? $request->payment_date,
                 'meals_plan' => $request->meals_plan,
+                'payment_status' => $request->payment_status ?? $booking->payment_status,
                 'total_amount' => $totalAmount,
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
@@ -582,35 +596,28 @@ class BookingController extends Controller
 
     public function updateHotelPayment(Request $request, Booking $booking)
     {
-        $remainingAmount = $booking->net_amount - $booking->hotel_paid_amount;
-
         $request->validate([
-            'payment_amount' => [
+            'hotel_paid_amount' => [
                 'required',
                 'numeric',
-                'min:0.01',
-                'max:' . max($remainingAmount, 0.01), // Allow payment if > 0, ensuring max is at least min
+                'min:0',
             ],
-        ], [
-            'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-                'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol
-            ]),
         ]);
 
+        $newPaidAmount = $request->hotel_paid_amount;
         $booking->update([
-            'hotel_paid_amount' => $booking->hotel_paid_amount + $request->payment_amount
+            'hotel_paid_amount' => $newPaidAmount
         ]);
 
-        return back()->with('success', __('Hotel payment updated successfully.'));
+        $remainingAmount = $booking->net_amount - $newPaidAmount;
+        
+        return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
+            'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol
+        ]));
     }
 
     public function destroy(Booking $booking)
     {
-        // Check if check_in date has not passed yet
-        if ($booking->check_in < now()) {
-            return back()->with('error', __('Cannot delete booking. Check-in date has already passed.'));
-        }
-
         try {
             $booking->delete();
             return redirect()->route('bookings.index')->with('success', __('Booking deleted successfully'));
@@ -911,13 +918,19 @@ class BookingController extends Controller
         if ($request->filled('payment_status')) {
             switch ($request->payment_status) {
                 case 'paid':
-                    $query->whereRaw('paid_amount >= total_amount');
+                    $query->whereRaw('hotel_paid_amount >= net_amount');
                     break;
+
                 case 'unpaid':
-                    $query->where('paid_amount', 0);
+                    $query->where('hotel_paid_amount', 0);
                     break;
+
                 case 'partial':
-                    $query->whereRaw('paid_amount > 0 AND paid_amount < total_amount');
+                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
+                    break;
+
+                case 'revised':
+                    $query->whereRaw('hotel_paid_amount > net_amount');
                     break;
             }
         }
@@ -963,7 +976,7 @@ class BookingController extends Controller
             $sortOrder = 'desc';
         }
 
-        $query->orderBy($sortBy, $sortOrder);
+        $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
 
         return $query;
     }

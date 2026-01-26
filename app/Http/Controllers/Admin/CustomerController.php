@@ -81,6 +81,8 @@ class CustomerController extends Controller
      */
     public function create()
     {
+       
+
         $hotels = Hotel::where('is_active', true)->get();
         return view('admin.pages.customers.create', compact('hotels'));
     }
@@ -181,6 +183,8 @@ class CustomerController extends Controller
      */
     public function update(Request $request, string $id)
     {
+       
+
         $customer = Customer::findOrFail($id);
 
         $validated = $request->validate([
@@ -190,7 +194,7 @@ class CustomerController extends Controller
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|string',
             'notes' => 'nullable|string',
-            'type' => 'required|in:B2B,B2C',
+            'type' => 'required|in:individual,corporate',
             'status' => 'required|in:potential,cancelled,active',
             'priority' => 'required|in:low,medium,high,urgent',
             'source' => 'nullable|in:phone,website,social_media,referral,direct_visit',
