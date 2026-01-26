@@ -128,9 +128,13 @@
                 <thead>
                     <tr>
                         <th>{{ __('Name') }}</th>
+                        <th>{{ __('Company_Name') }}</th>
                         <th>{{ __('Address') }}</th>
+                       
                         <th>{{ __('Bank Accounts') }}</th>
+                        
                         <th>{{ __('Status') }}</th>
+                         
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -138,6 +142,7 @@
                     @forelse($hotels as $hotel)
                         <tr>
                             <td>{{ $hotel->name }}</td>
+                            <td>{{ $hotel->company_name }}</td>
                             <td>{{ $hotel->address }}</td>
                             <td>
                                 @if ($hotel->bankAccounts->count() > 0)

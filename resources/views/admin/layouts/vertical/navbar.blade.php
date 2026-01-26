@@ -51,11 +51,14 @@
                     <li>
                         <div class="timezone-list" style="max-height: 300px; overflow-y: auto;">
                             @foreach(config('timezones.supported') as $timezone => $label)
-                                <form action="{{ route('timezone.change') }}" method="POST" class="timezone-form" data-timezone-label="{{ strtolower($label) }}">
+                                @php
+                                    $timezoneLabel = is_array($label) ? ($label[app()->getLocale()] ?? $label['en']) : $label;
+                                @endphp
+                                <form action="{{ route('timezone.change') }}" method="POST" class="timezone-form" data-timezone-label="{{ strtolower($timezoneLabel) }}">
                                     @csrf
                                     <input type="hidden" name="timezone" value="{{ $timezone }}">
                                     <button type="submit" class="dropdown-item {{ (request()->cookie('timezone', config('timezones.default')) == $timezone) ? 'active' : '' }}">
-                                        <span>{{ $label }}</span>
+                                        <span>{{ $timezoneLabel }}</span>
                                     </button>
                                 </form>
                             @endforeach

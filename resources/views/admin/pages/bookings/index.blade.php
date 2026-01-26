@@ -377,7 +377,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <label for="per_page" class="form-label mb-0">{{ __('Show') }}:</label>
                             <select name="per_page" id="per_page" class="form-select form-select-sm"
-                                    style="width: auto;">
+                                    style="width: auto;" onchange="window.location.href='{{ route('bookings.index') }}?' + new URLSearchParams({{ json_encode(request()->query()) }}).toString().replace(/&per_page=[^&]*/, '').replace(/per_page=[^&]*/, '') + '&per_page=' + this.value">
                                 <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
                                 <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
                                 <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
@@ -386,6 +386,11 @@
                             </select>
                             <span class="text-muted small">{{ __('entries') }}</span>
                         </div>
+                    </div>
+
+                    <!-- Horizontal Scroll Container (Top) -->
+                    <div class="scroll-top-container mb-2" style="overflow-x: auto; overflow-y: hidden; height: 20px;" id="scrollTop">
+                        <div id="scrollTopContent" style="height: 1px;"></div>
                     </div>
 
                     <div class="table-responsive" style="overflow-x: auto; overflow-y: visible; max-height: 70vh;">
@@ -824,6 +829,52 @@
                         url.searchParams.set('per_page', this.value);
                         url.searchParams.set('page', '1'); // Reset to first page
                         window.location.href = url.toString();
+                    });
+                }
+
+                // Synchronize horizontal scrolling between top and bottom containers
+                const scrollContainerTop = document.getElementById('scrollTop');
+                const scrollContainerBottom = document.querySelector('.table-responsive');
+                const scrollContent = document.getElementById('scrollTopContent');
+                const table = document.querySelector('.table');
+                
+                if (scrollContainerTop && scrollContainerBottom && table) {
+                    // Set the width of the top scroll content to match the table
+                    const updateScrollWidth = function() {
+                        // Get the actual width of the table content
+                        const tableWidth = table.scrollWidth;
+                        scrollContent.style.width = tableWidth + 'px';
+                    };
+                    
+                    // Initial width update after a short delay to ensure table is rendered
+                    setTimeout(updateScrollWidth, 100);
+                    
+                    // Update width on window resize
+                    window.addEventListener('resize', updateScrollWidth);
+                    
+                    // Update width when table content changes
+                    const observer = new MutationObserver(function(mutations) {
+                        updateScrollWidth();
+                    });
+                    observer.observe(table, { childList: true, subtree: true });
+                    
+                    let isScrollingTop = false;
+                    let isScrollingBottom = false;
+
+                    scrollContainerTop.addEventListener('scroll', function() {
+                        if (!isScrollingBottom) {
+                            isScrollingTop = true;
+                            scrollContainerBottom.scrollLeft = this.scrollLeft;
+                            setTimeout(() => { isScrollingTop = false; }, 50);
+                        }
+                    });
+
+                    scrollContainerBottom.addEventListener('scroll', function() {
+                        if (!isScrollingTop) {
+                            isScrollingBottom = true;
+                            scrollContainerTop.scrollLeft = this.scrollLeft;
+                            setTimeout(() => { isScrollingBottom = false; }, 50);
+                        }
                     });
                 }
             });

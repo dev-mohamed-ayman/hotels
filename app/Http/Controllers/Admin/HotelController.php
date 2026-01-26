@@ -61,6 +61,7 @@ class HotelController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'address' => 'required|string|max:500',
             'is_active' => 'boolean',
             'bank_accounts' => 'nullable|array',
@@ -71,6 +72,7 @@ class HotelController extends Controller
 
         $hotel = Hotel::create([
             'name' => $validated['name'],
+            'company_name' => $validated['company_name'] ?? null,
             'address' => $validated['address'],
             'is_active' => $request->has('is_active') ? $request->is_active : false,
         ]);
@@ -103,6 +105,7 @@ class HotelController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'company_name' => 'nullable|string|max:255',
             'address' => 'required|string|max:500',
             'is_active' => 'boolean',
             'bank_accounts' => 'nullable|array',
@@ -113,6 +116,7 @@ class HotelController extends Controller
 
         $hotel->update([
             'name' => $validated['name'],
+            'company_name' => $validated['company_name'] ?? null,
             'address' => $validated['address'],
             'is_active' => $request->has('is_active') ? $request->is_active : false,
         ]);

@@ -28,6 +28,10 @@
                                 <p class="mb-0 fw-semibold">{{ $hotel->name }}</p>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label text-muted small">{{ __('Company Name') }}</label>
+                                <p class="mb-0">{{ $hotel->company_name }}</p>
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label text-muted small">{{ __('Address') }}</label>
                                 <p class="mb-0">{{ $hotel->address }}</p>
                             </div>

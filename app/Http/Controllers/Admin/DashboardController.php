@@ -48,6 +48,14 @@ class DashboardController extends Controller
             ->get()
             : collect();
 
+        // All bookings starting within 2 days (only if user can view bookings)
+        $upcomingBookings = $user->can('view bookings')
+            ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
+            ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
+            ->orderBy('check_in', 'asc')
+            ->get()
+            : collect();
+
         // Upcoming Option Dates (Next 7 days)
         $upcomingOptionDates = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
@@ -162,6 +170,7 @@ class DashboardController extends Controller
             'totalAmount',
             'paidAmount',
             'recentBookings',
+            'upcomingBookings',
             'paidBookings',
             'unpaidBookings',
             'partialBookings',

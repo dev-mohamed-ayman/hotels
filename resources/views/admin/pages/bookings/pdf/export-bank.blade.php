@@ -82,6 +82,7 @@
         <th>No.</th>
         <th>File Code</th>
         <th>Hotel Name</th>
+        <th>Company Name</th>
         <th>Bank Name</th>
         <th>Bank Account</th>
         <th>Amount</th>
@@ -93,6 +94,7 @@
             <td>{{ $index + 1 }}</td>
             <td>{{ $data['booking']->code }}</td>
             <td>{{ $data['booking']->hotel->name }}</td>
+            <td>{{ $data['booking']->hotel->company_name ?? '-' }}</td>
             <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
             <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
             <td>{{ $data['booking']->currency->symbol }}{{ number_format($data['total'], 0) }}</td>
@@ -118,7 +120,7 @@
     <tfoot>
     @foreach ($currencyTotals as $currencyTotal)
         <tr class="total-row">
-            <td colspan="5" style="text-align: center;">{{ __('Total') }}
+            <td colspan="6" style="text-align: center;">{{ __('Total') }}
                 ({{ $currencyTotal['symbol'] }})
             </td>
             <td>

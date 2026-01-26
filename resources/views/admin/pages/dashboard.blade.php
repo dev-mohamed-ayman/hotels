@@ -182,6 +182,171 @@
         </div>
     @endif
 
+    <!-- All Bookings Starting Within 2 Days -->
+    @if ($upcomingBookings->isNotEmpty())
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="mb-0">{{ __('All Bookings Starting Within 2 Days') }}</h5>
+                            <span class="badge bg-label-info">{{ $upcomingBookings->count() }} {{ __('Bookings') }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover text-center table-sm" style="font-size: 0.875rem;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-nowrap">{{ __('Code') }}</th>
+                                        <th class="text-nowrap">{{ __('Hotel') }}</th>
+                                        <th class="text-nowrap">{{ __('Rooms') }}</th>
+                                        <th class="text-nowrap">{{ __('Check In') }}</th>
+                                        <th class="text-nowrap">{{ __('Check Out') }}</th>
+                                        <th class="text-nowrap">{{ __('Nights') }}</th>
+                                        <th class="text-nowrap">{{ __('Total Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Paid Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Remaining Net') }}</th>
+                                        <th class="text-nowrap">{{ __('Option Date') }}</th>
+                                        <th class="text-nowrap">{{ __('Status') }}</th>
+                                        <th class="text-nowrap">{{ __('Actions') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($upcomingBookings as $booking)
+                                        <tr>
+                                            <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
+                                            <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
+                                            <td class="py-2" style="width: 130px;">
+                                                @if ($booking->rooms && $booking->rooms->count() > 0)
+                                                    @php
+                                                        $roomTypes = ['SGL' => 0, 'DBL' => 0, 'TPL' => 0, 'QUD' => 0];
+                                                        $totalRooms = 0;
+                                                        foreach ($booking->rooms as $room) {
+                                                            $roomTypes[$room->room_type] += $room->room_count;
+                                                            $totalRooms += $room->room_count;
+                                                        }
+                                                    @endphp
+                                                    <div class="text-start" style="line-height: 1.4;">
+                                                        <div class="mb-1">
+                                                            <strong class="text-primary">{{ $totalRooms }}</strong>
+                                                            <small class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap gap-1">
+                                                            @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
+                                                                @if ($roomTypes[$type] > 0)
+                                                                    <span class="badge bg-label-info" style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
+                                                                        {{ $roomTypes[$type] }} <strong>{{ $type }}</strong>
+                                                                    </span>
+                                                                @endif
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap py-2">{{ $booking->check_in->format('d-m-Y') }}</td>
+                                            <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
+                                            <td class="text-nowrap py-2">{{ $booking->nights }}</td>
+                                            <td class="text-nowrap py-2">
+                                                {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->net_amount, 0) }}
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                <span class="fw-semibold text-success">
+                                                    {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->hotel_paid_amount, 0) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                @php
+                                                    $remaining = $booking->net_amount - $booking->hotel_paid_amount;
+                                                @endphp
+                                                @if ($remaining > 0)
+                                                    <span class="badge bg-label-danger" style="font-size: 0.75rem;">
+                                                        <i class="ti tabler-alert-circle me-1"></i>
+                                                        {{ $booking->currency->symbol }} {{ number_format($remaining, 0) }}
+                                                    </span>
+                                                @elseif ($booking->net_amount > 0)
+                                                    <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                        <i class="ti tabler-check me-1"></i>
+                                                        {{ __('Paid') }}
+                                                    </span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2">
+                                                @if ($booking->option_date)
+                                                    <div class="d-flex flex-column align-items-center gap-1">
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <i class="ti tabler-calendar-event text-primary" style="font-size: 0.9rem;"></i>
+                                                            <span class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
+                                                        </div>
+                                                        @if ($remaining <= 0)
+                                                            <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                                <i class="ti tabler-check me-1"></i>
+                                                                {{ __('Paid') }}
+                                                            </span>
+                                                        @else
+                                                            @if ($booking->option_date->isPast())
+                                                                <span class="badge bg-label-warning" style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                            @elseif ($booking->option_date->isToday())
+                                                                <span class="badge bg-label-info" style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                            @else
+                                                                <span class="badge bg-label-success" style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                            @endif
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap py-2">
+                                                @if ($booking->status == 'confirmed')
+                                                    <span class="badge bg-label-success">{{ __('Confirmed') }}</span>
+                                                @elseif($booking->status == 'pending')
+                                                    <span class="badge bg-label-warning">{{ __('Pending') }}</span>
+                                                @else
+                                                    <span class="badge bg-label-danger">{{ __('Cancelled') }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-nowrap">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-icon btn-secondary" type="button"
+                                                        id="upcomingActionsDropdown{{ $booking->id }}"
+                                                        data-bs-toggle="dropdown" aria-expanded="false"
+                                                        style="padding: 0.25rem 0.5rem;">
+                                                        <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="upcomingActionsDropdown{{ $booking->id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ route('bookings.show', $booking) }}">
+                                                                <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
+                                                            </a>
+                                                        </li>
+                                                        @can('edit bookings')
+                                                            @if ($booking->check_in >= now())
+                                                                <li>
+                                                                    <a class="dropdown-item" href="{{ route('bookings.edit', $booking) }}">
+                                                                        <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+                                                        @endcan
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <!-- Room Nights Production Chart -->

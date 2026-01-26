@@ -27,6 +27,14 @@
                                 @enderror
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label" for="company_name">{{ __('Company Name') }}</label>
+                                <input type="text" class="form-control @error('company_name') is-invalid @enderror"
+                                    id="company_name" name="company_name" value="{{ old('company_name') }}" />
+                                @error('company_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label" for="address">{{ __('Address') }}</label>
                                 <input type="text" class="form-control @error('address') is-invalid @enderror"
                                     id="address" name="address" value="{{ old('address') }}" required />
