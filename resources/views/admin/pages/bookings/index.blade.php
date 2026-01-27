@@ -553,6 +553,14 @@
                                                                                     <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
                                                                                 </a>
                                                                             </li>
+                                                                            <li>
+                                                                                <form action="{{ route('bookings.duplicate', $booking->id) }}" method="POST">
+                                                                                    @csrf
+                                                                                    <button type="submit" class="dropdown-item">
+                                                                                        <i class="ti tabler-copy me-2"></i>{{ __('Duplicate') }}
+                                                                                    </button>
+                                                                                </form>
+                                                                            </li>
                                                                             {{-- <li>
                                                                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                                     data-bs-target="#paymentModal{{ $booking->id }}">
