@@ -822,58 +822,63 @@
                 const scrollContent = document.getElementById('scrollTopContent');
                 const table = document.querySelector('.table');
                  if (scrollContainerTop && scrollContainerBottom && table) {
-                            // Set the width of the top scroll content to match the table
-                            const updateScrollWidth = function () {
-                                // Get the actual width of the table content
-                                const tableWidth = table.scrollWidth;
-                                scrollContent.style.width = tableWidth + 'px';
-                            };
+                                    // Set the width of the top scroll content to match the table
+                                    const updateScrollWidth = function () {
+                                        // Get the actual width of the table content
+                                        const tableWidth = table.scrollWidth;
+                                        scrollContent.style.width = tableWidth + 'px';
+                                    };
 
-                            // Initial width update after a short delay to ensure table is rendered
-                            setTimeout(updateScrollWidth, 100);
+                                    // Initial width update after a short delay to ensure table is rendered
+                                    setTimeout(updateScrollWidth, 100);
 
-                            // Update width on window resize
-                            window.addEventListener('resize', updateScrollWidth);
+                                    // Update width on window resize
+                                    window.addEventListener('resize', updateScrollWidth);
 
-                            // Update width when table content changes
-                            const observer = new MutationObserver(function (mutations) {
-                                updateScrollWidth();
-                            });
-                            observer.observe(table, { childList: true, subtree: true });
+                                    // Update width when table content changes
+                                    const observer = new MutationObserver(function (mutations) {
+                                        updateScrollWidth();
+                                    });
+                                    observer.observe(table, { childList: true, subtree: true });
 
-                            let isScrollingTop = false;
-                            let isScrollingBottom = false;
+                                    let isScrollingTop = false;
+                                    let isScrollingBottom = false;
 
-                            scrollContainerTop.addEventListener('scroll', function () {
-                                if (!isScrollingBottom) {
-                                    isScrollingTop = true;
-                                    scrollContainerBottom.scrollLeft = this.scrollLeft;
-                                    setTimeout(() => { isScrollingTop = false; }, 50);
+                                    scrollContainerTop.addEventListener('scroll', function () {
+                                        if (!isScrollingBottom) {
+                                            isScrollingTop = true;
+                                            scrollContainerBottom.scrollLeft = this.scrollLeft;
+                                            setTimeout(() => { isScrollingTop = false; }, 50);
+                                        }
+                                    });
+
+                                    scrollContainerBottom.addEventListener('scroll', function () {
+                                        if (!isScrollingTop) {
+                                            isScrollingBottom = true;
+                                            scrollContainerTop.scrollLeft = this.scrollLeft;
+                                            setTimeout(() => { isScrollingBottom = false; }, 50);
+                                        }
+                                    });
                                 }
                             });
 
-                            scrollContainerBottom.addEventListener('scroll', function () {
-                                if (!isScrollingTop) {
-                                    isScrollingBottom = true;
-                                    scrollContainerTop.scrollLeft = this.scrollLeft;
-                                    setTimeout(() => { isScrollingBottom = false; }, 50);
-                                }
-                            });
-                        }
-                    });
+                            // Preserve filter values from session
+                            @if(!empty($savedFilters))
+                                const savedFilters = @json($savedFilters);
 
-                    // Preserve filter values from session
-                    @if(session('booking_filters'))
-                        const savedFilters = @json(session('booking_filters'));
+                                // Apply saved filters to form fields
+                                Object.keys(savedFilters).forEach(function(key) {
+                                    const element = document.querySelector(`[name="${key}"]`);
+                                    if (element) {
+                                        element.value = savedFilters[key];
 
-                        // Apply saved filters to form fields
-                        Object.keys(savedFilters).forEach(function(key) {
-                            const element = document.querySelector(`[name="${key}"]`);
-                            if (element) {
-                                element.value = savedFilters[key];
-                            }
-                        });
-                    @endif
-                </script>
+                                        // Trigger change event for select elements to update dependent fields
+                                        if (element.tagName === 'SELECT') {
+                                            element.dispatchEvent(new Event('change'));
+                                        }
+                                    }
+                                });
+                            @endif
+                        </script>
     @endpush
 @endsection
