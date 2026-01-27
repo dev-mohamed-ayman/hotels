@@ -35,7 +35,9 @@ class BookingController extends Controller
 
     public function index(Request $request)
     {
-        
+        // Handle filter persistence
+        $this->handleFilterPersistence($request);
+
         $query = Booking::with(['customer', 'hotel', 'currency', 'rooms']);
 
         // Filter by hotel
@@ -47,27 +49,27 @@ class BookingController extends Controller
         if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->customer_id);
         }
-// Filter by payment status
-if ($request->filled('payment_status')) {
-    switch ($request->payment_status) {
-        case 'paid':
-            $query->whereRaw('hotel_paid_amount >= net_amount');
-            break;
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            switch ($request->payment_status) {
+                case 'paid':
+                    $query->whereRaw('hotel_paid_amount >= net_amount');
+                    break;
 
-        case 'unpaid':
-            $query->where('hotel_paid_amount', 0);
-            break;
+                case 'unpaid':
+                    $query->where('hotel_paid_amount', 0);
+                    break;
 
-        case 'partial':
-            $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
-            break;
+                case 'partial':
+                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
+                    break;
 
-        case 'revised':
-            // هنا بنعتبر إن المدفوع أكبر من الصافي (زيادة أو تعديل)
-            $query->whereRaw('hotel_paid_amount > net_amount');
-            break;
-    }
-}
+                case 'revised':
+                    // هنا بنعتبر إن المدفوع أكبر من الصافي (زيادة أو تعديل)
+                    $query->whereRaw('hotel_paid_amount > net_amount');
+                    break;
+            }
+        }
 
 
         // Filter by check-in date range
@@ -134,6 +136,49 @@ if ($request->filled('payment_status')) {
         return view('admin.pages.bookings.index', compact('bookings', 'hotels', 'customers', 'currencies', 'totalFilteredBookings'));
     }
 
+    /**
+     * Handle filter persistence in session
+     */
+    private function handleFilterPersistence(Request $request)
+    {
+        // If this is a clear filters request
+        if ($request->has('clear_filters')) {
+            session()->forget('booking_filters');
+            return;
+        }
+
+        // Get current filters from request
+        $currentFilters = $request->only([
+            'hotel_id',
+            'customer_id',
+            'payment_status',
+            'check_in_from',
+            'check_in_to',
+            'check_out_from',
+            'check_out_to',
+            'currency_id',
+            'search',
+            'sort_by',
+            'sort_order',
+            'per_page'
+        ]);
+
+        // Remove empty values
+        $currentFilters = array_filter($currentFilters, function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        // If we have filters in the request, save them to session
+        if (!empty($currentFilters)) {
+            session(['booking_filters' => $currentFilters]);
+        }
+        // If no filters in request but we have saved filters, apply them
+        elseif (session()->has('booking_filters') && empty($currentFilters)) {
+            $savedFilters = session('booking_filters');
+            $request->merge($savedFilters);
+        }
+    }
+
     public function show(string $id)
     {
         $booking = Booking::with(['customer', 'hotel', 'currency', 'rooms', 'adjustments'])->findOrFail($id);
@@ -197,11 +242,11 @@ if ($request->filled('payment_status')) {
             'discounts.*.guest_rate' => 'required|numeric',
             'discounts.*.margin' => 'nullable|numeric',
             'discounts.*.description' => 'required|string',
-           
-            'payment_status' => 'required|in:paid,unpaid,partial,revised',
-]);
 
-       
+            'payment_status' => 'required|in:paid,unpaid,partial,revised',
+        ]);
+
+
 
         try {
             DB::beginTransaction();
@@ -610,7 +655,7 @@ if ($request->filled('payment_status')) {
         ]);
 
         $remainingAmount = $booking->net_amount - $newPaidAmount;
-        
+
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
             'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol
         ]));
@@ -1022,7 +1067,7 @@ if ($request->filled('payment_status')) {
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
-            'orientation' => 'P',
+            'orientation' => 'L',
             'margin_left' => 15,
             'margin_right' => 15,
             'margin_top' => 15,

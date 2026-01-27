@@ -52,9 +52,9 @@ class DashboardController extends Controller
         $upcomingBookings = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
             ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
-            ->orderBy('check_in', 'asc')
             ->get()
             : collect();
+
 
         // Upcoming Option Dates (Next 7 days)
         $upcomingOptionDates = $user->can('view bookings')
@@ -186,7 +186,7 @@ class DashboardController extends Controller
     public function logout()
     {
         $user = Auth::user();
-        
+
         // Log logout activity
         activity()
             ->causedBy($user)

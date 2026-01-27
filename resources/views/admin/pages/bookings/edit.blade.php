@@ -1,7 +1,11 @@
 @extends('admin.layouts.app')
 
 @section('title', __('Edit Booking'))
-
+{{--@if($errors->any())--}}
+{{--    @foreach($errors->all() as $error)--}}
+{{--        <code>{{$error}}</code>--}}
+{{--    @endforeach--}}
+{{--@endif--}}
 @section('content')
     <div class="row">
         <div class="col-md-12">
@@ -10,7 +14,8 @@
                     <h5 class="mb-0">{{ __('Edit Booking') }} - {{ $booking->code }}</h5>
                     <div class="d-flex gap-2">
                         @can('delete bookings')
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">
                                 <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
                             </button>
                         @endcan
@@ -37,16 +42,16 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="code">{{ __('Booking Code') }}</label>
                                 <input type="text" class="form-control @error('code') is-invalid @enderror"
-                                    id="code" name="code" value="{{ old('code', $booking->code) }}" required />
+                                       id="code" name="code" value="{{ old('code', $booking->code) }}" required/>
                                 @error('code')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="client_type">{{ __('Client Type') }}</label>
                                 <select class="form-select @error('client_type') is-invalid @enderror" id="client_type"
-                                    required>
+                                        required>
                                     <option value="">{{ __('Select Client Type') }}</option>
                                     <option value="corporate"
                                         {{ old('client_type', $booking->customer->type) == 'corporate' ? 'selected' : '' }}>
@@ -56,14 +61,14 @@
                                         {{ __('B2C (Individual)') }}</option>
                                 </select>
                                 @error('client_type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="customer_id">{{ __('Customer') }}</label>
                                 <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id"
-                                    name="customer_id" required>
+                                        name="customer_id" required>
                                     <option value="">{{ __('Select Customer') }}</option>
                                     @foreach ($customers as $customer)
                                         <option value="{{ $customer->id }}"
@@ -73,14 +78,14 @@
                                     @endforeach
                                 </select>
                                 @error('customer_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="customer_nationality">{{ __('Nationality') }}</label>
                                 <select class="form-select @error('customer_nationality') is-invalid @enderror"
-                                    id="customer_nationality" name="customer_nationality">
+                                        id="customer_nationality" name="customer_nationality">
                                     <option value="">{{ __('Select Nationality') }}</option>
                                     @foreach ($nationalities as $nationality)
                                         <option value="{{ $nationality['nationality'] }}"
@@ -90,14 +95,14 @@
                                     @endforeach
                                 </select>
                                 @error('customer_nationality')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="hotel_id">{{ __('Hotel') }}</label>
                                 <select class="form-select @error('hotel_id') is-invalid @enderror" id="hotel_id"
-                                    name="hotel_id" required>
+                                        name="hotel_id" required>
                                     <option value="">{{ __('Select Hotel') }}</option>
                                     @foreach ($hotels as $hotel)
                                         <option value="{{ $hotel->id }}"
@@ -107,53 +112,53 @@
                                     @endforeach
                                 </select>
                                 @error('hotel_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_in">{{ __('Check In Date') }}</label>
                                 <input type="date" class="form-control @error('check_in') is-invalid @enderror"
-                                    id="check_in" name="check_in"
-                                    value="{{ old('check_in', $booking->check_in->format('Y-m-d')) }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                       id="check_in" name="check_in"
+                                       value="{{ old('check_in', $booking->check_in->format('Y-m-d')) }}"
+                                       min="{{ now()->format('Y-m-d') }}" required/>
                                 @error('check_in')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_out">{{ __('Check Out Date') }}</label>
                                 <input type="date" class="form-control @error('check_out') is-invalid @enderror"
-                                    id="check_out" name="check_out"
-                                    value="{{ old('check_out', $booking->check_out->format('Y-m-d')) }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                       id="check_out" name="check_out"
+                                       value="{{ old('check_out', $booking->check_out->format('Y-m-d')) }}"
+                                       min="{{ now()->format('Y-m-d') }}" required/>
                                 @error('check_out')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="nights">{{ __('Number of Nights') }}</label>
                                 <input type="number" class="form-control" id="nights" value="{{ $booking->nights }}"
-                                    readonly />
+                                       readonly/>
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="option_date">{{ __('Option Date') }}</label>
                                 <input type="date" class="form-control @error('option_date') is-invalid @enderror"
-                                    id="option_date" name="option_date"
-                                    value="{{ old('option_date', $booking->option_date?->format('Y-m-d') ?? $booking->payment_date?->format('Y-m-d')) }}"
-                                    min="{{ now()->format('Y-m-d') }}" />
+                                       id="option_date" name="option_date"
+                                       value="{{ old('option_date', $booking->option_date?->format('Y-m-d') ?? $booking->payment_date?->format('Y-m-d')) }}"
+                                       min="{{ now()->format('Y-m-d') }}"/>
                                 @error('option_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="currency_id">{{ __('Currency') }}</label>
                                 <select class="form-select @error('currency_id') is-invalid @enderror" id="currency_id"
-                                    name="currency_id" required>
+                                        name="currency_id" required>
                                     <option value="">{{ __('Select Currency') }}</option>
                                     @foreach ($currencies as $currency)
                                         <option value="{{ $currency->id }}"
@@ -163,52 +168,56 @@
                                     @endforeach
                                 </select>
                                 @error('currency_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="meals_plan">{{ __('Meals Plan') }}</label>
                                 <input type="text" class="form-control @error('meals_plan') is-invalid @enderror"
-                                    id="meals_plan" name="meals_plan"
-                                    value="{{ old('meals_plan', $booking->meals_plan) }}" />
+                                       id="meals_plan" name="meals_plan"
+                                       value="{{ old('meals_plan', $booking->meals_plan) }}"/>
                                 @error('meals_plan')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                         <div class="col-md-4 mb-3">
-                            <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
-                            <select class="form-select @error('payment_status') is-invalid @enderror" id="payment_status"
-                                name="payment_status">
-                                <option value="paid" {{ old('payment_status', $booking->payment_status ?? '') == 'paid' ? 'selected' : '' }}>
-                                    {{ __('Paid') }}
-                                </option>
-                                <option value="unpaid" {{ old('payment_status', $booking->payment_status ?? 'unpaid') == 'unpaid' ? 'selected' : '' }}>
-                                    {{ __('Unpaid') }}
-                                </option>
-                                <option value="partial" {{ old('payment_status', $booking->payment_status ?? '') == 'partial' ? 'selected' : '' }}>
-                                    {{ __('Partial') }}
-                                </option>
-                                <option value="revised" {{ old('payment_status', $booking->payment_status ?? '') == 'revised' ? 'selected' : '' }}>
-                                    {{ __('Revised') }}
-                                </option>
-                            </select>
-                            <small class="text-muted" id="paymentStatusHint">
-                                @if ($booking->hotel_paid_amount == 0)
-                                    {{ __('No payments recorded') }}
-                                @elseif ($booking->hotel_paid_amount >= $booking->net_amount)
-                                    {{ __('Fully paid based on recorded payments') }}
-                                @else
-                                    {{ __('Partially paid based on recorded payments') }}
-                                @endif
-                            </small>
-                            @error('payment_status')
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
+                                <select class="form-select @error('payment_status') is-invalid @enderror"
+                                        id="payment_status"
+                                        name="payment_status">
+                                    <option
+                                        value="paid" {{ old('payment_status', $booking->payment_status ?? '') == 'paid' ? 'selected' : '' }}>
+                                        {{ __('Paid') }}
+                                    </option>
+                                    <option
+                                        value="unpaid" {{ old('payment_status', $booking->payment_status ?? 'unpaid') == 'unpaid' ? 'selected' : '' }}>
+                                        {{ __('Unpaid') }}
+                                    </option>
+                                    <option
+                                        value="partial" {{ old('payment_status', $booking->payment_status ?? '') == 'partial' ? 'selected' : '' }}>
+                                        {{ __('Partial') }}
+                                    </option>
+                                    <option
+                                        value="revised" {{ old('payment_status', $booking->payment_status ?? '') == 'revised' ? 'selected' : '' }}>
+                                        {{ __('Revised') }}
+                                    </option>
+                                </select>
+                                <small class="text-muted" id="paymentStatusHint">
+                                    @if ($booking->hotel_paid_amount == 0)
+                                        {{ __('No payments recorded') }}
+                                    @elseif ($booking->hotel_paid_amount >= $booking->net_amount)
+                                        {{ __('Fully paid based on recorded payments') }}
+                                    @else
+                                        {{ __('Partially paid based on recorded payments') }}
+                                    @endif
+                                </small>
+                                @error('payment_status')
                                 <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                @enderror
+                            </div>
 
 
-                            
                         </div>
 
                         {{-- Rooms & Guest Details --}}
@@ -223,7 +232,7 @@
                                             <label class="form-label fw-semibold">{{ __('Room Type') }} <span
                                                     class="text-danger">*</span></label>
                                             <select name="rooms[{{ $index }}][room_type]" class="form-select"
-                                                required>
+                                                    required>
                                                 <option value="">{{ __('Select') }}</option>
                                                 <option value="SGL" {{ $room->room_type == 'SGL' ? 'selected' : '' }}>
                                                     SGL
@@ -242,8 +251,8 @@
                                         <div class="col-md-6">
                                             <label class="form-label fw-semibold">{{ __('Category') }}</label>
                                             <input type="text" name="rooms[{{ $index }}][category]"
-                                                class="form-control" value="{{ $room->category }}"
-                                                placeholder="{{ __('Optional') }}" />
+                                                   class="form-control" value="{{ $room->category }}"
+                                                   placeholder="{{ __('Optional') }}"/>
                                         </div>
                                     </div>
                                     <div class="row g-2 mt-2">
@@ -251,23 +260,23 @@
                                             <label class="form-label fw-semibold">{{ __('Count') }} <span
                                                     class="text-danger">*</span></label>
                                             <input type="number" name="rooms[{{ $index }}][room_count]"
-                                                class="form-control room-count" value="{{ $room->room_count }}"
-                                                min="1" required />
+                                                   class="form-control room-count" value="{{ $room->room_count }}"
+                                                   min="1" required/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label fw-semibold">{{ __('Net Rate') }} <span
                                                     class="text-danger">*</span></label>
                                             <input type="number" step="1"
-                                                name="rooms[{{ $index }}][price]" class="form-control room-price"
-                                                value="{{ $room->price }}" min="0" required />
+                                                   name="rooms[{{ $index }}][price]" class="form-control room-price"
+                                                   value="{{ $room->price }}" min="0" required/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label fw-semibold">{{ __('Margin') }} <span
                                                     class="text-danger">*</span></label>
                                             <input type="number" step="1"
-                                                name="rooms[{{ $index }}][margin]"
-                                                class="form-control room-margin" value="{{ $room->margin }}"
-                                                min="0" required />
+                                                   name="rooms[{{ $index }}][margin]"
+                                                   class="form-control room-margin" value="{{ $room->margin }}"
+                                                   min="0" required/>
                                         </div>
                                         <div class="col-md-3 d-flex align-items-end">
                                             <button type="button" class="btn btn-danger btn-sm remove-room w-100">
@@ -279,24 +288,26 @@
                                         <div class="col-md-4">
                                             <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                                             <input type="number" name="rooms[{{ $index }}][child_count]"
-                                                class="form-control room-child-count" value="{{ $room->child_count }}"
-                                                min="0" />
+                                                   class="form-control room-child-count"
+                                                   value="{{ $room->child_count }}"
+                                                   min="0"/>
                                         </div>
                                         <div class="col-md-4">
                                             <label
                                                 class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
                                             <input type="number" step="1"
-                                                name="rooms[{{ $index }}][child_price]"
-                                                class="form-control room-child-price"
-                                                value="{{ $room->child_price ?? 0 }}" min="0" />
+                                                   name="rooms[{{ $index }}][child_price]"
+                                                   class="form-control room-child-price"
+                                                   value="{{ $room->child_price ?? 0 }}" min="0"/>
                                         </div>
                                         <div class="col-md-4">
                                             <label
                                                 class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
                                             <input type="number" step="1"
-                                                name="rooms[{{ $index }}][child_margin]"
-                                                class="form-control room-child-margin" value="{{ $room->child_margin }}"
-                                                min="0" />
+                                                   name="rooms[{{ $index }}][child_margin]"
+                                                   class="form-control room-child-margin"
+                                                   value="{{ $room->child_margin }}"
+                                                   min="0"/>
                                         </div>
                                     </div>
                                 </div>
@@ -323,28 +334,28 @@
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Net Rate') }}</label>
                                             <input type="number" step="1"
-                                                name="additions[{{ $index }}][net_rate]"
-                                                class="form-control addition-net-rate" value="{{ $netRate }}"
-                                                required />
+                                                   name="additions[{{ $index }}][net_rate]"
+                                                   class="form-control addition-net-rate" value="{{ $netRate }}"
+                                                   required/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Guest Rate') }}</label>
                                             <input type="number" step="1"
-                                                name="additions[{{ $index }}][guest_rate]"
-                                                class="form-control addition-guest-rate" value="{{ $guestRate }}"
-                                                required />
+                                                   name="additions[{{ $index }}][guest_rate]"
+                                                   class="form-control addition-guest-rate" value="{{ $guestRate }}"
+                                                   required/>
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">{{ __('Margin') }}</label>
                                             <input type="number" step="1"
-                                                name="additions[{{ $index }}][margin]"
-                                                class="form-control addition-margin" value="{{ $margin }}"
-                                                readonly />
+                                                   name="additions[{{ $index }}][margin]"
+                                                   class="form-control addition-margin" value="{{ $margin }}"
+                                                   readonly/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Description') }}</label>
                                             <input type="text" name="additions[{{ $index }}][description]"
-                                                class="form-control" value="{{ $addition->description }}" required />
+                                                   class="form-control" value="{{ $addition->description }}" required/>
                                         </div>
                                         <div class="col-md-1 d-flex align-items-end">
                                             <button type="button" class="btn btn-danger btn-sm remove-addition">
@@ -376,28 +387,28 @@
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Net Rate') }}</label>
                                             <input type="number" step="1"
-                                                name="discounts[{{ $index }}][net_rate]"
-                                                class="form-control discount-net-rate" value="{{ $netRate }}"
-                                                required />
+                                                   name="discounts[{{ $index }}][net_rate]"
+                                                   class="form-control discount-net-rate" value="{{ $netRate }}"
+                                                   required/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Guest Rate') }}</label>
                                             <input type="number" step="1"
-                                                name="discounts[{{ $index }}][guest_rate]"
-                                                class="form-control discount-guest-rate" value="{{ $guestRate }}"
-                                                required />
+                                                   name="discounts[{{ $index }}][guest_rate]"
+                                                   class="form-control discount-guest-rate" value="{{ $guestRate }}"
+                                                   required/>
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">{{ __('Margin') }}</label>
                                             <input type="number" step="1"
-                                                name="discounts[{{ $index }}][margin]"
-                                                class="form-control discount-margin" value="{{ $margin }}"
-                                                readonly />
+                                                   name="discounts[{{ $index }}][margin]"
+                                                   class="form-control discount-margin" value="{{ $margin }}"
+                                                   readonly/>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">{{ __('Description') }}</label>
                                             <input type="text" name="discounts[{{ $index }}][description]"
-                                                class="form-control" value="{{ $discount->description }}" required />
+                                                   class="form-control" value="{{ $discount->description }}" required/>
                                         </div>
                                         <div class="col-md-1 d-flex align-items-end">
                                             <button type="button" class="btn btn-danger btn-sm remove-discount">
@@ -458,13 +469,14 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="notes">{{ __('Notes') }}</label>
-                                <textarea class="form-control" id="notes" name="notes" rows="3">{{ old('notes', $booking->notes) }}</textarea>
+                                <textarea class="form-control" id="notes" name="notes"
+                                          rows="3">{{ old('notes', $booking->notes) }}</textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
                                 <input type="number" step="1" name="paid_amount" id="paid_amount"
-                                    class="form-control form-control-lg"
-                                    value="{{ old('paid_amount', $booking->paid_amount) }}" min="0" />
+                                       class="form-control form-control-lg"
+                                       value="{{ old('paid_amount', $booking->paid_amount) }}" min="0"/>
                             </div>
                         </div>
 
@@ -498,7 +510,7 @@
         let discountIndex = {{ $booking->adjustments->where('type', 'discount')->count() }};
 
         // Prevent negative values in number inputs
-        document.addEventListener('input', function(e) {
+        document.addEventListener('input', function (e) {
             if (e.target.type === 'number' && e.target.value < 0) {
                 e.target.value = 0;
             }
@@ -513,7 +525,7 @@
         });
 
         // Prevent negative values and decimals on keydown
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.target.type === 'number') {
                 // Prevent negative, e, E, + for all number inputs
                 if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
@@ -530,7 +542,7 @@
         });
 
         // Prevent paste of non-integer values in integer fields
-        document.addEventListener('paste', function(e) {
+        document.addEventListener('paste', function (e) {
             if (e.target.classList.contains('room-count') || e.target.classList.contains('room-child-count')) {
                 e.preventDefault();
                 const paste = (e.clipboardData || window.clipboardData).getData('text');
@@ -542,7 +554,7 @@
         });
 
         // Client type change handler
-        document.getElementById('client_type').addEventListener('change', function() {
+        document.getElementById('client_type').addEventListener('change', function () {
             const clientType = this.value;
             const customerSelect = document.getElementById('customer_id');
             const currentCustomerId = "{{ $booking->customer_id }}";
@@ -580,7 +592,7 @@
         document.getElementById('check_out').addEventListener('change', calculateNights);
 
         // Add room
-        document.getElementById('addRoom').addEventListener('click', function() {
+        document.getElementById('addRoom').addEventListener('click', function () {
             const container = document.getElementById('roomsContainer');
             const newRow = document.createElement('div');
             newRow.className = 'room-row mb-3 p-3 border rounded bg-light';
@@ -642,7 +654,7 @@
         });
 
         // Remove room
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-room') || e.target.closest('.remove-room')) {
                 const row = e.target.closest('.room-row');
                 row.remove();
@@ -660,7 +672,7 @@
         }
 
         // Add addition
-        document.getElementById('addAddition').addEventListener('click', function() {
+        document.getElementById('addAddition').addEventListener('click', function () {
             const container = document.getElementById('additionsContainer');
             const newRow = document.createElement('div');
             newRow.className = 'addition-row mb-3 p-3 border rounded';
@@ -695,7 +707,7 @@
         });
 
         // Remove addition
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-addition') || e.target.closest('.remove-addition')) {
                 const row = e.target.closest('.addition-row');
                 row.remove();
@@ -704,7 +716,7 @@
         });
 
         // Add discount
-        document.getElementById('addDiscount').addEventListener('click', function() {
+        document.getElementById('addDiscount').addEventListener('click', function () {
             const container = document.getElementById('discountsContainer');
             const newRow = document.createElement('div');
             newRow.className = 'discount-row mb-3 p-3 border rounded';
@@ -739,7 +751,7 @@
         });
 
         // Remove discount
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('remove-discount') || e.target.closest('.remove-discount')) {
                 const row = e.target.closest('.discount-row');
                 row.remove();
@@ -882,11 +894,11 @@
 
                 // Calculate addition margin when net_rate or guest_rate changes
                 if (input.classList.contains('addition-net-rate') || input.classList.contains(
-                        'addition-guest-rate')) {
-                    input.removeEventListener('input', function() {
+                    'addition-guest-rate')) {
+                    input.removeEventListener('input', function () {
                         calculateAdditionMargin(input);
                     });
-                    input.addEventListener('input', function() {
+                    input.addEventListener('input', function () {
                         calculateAdditionMargin(input);
                         calculateSummary();
                     });
@@ -894,11 +906,11 @@
 
                 // Calculate discount margin when net_rate or guest_rate changes
                 if (input.classList.contains('discount-net-rate') || input.classList.contains(
-                        'discount-guest-rate')) {
-                    input.removeEventListener('input', function() {
+                    'discount-guest-rate')) {
+                    input.removeEventListener('input', function () {
                         calculateDiscountMargin(input);
                     });
-                    input.addEventListener('input', function() {
+                    input.addEventListener('input', function () {
                         calculateDiscountMargin(input);
                         calculateSummary();
                     });
@@ -908,7 +920,7 @@
 
         const paidAmountInput = document.getElementById('paid_amount');
         if (paidAmountInput) {
-            paidAmountInput.addEventListener('input', function() {
+            paidAmountInput.addEventListener('input', function () {
                 calculateSummary();
                 // Additional validation on input
                 const finalTotalEl = document.getElementById('finalTotal');
@@ -932,7 +944,7 @@
         // Open date picker when clicking on date inputs or their labels
         document.querySelectorAll('input[type="date"]').forEach(dateInput => {
             // Open picker when clicking on the input
-            dateInput.addEventListener('click', function() {
+            dateInput.addEventListener('click', function () {
                 if (this.showPicker) {
                     this.showPicker();
                 }
@@ -942,7 +954,7 @@
             if (dateInput.id) {
                 const label = document.querySelector(`label[for="${dateInput.id}"]`);
                 if (label) {
-                    label.addEventListener('click', function(e) {
+                    label.addEventListener('click', function (e) {
                         e.preventDefault();
                         const input = document.getElementById(dateInput.id);
                         if (input && input.showPicker) {
