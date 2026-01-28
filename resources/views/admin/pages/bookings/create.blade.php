@@ -177,9 +177,10 @@
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
-                                <select class="form-select @error('payment_status') is-invalid @enderror" id="payment_status"
-                                    name="payment_status" required>
-                                    <option value="unpaid" {{ old('payment_status', 'unpaid') == 'unpaid' ? 'selected' : '' }}>
+                                <select class="form-select @error('payment_status') is-invalid @enderror"
+                                    id="payment_status" name="payment_status" required>
+                                    <option value="unpaid"
+                                        {{ old('payment_status', 'unpaid') == 'unpaid' ? 'selected' : '' }}>
                                         {{ __('Unpaid') }}
                                     </option>
                                     <option value="partial" {{ old('payment_status') == 'partial' ? 'selected' : '' }}>

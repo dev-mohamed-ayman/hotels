@@ -63,9 +63,12 @@ Route::group(
             Route::get('bookings/{booking}/pdf/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'downloadDetailedPdf'])->name('bookings.pdf.detailed');
             Route::get('bookings/{booking}/pdf/guest', [\App\Http\Controllers\Admin\BookingController::class, 'downloadGuestPdf'])->name('bookings.pdf.guest');
             Route::get('bookings/{booking}/pdf/netrate', [\App\Http\Controllers\Admin\BookingController::class, 'downloadNetRatePdf'])->name('bookings.pdf.netrate');
-            
+
             // Duplicate booking route
             Route::post('bookings/{booking}/duplicate', [\App\Http\Controllers\Admin\BookingController::class, 'duplicate'])->name('bookings.duplicate');
+
+            // Toggle Payment Status Route
+            Route::post('bookings/{booking}/toggle-status', [\App\Http\Controllers\Admin\BookingController::class, 'togglePaymentStatus'])->name('bookings.toggle-status');
 
             // Bulk export routes
             Route::get('bookings/export/bank', [\App\Http\Controllers\Admin\BookingController::class, 'exportBankPdf'])->name('bookings.export.bank');

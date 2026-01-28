@@ -50,24 +50,7 @@ class BookingController extends Controller
         }
         // Filter by payment status
         if ($request->filled('payment_status')) {
-            switch ($request->payment_status) {
-                case 'paid':
-                    $query->whereRaw('hotel_paid_amount >= net_amount');
-                    break;
-
-                case 'unpaid':
-                    $query->where('hotel_paid_amount', 0);
-                    break;
-
-                case 'partial':
-                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
-                    break;
-
-                case 'revised':
-                    // هنا بنعتبر إن المدفوع أكبر من الصافي (زيادة أو تعديل)
-                    $query->whereRaw('hotel_paid_amount > net_amount');
-                    break;
-            }
+            $query->where('payment_status', $request->payment_status);
         }
 
         // Filter by check-in date range
@@ -307,6 +290,15 @@ class BookingController extends Controller
                 return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
             }
 
+            // Recalculate payment status
+            $newStatus = 'unpaid';
+
+            if ($paidAmount >= $totalAmount) {
+                $newStatus = 'paid';
+            } elseif ($paidAmount < $totalAmount && $paidAmount > 0) {
+                $newStatus = 'partial';
+            }
+
             $booking = Booking::create([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
@@ -318,13 +310,15 @@ class BookingController extends Controller
                 'option_date' => $request->option_date ?? $request->payment_date,
                 'meals_plan' => $request->meals_plan,
                 'status' => 'confirmed', // Default to confirmed for now
+                'payment_status' => $newStatus,
                 'total_amount' => $totalAmount,
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
-                'paid_amount' => $request->paid_amount ?? 0,
+                'paid_amount' => $paidAmount,
 
                 'net_amount' => $netRate,
                 'notes' => $request->notes,
+                'hotel_paid_amount' => 0,
             ]);
 
             // Update customer nationality if provided
@@ -522,6 +516,19 @@ class BookingController extends Controller
                 return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
             }
 
+            // Recalculate payment status
+            $newStatus = 'unpaid';
+            // If it was explicitly revised, keep it revised regardless of payment amount
+            if ($booking->payment_status === 'revised') {
+                $newStatus = 'revised';
+            } else {
+                if ($paidAmount >= $totalAmount) {
+                    $newStatus = 'paid';
+                } elseif ($paidAmount < $totalAmount && $paidAmount > 0) {
+                    $newStatus = 'partial';
+                }
+            }
+
             $booking->update([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
@@ -532,7 +539,7 @@ class BookingController extends Controller
                 'nights' => $nights,
                 'option_date' => $request->option_date ?? $request->payment_date,
                 'meals_plan' => $request->meals_plan,
-                'payment_status' => $request->payment_status ?? $booking->payment_status,
+                'payment_status' => $newStatus,
                 'total_amount' => $totalAmount,
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
@@ -635,6 +642,23 @@ class BookingController extends Controller
             'paid_amount' => $booking->paid_amount + $request->payment_amount,
         ]);
 
+        // Recalculate payment status
+        $newStatus = 'unpaid';
+        // If it was explicitly revised, keep it revised regardless of payment amount
+        if ($booking->payment_status === 'revised') {
+            $newStatus = 'revised';
+        } else {
+            if ($remainingAmount <= 0) {
+                $newStatus = 'paid';
+            } elseif ($remainingAmount > 0) {
+                $newStatus = 'partial';
+            }
+        }
+
+        $booking->update([
+            'payment_status' => $newStatus,
+        ]);
+
         return back()->with('success', __('Payment updated successfully.'));
     }
 
@@ -649,11 +673,29 @@ class BookingController extends Controller
         ]);
 
         $newPaidAmount = $request->hotel_paid_amount;
+
+        $remainingAmount = $booking->net_amount - $newPaidAmount;
+
         $booking->update([
             'hotel_paid_amount' => $newPaidAmount,
         ]);
 
-        $remainingAmount = $booking->net_amount - $newPaidAmount;
+        // Recalculate payment status
+        $newStatus = 'unpaid';
+        // If it was explicitly revised, keep it revised regardless of payment amount
+        if ($booking->payment_status === 'revised') {
+            $newStatus = 'revised';
+        } else {
+            if ($remainingAmount <= 0) {
+                $newStatus = 'paid';
+            } elseif ($remainingAmount > 0) {
+                $newStatus = 'partial';
+            }
+        }
+
+        $booking->update([
+            'payment_status' => $newStatus,
+        ]);
 
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
             'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
@@ -965,23 +1007,7 @@ class BookingController extends Controller
 
         // Filter by payment status
         if ($request->filled('payment_status')) {
-            switch ($request->payment_status) {
-                case 'paid':
-                    $query->whereRaw('hotel_paid_amount >= net_amount');
-                    break;
-
-                case 'unpaid':
-                    $query->where('hotel_paid_amount', 0);
-                    break;
-
-                case 'partial':
-                    $query->whereRaw('hotel_paid_amount > 0 AND hotel_paid_amount < net_amount');
-                    break;
-
-                case 'revised':
-                    $query->whereRaw('hotel_paid_amount > net_amount');
-                    break;
-            }
+            $query->where('payment_status', $request->payment_status);
         }
 
         // Filter by check-in date range
@@ -1025,7 +1051,7 @@ class BookingController extends Controller
             $sortOrder = 'desc';
         }
 
-        $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
+        $query->orderBy($sortBy, $sortOrder)->orderBy('code', $sortOrder);
 
         return $query;
     }
@@ -1048,13 +1074,14 @@ class BookingController extends Controller
             ]);
 
             // Set new code (append -copy)
-            $newBooking->code = $booking->code;
+            $newBooking->code = $booking->code.'-copy';
 
             // Reset amounts
             $newBooking->net_amount = 0;
             $newBooking->total_amount = 0;
             $newBooking->paid_amount = 0;
             $newBooking->hotel_paid_amount = 0;
+            $newBooking->payment_status = 'unpaid';
 
             $newBooking->save();
 
@@ -1073,6 +1100,28 @@ class BookingController extends Controller
 
             return back()->with('error', __('Error duplicating booking').': '.$e->getMessage());
         }
+    }
+
+    public function togglePaymentStatus(Booking $booking)
+    {
+        // If current status is revised, switch to auto-calculate (which might be paid, partial, or unpaid)
+        if ($booking->payment_status === 'revised') {
+            // Auto calculate based on amounts
+            $newStatus = 'unpaid';
+            if ($booking->paid_amount >= $booking->total_amount && $booking->total_amount > 0) {
+                $newStatus = 'paid';
+            } elseif ($booking->paid_amount > 0) {
+                $newStatus = 'partial';
+            }
+            $booking->update(['payment_status' => $newStatus]);
+            $message = __('Booking status set to Auto Calculate (:status)', ['status' => ucfirst($newStatus)]);
+        } else {
+            // Switch to revised
+            $booking->update(['payment_status' => 'revised']);
+            $message = __('Booking status set to Revised');
+        }
+
+        return back()->with('success', $message);
     }
 
     public function exportBankPdf(Request $request)
