@@ -135,7 +135,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Total Bookings') }}</h6>
-                                    <h3 class="mb-0">{{ $totalBookings == 0 ? '' : number_format($totalBookings) }}</h3>
+                                    <h3 class="mb-0">{{ $totalBookings == 0 ? '' : \App\Helpers\NumberHelper::format($totalBookings) }}</h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-primary">
@@ -152,7 +152,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Total Amount') }}</h6>
-                                    <h3 class="mb-0">{{ $totalAmount == 0 ? '' : number_format($totalAmount, 0) }}</h3>
+                                    <h3 class="mb-0">{{ $totalAmount == 0 ? '' : \App\Helpers\NumberHelper::format($totalAmount) }}</h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-success">
@@ -170,7 +170,7 @@
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Paid Amount') }}</h6>
                                     <h3 class="mb-0 text-success">
-                                        {{ $paidAmount == 0 ? '' : number_format($paidAmount, 0) }}</h3>
+                                        {{ $paidAmount == 0 ? '' : \App\Helpers\NumberHelper::format($paidAmount) }}</h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-success">
@@ -188,7 +188,7 @@
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Pending Amount') }}</h6>
                                     <h3 class="mb-0 text-warning">
-                                        {{ $pendingAmount == 0 ? '' : number_format($pendingAmount, 0) }}</h3>
+                                        {{ $pendingAmount == 0 ? '' : \App\Helpers\NumberHelper::format($pendingAmount) }}</h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-warning">
@@ -328,14 +328,14 @@
                                     <td>{{ $booking->check_out->format('d-m-Y') }}</td>
                                     <td>{{ $booking->nights }}</td>
                                     <td>
-                                        <strong>{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }}</strong>
+                                        <strong>{{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }}</strong>
                                         @if ($booking->currency)
                                             <span class="text-muted small">{{ $booking->currency->symbol }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         <span
-                                            class="text-success">{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }}</span>
+                                            class="text-success">{{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }}</span>
                                         @if ($booking->currency)
                                             <span class="text-muted small">{{ $booking->currency->symbol }}</span>
                                         @endif

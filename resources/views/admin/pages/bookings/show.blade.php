@@ -202,7 +202,7 @@
                                                 <div>
                                                     <span class="text-muted small d-block">{{ __('Total Amount') }}</span>
                                                     <span
-                                                        class="fw-bold fs-5 text-success">{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }}
+                                                        class="fw-bold fs-5 text-success">{{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }}
                                                         {{ $booking->currency->symbol ?? '' }}</span>
                                                 </div>
                                                 <div class="avatar">
@@ -217,7 +217,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
                                                 <span class="text-muted small">{{ __('Paid') }}</span>
                                                 <span
-                                                    class="fw-semibold text-primary">{{ $booking->paid_amount == 0 ? '' : @formatNumber($booking->paid_amount) }}</span>
+                                                    class="fw-semibold text-primary">{{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }}</span>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -225,7 +225,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : @formatNumber($booking->total_amount - $booking->paid_amount) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount - $booking->paid_amount) }}</span>
                                             </div>
                                         </div>
                                         @if ($booking->child_price > 0 || $booking->child_margin > 0)
@@ -234,7 +234,7 @@
                                                     <label
                                                         class="form-label text-muted small mb-1">{{ __('Child Net Rate') }}</label>
                                                     <div class="fw-semibold">
-                                                        {{ $booking->child_price == 0 ? '' : number_format($booking->child_price, 0) }}
+                                                        {{ $booking->child_price == 0 ? '' : \App\Helpers\NumberHelper::format($booking->child_price) }}
                                                         {{ $booking->currency->symbol ?? '' }}</div>
                                                 </div>
                                             </div>
@@ -244,7 +244,7 @@
                                                         <label
                                                             class="form-label text-muted small mb-1">{{ __('Child Margin') }}</label>
                                                         <div class="fw-semibold">
-                                                            {{ $booking->child_margin == 0 ? '' : number_format($booking->child_margin, 0) }}
+                                                            {{ $booking->child_margin == 0 ? '' : \App\Helpers\NumberHelper::format($booking->child_margin) }}
                                                             {{ $booking->currency->symbol ?? '' }}</div>
                                                     </div>
                                                 </div>
@@ -284,7 +284,7 @@
                                                     <span
                                                         class="text-muted small d-block">{{ __('Total Net Amount') }}</span>
                                                     <span
-                                                        class="fw-bold fs-5 text-secondary">{{ $booking->net_amount == 0 ? '' : number_format($booking->net_amount, 0) }}
+                                                        class="fw-bold fs-5 text-secondary">{{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }}
                                                         {{ $booking->currency->symbol ?? '' }}</span>
                                                 </div>
                                                 <div class="avatar">
@@ -299,7 +299,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-primary rounded">
                                                 <span class="text-muted small">{{ __('Paid to Hotel') }}</span>
                                                 <span
-                                                    class="fw-semibold text-primary">{{ $booking->hotel_paid_amount == 0 ? '' : @formatNumber($booking->hotel_paid_amount) }}</span>
+                                                    class="fw-semibold text-primary">{{ $booking->hotel_paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }}</span>
                                             </div>
                                         </div>
                                         <div class="col-6">
@@ -307,7 +307,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->hotel_paid_amount == 0 ? '' : @formatNumber($booking->net_amount - $booking->hotel_paid_amount) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->hotel_paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount - $booking->hotel_paid_amount) }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -402,20 +402,22 @@
                                             <td>{{ $room->room_type }}</td>
                                             <td>{{ $room->category ?? '-' }}</td>
                                             <td>{{ $room->room_count }}</td>
-                                            <td>{{ $room->price == 0 ? '' : number_format($room->price, 0) }}</td>
-                                            @can('view booking margins')
-                                                <td>{{ $room->margin == 0 ? '' : number_format($room->margin, 0) }}</td>
-                                            @endcan
-                                            <td>{{ $room->child_count == 0 ? '' : $room->child_count }}</td>
-                                            <td>{{ $room->child_price ? ($room->child_price == 0 ? '' : number_format($room->child_price, 0)) : '-' }}
+                                            <td>{{ $room->price == 0 ? '' : \App\Helpers\NumberHelper::format($room->price) }}
                                             </td>
                                             @can('view booking margins')
-                                                <td>{{ $room->child_margin ? ($room->child_margin == 0 ? '' : number_format($room->child_margin, 0)) : '-' }}
+                                                <td>{{ $room->margin == 0 ? '' : \App\Helpers\NumberHelper::format($room->margin) }}
+                                                </td>
+                                            @endcan
+                                            <td>{{ $room->child_count == 0 ? '' : $room->child_count }}</td>
+                                            <td>{{ $room->child_price ? ($room->child_price == 0 ? '' : \App\Helpers\NumberHelper::format($room->child_price)) : '-' }}
+                                            </td>
+                                            @can('view booking margins')
+                                                <td>{{ $room->child_margin ? ($room->child_margin == 0 ? '' : \App\Helpers\NumberHelper::format($room->child_margin)) : '-' }}
                                                 </td>
                                             @endcan
                                             @can('view booking guest rates')
                                                 <td>
-                                                    {{ ($room->price + $room->margin) * $room->room_count * $booking->nights == 0 ? '' : number_format(($room->price + $room->margin) * $room->room_count * $booking->nights, 0) }}
+                                                    {{ ($room->price + $room->margin) * $room->room_count * $booking->nights == 0 ? '' : \App\Helpers\NumberHelper::format(($room->price + $room->margin) * $room->room_count * $booking->nights) }}
                                                     {{ $booking->currency->symbol ?? '' }}
                                                 </td>
                                             @endcan
@@ -461,18 +463,18 @@
                                                     <tr>
                                                         <td>{{ $addition->description }}</td>
                                                         <td class="text-muted">
-                                                            {{ ($val = $addition->net_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ ($val = $addition->net_rate ?? ($addition->amount ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         @can('view booking guest rates')
                                                             <td class="text-success fw-semibold">
-                                                                +{{ ($val = $addition->guest_rate ?? ($addition->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                +{{ ($val = $addition->guest_rate ?? ($addition->amount ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                                 {{ $booking->currency->symbol ?? '' }}
                                                             </td>
                                                         @endcan
                                                         @can('view booking margins')
                                                             <td class="text-primary">
-                                                                {{ ($val = $addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ ($val = $addition->margin ?? ($addition->guest_rate ?? ($addition->amount ?? 0)) - ($addition->net_rate ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                                 {{ $booking->currency->symbol ?? '' }}
                                                             </td>
                                                         @endcan
@@ -483,18 +485,18 @@
                                                 <tr class="fw-bold table-active border-top border-2 border-dark">
                                                     <td class="text-uppercase">{{ __('Total') }}</td>
                                                     <td class="text-muted">
-                                                        {{ ($val = $booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'addition')->sum('net_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     @can('view booking guest rates')
                                                         <td class="text-success">
-                                                            +{{ ($val = $booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                            +{{ ($val = $booking->adjustments->where('type', 'addition')->sum('guest_rate') ?: $booking->adjustments->where('type', 'addition')->sum('amount')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     @endcan
                                                     @can('view booking margins')
                                                         <td class="text-primary">
-                                                            {{ ($val = $booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ ($val = $booking->adjustments->where('type', 'addition')->sum('margin') ?: $booking->adjustments->where('type', 'addition')->sum('guest_rate') - $booking->adjustments->where('type', 'addition')->sum('net_rate')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     @endcan
@@ -528,18 +530,18 @@
                                                     <tr>
                                                         <td>{{ $discount->description }}</td>
                                                         <td class="text-muted">
-                                                            {{ ($val = $discount->net_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ ($val = $discount->net_rate ?? ($discount->amount ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                         @can('view booking guest rates')
                                                             <td class="text-danger fw-semibold">
-                                                                -{{ ($val = $discount->guest_rate ?? ($discount->amount ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                -{{ ($val = $discount->guest_rate ?? ($discount->amount ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                                 {{ $booking->currency->symbol ?? '' }}
                                                             </td>
                                                         @endcan
                                                         @can('view booking margins')
                                                             <td class="text-primary">
-                                                                {{ ($val = $discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0)) == 0 ? '' : number_format($val, 0) }}
+                                                                {{ ($val = $discount->margin ?? ($discount->guest_rate ?? ($discount->amount ?? 0)) - ($discount->net_rate ?? 0)) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                                 {{ $booking->currency->symbol ?? '' }}
                                                             </td>
                                                         @endcan
@@ -550,18 +552,18 @@
                                                 <tr class="fw-bold table-active border-top border-2 border-dark">
                                                     <td class="text-uppercase">{{ __('Total') }}</td>
                                                     <td class="text-muted">
-                                                        {{ ($val = $booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                        {{ ($val = $booking->adjustments->where('type', 'discount')->sum('net_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                         {{ $booking->currency->symbol ?? '' }}
                                                     </td>
                                                     @can('view booking guest rates')
                                                         <td class="text-danger">
-                                                            -{{ ($val = $booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : number_format($val, 0) }}
+                                                            -{{ ($val = $booking->adjustments->where('type', 'discount')->sum('guest_rate') ?: $booking->adjustments->where('type', 'discount')->sum('amount')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     @endcan
                                                     @can('view booking margins')
                                                         <td class="text-primary">
-                                                            {{ ($val = $booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate')) == 0 ? '' : number_format($val, 0) }}
+                                                            {{ ($val = $booking->adjustments->where('type', 'discount')->sum('margin') ?: $booking->adjustments->where('type', 'discount')->sum('guest_rate') - $booking->adjustments->where('type', 'discount')->sum('net_rate')) == 0 ? '' : \App\Helpers\NumberHelper::format($val) }}
                                                             {{ $booking->currency->symbol ?? '' }}
                                                         </td>
                                                     @endcan
@@ -590,7 +592,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Total Amount') }}</h6>
                                     <h4 class="mb-0 text-success">
-                                        {{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }}<br>
+                                        {{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>
@@ -601,7 +603,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Paid Amount') }}</h6>
                                     <h4 class="mb-0 text-primary">
-                                        {{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }}<br>
+                                        {{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>
@@ -612,7 +614,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Pending Amount') }}</h6>
                                     <h4 class="mb-0 text-warning">
-                                        {{ $booking->total_amount - $booking->paid_amount == 0 ? '' : number_format($booking->total_amount - $booking->paid_amount, 0) }}<br>
+                                        {{ $booking->total_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount - $booking->paid_amount) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>

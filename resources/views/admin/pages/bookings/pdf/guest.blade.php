@@ -125,12 +125,12 @@
                     <td>{{ $room->room_count }}</td>
                     <td>{{ $room->room_type }}</td>
                     <td>{{ $room->category ?? '-' }}</td>
-                    <td>{{ $roomGuestRate == 0 ? '' : $booking->currency->symbol . number_format($roomGuestRate, 0) }}
+                    <td>{{ $roomGuestRate == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($roomGuestRate) }}
                     </td>
 
                     @if ($childQty > 0)
                         <td>{{ $childQty }}</td>
-                        <td>{{ $childGuestRate == 0 ? '' : $booking->currency->symbol . number_format($childGuestRate, 0) }}
+                        <td>{{ $childGuestRate == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($childGuestRate) }}
                         </td>
                     @else
                         <td></td>
@@ -138,11 +138,11 @@
                     @endif
 
                     @if ($firstRow)
-                        <td>{{ $guestExtras == 0 ? '' : $booking->currency->symbol . number_format($guestExtras, 0) }}
+                        <td>{{ $guestExtras == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($guestExtras) }}
                         </td>
-                        <td>{{ $guestReducts == 0 ? '' : $booking->currency->symbol . number_format($guestReducts, 0) }}
+                        <td>{{ $guestReducts == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($guestReducts) }}
                         </td>
-                        <td>{{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . number_format($totalGuestRate, 0) }}
+                        <td>{{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($totalGuestRate) }}
                         </td>
                     @else
                         <td></td>
@@ -169,7 +169,7 @@
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Total Guest Rate') }}</td>
                 <td style="border: 2px solid #000; font-weight: bold;">
-                    {{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . number_format($totalGuestRate, 0) }}
+                    {{ $totalGuestRate == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($totalGuestRate) }}
                 </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>
@@ -190,7 +190,7 @@
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Paid Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->paid_amount) }}
+                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . \App\Helpers\NumberHelper::format($booking->paid_amount) }}
                 </td>
                 <td colspan="3" style="border: 1px solid #000;"></td>
             </tr>

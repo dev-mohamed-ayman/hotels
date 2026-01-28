@@ -443,10 +443,31 @@
             }
         });
 
-        // Calculate nights
-        function calculateNights() {
-            const checkIn = document.getElementById('check_in').value;
-            const checkOut = document.getElementById('check_out').value;
+        // Calculate nights and manage dates
+        function manageDates() {
+            const checkInInput = document.getElementById('check_in');
+            const checkOutInput = document.getElementById('check_out');
+            const checkIn = checkInInput.value;
+
+            // Update check_out min date
+            if (checkIn) {
+                const checkInDate = new Date(checkIn);
+                const nextDay = new Date(checkInDate);
+                nextDay.setDate(checkInDate.getDate() + 1);
+                
+                const yyyy = nextDay.getFullYear();
+                const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                const dd = String(nextDay.getDate()).padStart(2, '0');
+                const nextDayStr = `${yyyy}-${mm}-${dd}`;
+
+                checkOutInput.min = nextDayStr;
+
+                if (checkOutInput.value && checkOutInput.value < nextDayStr) {
+                    checkOutInput.value = nextDayStr;
+                }
+            }
+
+            const checkOut = checkOutInput.value;
 
             if (checkIn && checkOut) {
                 const date1 = new Date(checkIn);
@@ -457,8 +478,11 @@
             }
         }
 
-        document.getElementById('check_in').addEventListener('change', calculateNights);
-        document.getElementById('check_out').addEventListener('change', calculateNights);
+        document.getElementById('check_in').addEventListener('change', manageDates);
+        document.getElementById('check_out').addEventListener('change', manageDates);
+
+        // Initialize on load
+        manageDates();
 
         // Add room
         document.getElementById('addRoom').addEventListener('click', function() {

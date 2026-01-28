@@ -97,7 +97,7 @@
             <td>{{ $data['booking']->hotel->company_name ?? '-' }}</td>
             <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
             <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
-            <td>{{ $data['booking']->currency->symbol }}{{ number_format($data['total'], 0) }}</td>
+            <td>{{ $data['booking']->currency->symbol }}{{ \App\Helpers\NumberHelper::format($data['total']) }}</td>
         </tr>
     @endforeach
     </tbody>
@@ -124,7 +124,7 @@
                 ({{ $currencyTotal['symbol'] }})
             </td>
             <td>
-                {{ $currencyTotal['symbol'] }}{{ number_format($currencyTotal['amount'], 0) }}
+                {{ $currencyTotal['symbol'] }}{{ \App\Helpers\NumberHelper::format($currencyTotal['amount']) }}
             </td>
         </tr>
     @endforeach

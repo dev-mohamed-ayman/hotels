@@ -74,11 +74,11 @@
                                             <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
                                             <td class="text-nowrap py-2">{{ $booking->nights }}</td>
                                             <td class="text-nowrap py-2">
-                                                {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->net_amount, 0) }}
+                                                {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->net_amount) }}
                                             </td>
                                             <td class="text-nowrap py-2">
                                                 <span class="fw-semibold text-success">
-                                                    {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->hotel_paid_amount, 0) }}
+                                                    {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }}
                                                 </span>
                                             </td>
                                             <td class="text-nowrap py-2">
@@ -88,7 +88,7 @@
                                                 @if ($remaining > 0)
                                                     <span class="fw-semibold text-danger">
                                                         {{ $booking->currency->symbol }}
-                                                        {{ number_format($remaining, 0) }}
+                                                        {{ \App\Helpers\NumberHelper::format($remaining) }}
                                                     </span>
                                                 @elseif ($booking->net_amount > 0)
                                                     <span class="badge bg-label-success" style="font-size: 0.75rem;">
@@ -230,13 +230,16 @@
                                                     <div class="text-start" style="line-height: 1.4;">
                                                         <div class="mb-1">
                                                             <strong class="text-primary">{{ $totalRooms }}</strong>
-                                                            <small class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
+                                                            <small
+                                                                class="text-muted">{{ $totalRooms == 1 ? __('Room') : __('Rooms') }}</small>
                                                         </div>
                                                         <div class="d-flex flex-wrap gap-1">
                                                             @foreach (['SGL', 'DBL', 'TPL', 'QUD'] as $type)
                                                                 @if ($roomTypes[$type] > 0)
-                                                                    <span class="badge bg-label-info" style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
-                                                                        {{ $roomTypes[$type] }} <strong>{{ $type }}</strong>
+                                                                    <span class="badge bg-label-info"
+                                                                        style="font-size: 0.7rem; padding: 0.15rem 0.35rem; line-height: 1.2;">
+                                                                        {{ $roomTypes[$type] }}
+                                                                        <strong>{{ $type }}</strong>
                                                                     </span>
                                                                 @endif
                                                             @endforeach
@@ -250,11 +253,11 @@
                                             <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
                                             <td class="text-nowrap py-2">{{ $booking->nights }}</td>
                                             <td class="text-nowrap py-2">
-                                                {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->net_amount, 0) }}
+                                                {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->net_amount) }}
                                             </td>
                                             <td class="text-nowrap py-2">
                                                 <span class="fw-semibold text-success">
-                                                    {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->hotel_paid_amount, 0) }}
+                                                    {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }}
                                                 </span>
                                             </td>
                                             <td class="text-nowrap py-2">
@@ -264,7 +267,8 @@
                                                 @if ($remaining > 0)
                                                     <span class="badge bg-label-danger" style="font-size: 0.75rem;">
                                                         <i class="ti tabler-alert-circle me-1"></i>
-                                                        {{ $booking->currency->symbol }} {{ number_format($remaining, 0) }}
+                                                        {{ $booking->currency->symbol }}
+                                                        {{ \App\Helpers\NumberHelper::format($remaining) }}
                                                     </span>
                                                 @elseif ($booking->net_amount > 0)
                                                     <span class="badge bg-label-success" style="font-size: 0.75rem;">
@@ -279,21 +283,27 @@
                                                 @if ($booking->option_date)
                                                     <div class="d-flex flex-column align-items-center gap-1">
                                                         <div class="d-flex align-items-center gap-1">
-                                                            <i class="ti tabler-calendar-event text-primary" style="font-size: 0.9rem;"></i>
-                                                            <span class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
+                                                            <i class="ti tabler-calendar-event text-primary"
+                                                                style="font-size: 0.9rem;"></i>
+                                                            <span
+                                                                class="fw-semibold text-primary text-nowrap">{{ $booking->option_date->format('d-m-Y') }}</span>
                                                         </div>
                                                         @if ($remaining <= 0)
-                                                            <span class="badge bg-label-success" style="font-size: 0.75rem;">
+                                                            <span class="badge bg-label-success"
+                                                                style="font-size: 0.75rem;">
                                                                 <i class="ti tabler-check me-1"></i>
                                                                 {{ __('Paid') }}
                                                             </span>
                                                         @else
                                                             @if ($booking->option_date->isPast())
-                                                                <span class="badge bg-label-warning" style="font-size: 0.65rem;">{{ __('Past') }}</span>
+                                                                <span class="badge bg-label-warning"
+                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
                                                             @elseif ($booking->option_date->isToday())
-                                                                <span class="badge bg-label-info" style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                                <span class="badge bg-label-info"
+                                                                    style="font-size: 0.65rem;">{{ __('Today') }}</span>
                                                             @else
-                                                                <span class="badge bg-label-success" style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
+                                                                <span class="badge bg-label-success"
+                                                                    style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
                                                             @endif
                                                         @endif
                                                     </div>
@@ -318,16 +328,19 @@
                                                         style="padding: 0.25rem 0.5rem;">
                                                         <i class="ti tabler-dots-vertical" style="font-size: 0.9rem;"></i>
                                                     </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="upcomingActionsDropdown{{ $booking->id }}">
+                                                    <ul class="dropdown-menu dropdown-menu-end"
+                                                        aria-labelledby="upcomingActionsDropdown{{ $booking->id }}">
                                                         <li>
-                                                            <a class="dropdown-item" href="{{ route('bookings.show', $booking) }}">
+                                                            <a class="dropdown-item"
+                                                                href="{{ route('bookings.show', $booking) }}">
                                                                 <i class="ti tabler-eye me-2"></i>{{ __('View Details') }}
                                                             </a>
                                                         </li>
                                                         @can('edit bookings')
                                                             @if ($booking->check_in >= now())
                                                                 <li>
-                                                                    <a class="dropdown-item" href="{{ route('bookings.edit', $booking) }}">
+                                                                    <a class="dropdown-item"
+                                                                        href="{{ route('bookings.edit', $booking) }}">
                                                                         <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
                                                                     </a>
                                                                 </li>
@@ -372,7 +385,7 @@
                         <div>
                             <p class="mb-1 text-muted">{{ __('Paid') }}</p>
                             <h4 class="mb-0 text-success fw-bold">
-                                {{ $paidBookings == 0 ? '' : number_format($paidBookings) }}</h4>
+                                {{ $paidBookings == 0 ? '' : \App\Helpers\NumberHelper::format($paidBookings) }}</h4>
                         </div>
                         <div class="avatar avatar-lg">
                             <div class="avatar-initial bg-label-success rounded shadow-sm">
@@ -384,7 +397,7 @@
                         <div>
                             <p class="mb-1 text-muted">{{ __('Partial Payment') }}</p>
                             <h4 class="mb-0 text-warning fw-bold">
-                                {{ $partialBookings == 0 ? '' : number_format($partialBookings) }}</h4>
+                                {{ $partialBookings == 0 ? '' : \App\Helpers\NumberHelper::format($partialBookings) }}</h4>
                         </div>
                         <div class="avatar avatar-lg">
                             <div class="avatar-initial bg-label-warning rounded shadow-sm">
@@ -396,7 +409,7 @@
                         <div>
                             <p class="mb-1 text-muted">{{ __('Unpaid') }}</p>
                             <h4 class="mb-0 text-danger fw-bold">
-                                {{ $unpaidBookings == 0 ? '' : number_format($unpaidBookings) }}</h4>
+                                {{ $unpaidBookings == 0 ? '' : \App\Helpers\NumberHelper::format($unpaidBookings) }}</h4>
                         </div>
                         <div class="avatar avatar-lg">
                             <div class="avatar-initial bg-label-danger rounded shadow-sm">
@@ -435,9 +448,9 @@
                                                 {{ $hotel['name'] }}
                                             </a>
                                         </td>
-                                        <td>{{ $hotel['total_sales'] == 0 ? '' : number_format($hotel['total_sales'], 0) }}
+                                        <td>{{ $hotel['total_sales'] == 0 ? '' : \App\Helpers\NumberHelper::format($hotel['total_sales']) }}
                                         </td>
-                                        <td>{{ $hotel['paid_sales'] == 0 ? '' : number_format($hotel['paid_sales'], 0) }}
+                                        <td>{{ $hotel['paid_sales'] == 0 ? '' : \App\Helpers\NumberHelper::format($hotel['paid_sales']) }}
                                         </td>
                                         <td><span class="badge bg-label-primary">{{ $hotel['bookings_count'] }}</span>
                                         </td>
@@ -528,11 +541,11 @@
                                         <td class="text-nowrap py-2">{{ $booking->check_out->format('d-m-Y') }}</td>
                                         <td class="text-nowrap py-2">{{ $booking->nights }}</td>
                                         <td class="text-nowrap py-2">
-                                            {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->net_amount, 0) }}
+                                            {{ $booking->net_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->net_amount) }}
                                         </td>
                                         <td class="text-nowrap py-2">
                                             <span class="fw-semibold text-success">
-                                                {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . number_format($booking->hotel_paid_amount, 0) }}
+                                                {{ $booking->hotel_paid_amount == 0 ? '' : $booking->currency->symbol . ' ' . \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }}
                                             </span>
                                         </td>
                                         <td class="text-nowrap py-2">
@@ -542,7 +555,8 @@
                                             @if ($remaining > 0)
                                                 <span class="badge bg-label-danger" style="font-size: 0.75rem;">
                                                     <i class="ti tabler-alert-circle me-1"></i>
-                                                    {{ $booking->currency->symbol }} {{ number_format($remaining, 0) }}
+                                                    {{ $booking->currency->symbol }}
+                                                    {{ \App\Helpers\NumberHelper::format($remaining) }}
                                                 </span>
                                             @elseif ($booking->net_amount > 0)
                                                 <span class="badge bg-label-success" style="font-size: 0.75rem;">
@@ -686,14 +700,14 @@
                                                         <div class="mb-3">
                                                             <label class="form-label">{{ __('Total Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ $booking->total_amount == 0 ? '' : number_format($booking->total_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
                                                                 class="form-label">{{ __('Current Paid Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ $booking->paid_amount == 0 ? '' : number_format($booking->paid_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -705,7 +719,7 @@
                                                                 class="form-label">{{ __('Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
@@ -726,7 +740,7 @@
                                                                     class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
                                                             <small class="text-muted">{{ __('Maximum') }}:
-                                                                {{ number_format($remaining, 0) }}
+                                                                {{ \App\Helpers\NumberHelper::format($remaining) }}
                                                                 {{ $booking->currency->symbol }}</small>
                                                         </div>
                                                         <div class="mb-3">
@@ -734,7 +748,7 @@
                                                                 class="form-label">{{ __('New Remaining Amount') }}</label>
                                                             <input type="text" class="form-control"
                                                                 id="new_remaining{{ $booking->id }}"
-                                                                value="{{ number_format($remaining, 0) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                     </div>
@@ -765,13 +779,13 @@
                                         <div class="mb-3">
                                             <label class="form-label">{{ __('Total Net Amount') }}</label>
                                             <input type="text" class="form-control"
-                                                value="{{ $booking->net_amount == 0 ? '' : number_format($booking->net_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                value="{{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }} {{ $booking->currency->symbol }}"
                                                 readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">{{ __('Paid to Hotel') }}</label>
                                             <input type="text" class="form-control"
-                                                value="{{ $booking->hotel_paid_amount == 0 ? '' : number_format($booking->hotel_paid_amount, 0) }} {{ $booking->currency->symbol }}"
+                                                value="{{ $booking->hotel_paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }} {{ $booking->currency->symbol }}"
                                                 readonly>
                                         </div>
                                         <div class="mb-3">
@@ -781,7 +795,7 @@
                                             <label class="form-label">{{ __('Remaining Amount') }}</label>
                                             <input type="text" class="form-control"
                                                 id="hotel_remaining{{ $booking->id }}"
-                                                value="{{ $hotelRemaining == 0 ? '' : number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
+                                                value="{{ $hotelRemaining == 0 ? '' : \App\Helpers\NumberHelper::format($hotelRemaining) }} {{ $booking->currency->symbol }}"
                                                 readonly>
                                         </div>
                                         <div class="mb-3">
@@ -799,14 +813,14 @@
                                                 <span class="input-group-text">{{ $booking->currency->symbol }}</span>
                                             </div>
                                             <small class="text-muted">{{ __('Maximum') }}:
-                                                {{ number_format(max($hotelRemaining, 0), 0) }}
+                                                {{ \App\Helpers\NumberHelper::format(max($hotelRemaining, 0)) }}
                                                 {{ $booking->currency->symbol }}</small>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">{{ __('New Remaining Amount') }}</label>
                                             <input type="text" class="form-control"
                                                 id="new_hotel_remaining{{ $booking->id }}"
-                                                value="{{ number_format($hotelRemaining, 0) }} {{ $booking->currency->symbol }}"
+                                                value="{{ \App\Helpers\NumberHelper::format($hotelRemaining) }} {{ $booking->currency->symbol }}"
                                                 readonly>
                                         </div>
                                     </div>

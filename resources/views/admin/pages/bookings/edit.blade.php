@@ -120,7 +120,8 @@
                                 <input type="date" class="form-control @error('check_in') is-invalid @enderror"
                                     id="check_in" name="check_in"
                                     value="{{ old('check_in', $booking->check_in->format('Y-m-d')) }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                    min="{{ $booking->check_in->lt(now()->startOfDay()) ? $booking->check_in->format('Y-m-d') : now()->format('Y-m-d') }}"
+                                    required />
                                 @error('check_in')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -131,7 +132,8 @@
                                 <input type="date" class="form-control @error('check_out') is-invalid @enderror"
                                     id="check_out" name="check_out"
                                     value="{{ old('check_out', $booking->check_out->format('Y-m-d')) }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                    min="{{ $booking->check_out->lt(now()->startOfDay()) ? $booking->check_out->format('Y-m-d') : now()->format('Y-m-d') }}"
+                                    required />
                                 @error('check_out')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -569,10 +571,31 @@
             }
         });
 
-        // Calculate nights
-        function calculateNights() {
-            const checkIn = document.getElementById('check_in').value;
-            const checkOut = document.getElementById('check_out').value;
+        // Calculate nights and manage dates
+        function manageDates() {
+            const checkInInput = document.getElementById('check_in');
+            const checkOutInput = document.getElementById('check_out');
+            const checkIn = checkInInput.value;
+
+            // Update check_out min date
+            if (checkIn) {
+                const checkInDate = new Date(checkIn);
+                const nextDay = new Date(checkInDate);
+                nextDay.setDate(checkInDate.getDate() + 1);
+
+                const yyyy = nextDay.getFullYear();
+                const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
+                const dd = String(nextDay.getDate()).padStart(2, '0');
+                const nextDayStr = `${yyyy}-${mm}-${dd}`;
+
+                checkOutInput.min = nextDayStr;
+
+                if (checkOutInput.value && checkOutInput.value < nextDayStr) {
+                    checkOutInput.value = nextDayStr;
+                }
+            }
+
+            const checkOut = checkOutInput.value;
 
             if (checkIn && checkOut) {
                 const date1 = new Date(checkIn);
@@ -583,8 +606,11 @@
             }
         }
 
-        document.getElementById('check_in').addEventListener('change', calculateNights);
-        document.getElementById('check_out').addEventListener('change', calculateNights);
+        document.getElementById('check_in').addEventListener('change', manageDates);
+        document.getElementById('check_out').addEventListener('change', manageDates);
+
+        // Initialize on load
+        manageDates();
 
         // Add room
         document.getElementById('addRoom').addEventListener('click', function() {
