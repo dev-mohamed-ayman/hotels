@@ -22,6 +22,7 @@ class Customer extends Model
         'status',
         'priority',
         'source',
+        'wallet',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class Customer extends Model
         'status' => 'string',
         'priority' => 'string',
         'source' => 'string',
+        'wallet' => 'decimal:2',
     ];
 
     public function hotels()
@@ -49,5 +51,10 @@ class Customer extends Model
     public function latestFollowUp()
     {
         return $this->hasOne(FollowUp::class)->latestOfMany();
+    }
+
+    public function walletTransactions()
+    {
+        return $this->hasMany(WalletTransaction::class)->orderBy('created_at', 'desc');
     }
 }

@@ -69,13 +69,22 @@
                                     name="customer_id" required>
                                     <option value="">{{ __('Select Customer') }}</option>
                                     @foreach ($customers as $customer)
-                                        <option value="{{ $customer->id }}"
+                                        <option value="{{ $customer->id }}" data-type="{{ $customer->type }}"
                                             {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                             {{ $customer->name }}
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('customer_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3 d-none" id="client_name_container">
+                                <label class="form-label" for="client_name">{{ __('Client Name') }}</label>
+                                <input type="text" class="form-control @error('client_name') is-invalid @enderror"
+                                    id="client_name" name="client_name" value="{{ old('client_name') }}" />
+                                @error('client_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -117,8 +126,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_in">{{ __('Check In Date') }}</label>
                                 <input type="date" class="form-control @error('check_in') is-invalid @enderror"
-                                    id="check_in" name="check_in" value="{{ old('check_in') }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                    id="check_in" name="check_in" value="{{ old('check_in') }}" required />
                                 @error('check_in')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -127,8 +135,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="check_out">{{ __('Check Out Date') }}</label>
                                 <input type="date" class="form-control @error('check_out') is-invalid @enderror"
-                                    id="check_out" name="check_out" value="{{ old('check_out') }}"
-                                    min="{{ now()->format('Y-m-d') }}" required />
+                                    id="check_out" name="check_out" value="{{ old('check_out') }}" required />
                                 @error('check_out')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -142,8 +149,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" for="option_date">{{ __('Option Date') }}</label>
                                 <input type="date" class="form-control @error('option_date') is-invalid @enderror"
-                                    id="option_date" name="option_date" value="{{ old('option_date') }}"
-                                    min="{{ now()->format('Y-m-d') }}" />
+                                    id="option_date" name="option_date" value="{{ old('option_date') }}" />
                                 @error('option_date')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -233,13 +239,13 @@
                                     <div class="col-md-3">
                                         <label class="form-label fw-semibold">{{ __('Net Rate') }} <span
                                                 class="text-danger">*</span></label>
-                                        <input type="number" step="1" name="rooms[0][price]"
+                                        <input type="number" step="0.01" name="rooms[0][price]"
                                             class="form-control room-price" min="0" required />
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label fw-semibold">{{ __('Margin') }} <span
                                                 class="text-danger">*</span></label>
-                                        <input type="number" step="1" name="rooms[0][margin]"
+                                        <input type="number" step="0.01" name="rooms[0][margin]"
                                             class="form-control room-margin" min="0" required />
                                     </div>
                                     <div class="col-md-3 d-flex align-items-end">
@@ -256,12 +262,12 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
-                                        <input type="number" step="1" name="rooms[0][child_price]"
+                                        <input type="number" step="0.01" name="rooms[0][child_price]"
                                             class="form-control room-child-price" value="0" min="0" />
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                                        <input type="number" step="1" name="rooms[0][child_margin]"
+                                        <input type="number" step="0.01" name="rooms[0][child_margin]"
                                             class="form-control room-child-margin" value="0" min="0" />
                                     </div>
                                 </div>
@@ -345,7 +351,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
-                                <input type="number" step="1" name="paid_amount" id="paid_amount"
+                                <input type="number" step="0.01" name="paid_amount" id="paid_amount"
                                     class="form-control form-control-lg" value="0" min="0" />
                             </div>
                         </div>
@@ -395,21 +401,21 @@
         });
 
         // Prevent negative values and decimals on keydown
-        document.addEventListener('keydown', function(e) {
-            if (e.target.type === 'number') {
-                // Prevent negative, e, E, + for all number inputs
-                if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
-                    e.preventDefault();
-                }
-
-                // Prevent decimal point (.) and comma (,) for integer fields
-                if ((e.target.classList.contains('room-count') || e.target.classList.contains(
-                        'room-child-count')) &&
-                    (e.key === '.' || e.key === ',')) {
-                    e.preventDefault();
-                }
-            }
-        });
+        // document.addEventListener('keydown', function(e) {
+        //     if (e.target.type === 'number') {
+        //         // Prevent negative, e, E, + for all number inputs
+        //         if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+        //             e.preventDefault();
+        //         }
+        //
+        //         // Prevent decimal point (.) and comma (,) for integer fields
+        //         if ((e.target.classList.contains('room-count') || e.target.classList.contains(
+        //                 'room-child-count')) &&
+        //             (e.key === '.' || e.key === ',')) {
+        //             e.preventDefault();
+        //         }
+        //     }
+        // });
 
         // Prevent paste of non-integer values in integer fields
         document.addEventListener('paste', function(e) {
@@ -436,12 +442,33 @@
                     const option = document.createElement('option');
                     option.value = customer.id;
                     option.textContent = customer.name;
+                    option.dataset.type = customer.type;
                     customerSelect.appendChild(option);
                 });
             } else {
                 customerSelect.disabled = true;
             }
+            toggleClientName();
         });
+
+        // Customer change handler
+        document.getElementById('customer_id').addEventListener('change', toggleClientName);
+
+        function toggleClientName() {
+            const customerSelect = document.getElementById('customer_id');
+            const selectedOption = customerSelect.options[customerSelect.selectedIndex];
+            const clientNameContainer = document.getElementById('client_name_container');
+            const clientNameInput = document.getElementById('client_name');
+
+            if (selectedOption && selectedOption.dataset.type === 'corporate') {
+                clientNameContainer.classList.remove('d-none');
+                clientNameInput.required = true;
+            } else {
+                clientNameContainer.classList.add('d-none');
+                clientNameInput.required = false;
+                clientNameInput.value = '';
+            }
+        }
 
         // Calculate nights and manage dates
         function manageDates() {
@@ -454,7 +481,7 @@
                 const checkInDate = new Date(checkIn);
                 const nextDay = new Date(checkInDate);
                 nextDay.setDate(checkInDate.getDate() + 1);
-                
+
                 const yyyy = nextDay.getFullYear();
                 const mm = String(nextDay.getMonth() + 1).padStart(2, '0');
                 const dd = String(nextDay.getDate()).padStart(2, '0');
@@ -483,6 +510,7 @@
 
         // Initialize on load
         manageDates();
+        toggleClientName();
 
         // Add room
         document.getElementById('addRoom').addEventListener('click', function() {
@@ -513,11 +541,11 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">{{ __('Net Rate') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="1" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="1" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-danger btn-sm remove-room w-100">
@@ -532,11 +560,11 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
-                        <input type="number" step="1" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                        <input type="number" step="1" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
+                        <input type="number" step="0.01" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
                     </div>
                 </div>
             `;
@@ -573,15 +601,15 @@
                 <div class="row g-2">
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Net Rate') }}</label>
-                        <input type="number" step="1" name="additions[${additionIndex}][net_rate]" class="form-control addition-net-rate" required />
+                        <input type="number" step="0.01" name="additions[${additionIndex}][net_rate]" class="form-control addition-net-rate" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Guest Rate') }}</label>
-                        <input type="number" step="1" name="additions[${additionIndex}][guest_rate]" class="form-control addition-guest-rate" required />
+                        <input type="number" step="0.01" name="additions[${additionIndex}][guest_rate]" class="form-control addition-guest-rate" required />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">{{ __('Margin') }}</label>
-                        <input type="number" step="1" name="additions[${additionIndex}][margin]" class="form-control addition-margin" readonly />
+                        <input type="number" step="0.01" name="additions[${additionIndex}][margin]" class="form-control addition-margin" readonly />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
@@ -617,15 +645,15 @@
                 <div class="row g-2">
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Net Rate') }}</label>
-                        <input type="number" step="1" name="discounts[${discountIndex}][net_rate]" class="form-control discount-net-rate" required />
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][net_rate]" class="form-control discount-net-rate" required />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Guest Rate') }}</label>
-                        <input type="number" step="1" name="discounts[${discountIndex}][guest_rate]" class="form-control discount-guest-rate" required />
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][guest_rate]" class="form-control discount-guest-rate" required />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">{{ __('Margin') }}</label>
-                        <input type="number" step="1" name="discounts[${discountIndex}][margin]" class="form-control discount-margin" readonly />
+                        <input type="number" step="0.01" name="discounts[${discountIndex}][margin]" class="form-control discount-margin" readonly />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">{{ __('Description') }}</label>
@@ -705,7 +733,7 @@
             // Net Rate includes child cost, additions (net_rate), and discounts (net_rate)
             const netRateTotal = premarginTotal + totalChildCost + additionsTotal - discountsTotal;
             // Margin Value includes additions margin and discounts margin
-            const totalMarginValue = marginValue + additionsMarginTotal - discountsMarginTotal;
+            const totalMarginValue = marginValue + additionsMarginTotal + discountsMarginTotal;
             const finalTotal = netRateTotal + totalMarginValue;
             const paidAmountInput = document.getElementById('paid_amount');
 
@@ -720,7 +748,7 @@
             if (paidAmount > finalTotal) {
                 if (paidAmountInput) {
                     paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                    paidAmountInput.value = finalTotal.toFixed(0);
+                    paidAmountInput.value = finalTotal.toFixed(2);
                 }
                 // Use corrected value for calculation
                 paidAmount = finalTotal;
@@ -738,10 +766,10 @@
             const finalTotalEl = document.getElementById('finalTotal');
             const remainingAmountEl = document.getElementById('remainingAmount');
 
-            if (premarginTotalEl) premarginTotalEl.textContent = netRateTotal.toFixed(0);
-            if (marginValueEl) marginValueEl.textContent = totalMarginValue.toFixed(0);
-            if (finalTotalEl) finalTotalEl.textContent = finalTotal.toFixed(0);
-            if (remainingAmountEl) remainingAmountEl.textContent = remainingAmount.toFixed(0);
+            if (premarginTotalEl) premarginTotalEl.textContent = netRateTotal.toFixed(2);
+            if (marginValueEl) marginValueEl.textContent = totalMarginValue.toFixed(2);
+            if (finalTotalEl) finalTotalEl.textContent = finalTotal.toFixed(2);
+            if (remainingAmountEl) remainingAmountEl.textContent = remainingAmount.toFixed(2);
         }
 
         // Calculate addition margin automatically
@@ -756,7 +784,7 @@
                     const netRate = parseFloat(netRateInput.value) || 0;
                     const guestRate = parseFloat(guestRateInput.value) || 0;
                     const margin = guestRate - netRate;
-                    marginInput.value = margin.toFixed(0);
+                    marginInput.value = margin.toFixed(2);
                 }
             }
         }
@@ -773,7 +801,7 @@
                     const netRate = parseFloat(netRateInput.value) || 0;
                     const guestRate = parseFloat(guestRateInput.value) || 0;
                     const margin = netRate - guestRate;
-                    marginInput.value = margin.toFixed(0);
+                    marginInput.value = margin.toFixed(2);
                 }
             }
         }

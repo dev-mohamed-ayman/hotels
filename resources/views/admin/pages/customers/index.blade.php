@@ -273,8 +273,26 @@
                             <td>{{ $customer->name }}</td>
                             <td>{{ $customer->phone_1 }}</td>
                             <td>{{ $customer->email ?? '-' }}</td>
+                            {{-- <td>
+                                @foreach ($customer->walletTransactions->groupBy('currency_id') as $currencyId => $transactions)
+                                    @php
+                                        $balance = $transactions->sum(function ($t) {
+                                            return $t->type == 'credit' ? $t->amount : -$t->amount;
+                                        });
+                                        $currency = $transactions->first()->currency;
+                                    @endphp
+                                    @if ($balance != 0)
+                                        <div>
+                                            <small>{{ number_format($balance, 2) }} {{ $currency->code ?? '' }}</small>
+                                        </div>
+                                    @endif
+                                @endforeach
+                                @if ($customer->walletTransactions->isEmpty())
+                                    0.00
+                                @endif
+                            </td> --}}
                             <td>
-                                @if ($customer->type == 'B2C')
+                                @if ($customer->type == 'individual')
                                     <span class="badge bg-label-primary">{{ __('B2C (Individual)') }}</span>
                                 @else
                                     <span class="badge bg-label-info">{{ __('B2B (Corporate)') }}</span>

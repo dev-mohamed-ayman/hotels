@@ -48,6 +48,10 @@ Route::group(
 
             // Customers Routes
             Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);
+            Route::post('customers/{customer}/wallet/transaction', [\App\Http\Controllers\Admin\WalletController::class, 'store'])->name('customers.wallet.transaction');
+            Route::put('wallet-transactions/{transaction}', [\App\Http\Controllers\Admin\WalletController::class, 'update'])->name('wallet.transactions.update');
+            Route::delete('wallet-transactions/{transaction}', [\App\Http\Controllers\Admin\WalletController::class, 'destroy'])->name('wallet.transactions.destroy');
+            Route::get('customers/{customer}/wallet/export-pdf', [\App\Http\Controllers\Admin\WalletController::class, 'exportWalletPdf'])->name('customers.wallet.export-pdf');
 
             // Follow-ups Routes
             Route::prefix('customers/{customer}/follow-ups')->name('follow-ups.')->controller(\App\Http\Controllers\Admin\FollowUpController::class)->group(function () {

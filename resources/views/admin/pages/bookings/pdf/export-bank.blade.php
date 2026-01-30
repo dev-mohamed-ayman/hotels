@@ -11,7 +11,7 @@
 
         body {
             font-family: 'Aptos', sans-serif;
-            font-size: 12pt;
+            font-size: 12px;
         }
 
         .logo-container {
@@ -27,20 +27,21 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12pt;
+            font-size: 12px;
         }
 
         th {
             background-color: #0d3c47;
             color: white;
-            padding: 10px;
+            padding: 12px 4px;
             text-align: center;
             font-weight: bold;
             border: 1px solid #fff;
+            text-wrap: nowrap !important;
         }
 
         td {
-            padding: 12px 10px;
+            padding: 12px 4px;
             text-align: center;
             background-color: #eef5fa;
             border: 1px solid #fff;
@@ -61,7 +62,7 @@
             background-color: #0d3c47 !important;
             color: white !important;
             font-weight: bold;
-            padding: 15px 10px;
+            padding: 15px 7px;
         }
     </style>
 </head>
@@ -78,14 +79,14 @@
 
 <table>
     <thead>
-    <tr>
+    <tr style="text-wrap: nowrap">
         <th>No.</th>
-        <th>File Code</th>
-        <th>Hotel Name</th>
-        <th>Company Name</th>
-        <th>Bank Name</th>
-        <th>Bank Account</th>
-        <th>Amount</th>
+        <th style="text-wrap: nowrap;">File Code</th>
+        <th style="text-wrap: nowrap;">Hotel Name</th>
+        <th style="text-wrap: nowrap;">Company Name</th>
+        <th class="nowrap" style="width: 130px">Bank Name</th>
+        <th style="text-wrap: nowrap;">Bank Account</th>
+        <th style="text-wrap: nowrap;">Amount</th>
     </tr>
     </thead>
     <tbody>

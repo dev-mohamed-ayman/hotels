@@ -4,6 +4,11 @@
 
 @section('content')
     <div class="row">
+        <!-- Wallet Section -->
+        <div class="col-12 mb-4">
+            @include('admin.pages.customers.partials.wallet')
+        </div>
+
         <!-- Customer Information Card -->
         <div class="col-md-12 mb-4">
             <div class="card">
@@ -135,7 +140,9 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Total Bookings') }}</h6>
-                                    <h3 class="mb-0">{{ $totalBookings == 0 ? '' : \App\Helpers\NumberHelper::format($totalBookings) }}</h3>
+                                    <h3 class="mb-0">
+                                        {{ $totalBookings == 0 ? '' : \App\Helpers\NumberHelper::format($totalBookings) }}
+                                    </h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-primary">
@@ -152,7 +159,8 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Total Amount') }}</h6>
-                                    <h3 class="mb-0">{{ $totalAmount == 0 ? '' : \App\Helpers\NumberHelper::format($totalAmount) }}</h3>
+                                    <h3 class="mb-0">
+                                        {{ $totalAmount == 0 ? '' : \App\Helpers\NumberHelper::format($totalAmount) }}</h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-success">
@@ -188,7 +196,8 @@
                                 <div>
                                     <h6 class="text-muted mb-1">{{ __('Pending Amount') }}</h6>
                                     <h3 class="mb-0 text-warning">
-                                        {{ $pendingAmount == 0 ? '' : \App\Helpers\NumberHelper::format($pendingAmount) }}</h3>
+                                        {{ $pendingAmount == 0 ? '' : \App\Helpers\NumberHelper::format($pendingAmount) }}
+                                    </h3>
                                 </div>
                                 <div class="avatar avatar-lg">
                                     <span class="avatar-initial rounded bg-label-warning">

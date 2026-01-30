@@ -81,7 +81,7 @@ class BookingController extends Controller
 
         // Sorting
         $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortOrder = $request->get('sort_order', 'asc');
 
         // Validate sort_by column
         $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
@@ -91,7 +91,7 @@ class BookingController extends Controller
 
         // Validate sort_order
         if (! in_array($sortOrder, ['asc', 'desc'])) {
-            $sortOrder = 'desc';
+            $sortOrder = 'asc';
         }
 
         $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
@@ -200,6 +200,7 @@ class BookingController extends Controller
         $request->validate([
             'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
+            'client_name' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
@@ -302,6 +303,7 @@ class BookingController extends Controller
             $booking = Booking::create([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
+                'client_name' => $request->client_name,
                 'hotel_id' => $request->hotel_id,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
@@ -425,6 +427,7 @@ class BookingController extends Controller
         $request->validate([
             'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
+            'client_name' => 'nullable|string|max:255',
             'customer_nationality' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',
@@ -532,6 +535,7 @@ class BookingController extends Controller
             $booking->update([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
+                'client_name' => $request->client_name,
                 'hotel_id' => $request->hotel_id,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
@@ -672,6 +676,7 @@ class BookingController extends Controller
             ],
         ]);
 
+        $currentHotelPaid = $booking->hotel_paid_amount;
         $newPaidAmount = $request->hotel_paid_amount;
 
         $remainingAmount = $booking->net_amount - $newPaidAmount;
@@ -679,6 +684,41 @@ class BookingController extends Controller
         $booking->update([
             'hotel_paid_amount' => $newPaidAmount,
         ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Calculate amount to deduct: The difference between new and old paid amount
+            // This represents the amount "just paid" in this transaction
+            $amountJustPaid = $newPaidAmount - $currentHotelPaid;
+
+            // If amount is positive, deduct from customer wallet
+            // If negative (refund?), we currently don't handle it or ignore it based on user request "deduct what I paid"
+
+            if ($amountJustPaid > 0) {
+                $booking->customer->walletTransactions()->create([
+                    'amount' => $amountJustPaid,
+                    'type' => 'credit',
+                    'currency_id' => $booking->currency_id,
+                    'description' => __('Payment for Booking #:code (Hotel Payment)', ['code' => $booking->code]),
+                    'reference' => $booking->code,
+                ]);
+
+                // Update Booking Payment Status (Customer Side) if fully paid?
+                // User didn't ask to update paid_amount, but usually if we deduct from wallet, it means customer paid us.
+                // Let's update paid_amount as well by the same amount.
+
+                $booking->update([
+                    'paid_amount' => $booking->paid_amount + $amountJustPaid,
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', __('Error deducting from wallet: ').$e->getMessage());
+        }
 
         // Recalculate payment status
         $newStatus = 'unpaid';
@@ -1092,7 +1132,7 @@ class BookingController extends Controller
 
             DB::commit();
 
-            return redirect()->route('bookings.edit', $newBooking->id)
+            return redirect()->route('bookings.index', $newBooking->id)
                 ->with('success', __('Booking duplicated successfully. Please add rooms and details.'));
 
         } catch (\Exception $e) {
@@ -1165,11 +1205,11 @@ class BookingController extends Controller
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
-            'orientation' => 'L',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 15,
-            'margin_bottom' => 15,
+            'orientation' => 'P',
+            'margin_left' => 7,
+            'margin_right' => 7,
+            'margin_top' => 7,
+            'margin_bottom' => 7,
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
             'default_font' => '',
@@ -1245,6 +1285,35 @@ class BookingController extends Controller
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
+        // Group bookings by code, hotel, meals, dates, and nights
+        $groupedBookings = $bookings->groupBy(function ($booking) {
+            return $booking->code.'|'.
+                $booking->hotel_id.'|'.
+                $booking->meals_plan.'|'.
+                $booking->check_in->format('Y-m-d').'|'.
+                $booking->check_out->format('Y-m-d').'|'.
+                $booking->nights;
+        });
+
+        // Merge grouped bookings
+        $bookings = $groupedBookings->map(function ($group) {
+            if ($group->count() === 1) {
+                return $group->first();
+            }
+
+            // Use the first booking as the base
+            $masterBooking = $group->first();
+
+            // Merge rooms from all bookings in the group
+            $allRooms = $group->pluck('rooms')->flatten();
+            $masterBooking->setRelation('rooms', $allRooms);
+
+            // Merge adjustments from all bookings in the group
+            $allAdjustments = $group->pluck('adjustments')->flatten();
+            $masterBooking->setRelation('adjustments', $allAdjustments);
+
+            return $masterBooking;
+        })->values(); // Reset keys
 
         $html = view('admin.pages.bookings.pdf.export-guest', compact('bookings'))->render();
 
@@ -1273,6 +1342,37 @@ class BookingController extends Controller
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
+
+
+        // Group bookings by code, hotel, meals, dates, and nights
+        $groupedBookings = $bookings->groupBy(function ($booking) {
+            return $booking->code.'|'.
+                $booking->hotel_id.'|'.
+                $booking->meals_plan.'|'.
+                $booking->check_in->format('Y-m-d').'|'.
+                $booking->check_out->format('Y-m-d').'|'.
+                $booking->nights;
+        });
+
+        // Merge grouped bookings
+        $bookings = $groupedBookings->map(function ($group) {
+            if ($group->count() === 1) {
+                return $group->first();
+            }
+
+            // Use the first booking as the base
+            $masterBooking = $group->first();
+
+            // Merge rooms from all bookings in the group
+            $allRooms = $group->pluck('rooms')->flatten();
+            $masterBooking->setRelation('rooms', $allRooms);
+
+            // Merge adjustments from all bookings in the group
+            $allAdjustments = $group->pluck('adjustments')->flatten();
+            $masterBooking->setRelation('adjustments', $allAdjustments);
+
+            return $masterBooking;
+        })->values(); // Reset keys
 
         $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookings'))->render();
 

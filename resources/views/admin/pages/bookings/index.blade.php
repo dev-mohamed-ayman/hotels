@@ -260,13 +260,13 @@
                                                 <div class="col-md-3">
                                                     <label class="form-label">{{ __('Sort Order') }}</label>
                                                     <select name="sort_order" class="form-select">
-                                                        <option value="desc"
-                                                            {{ request('sort_order') == 'desc' ? 'selected' : '' }}>
-                                                            {{ __('Descending') }}
-                                                        </option>
                                                         <option value="asc"
                                                             {{ request('sort_order') == 'asc' ? 'selected' : '' }}>
                                                             {{ __('Ascending') }}
+                                                        </option>
+                                                        <option value="desc"
+                                                            {{ request('sort_order') == 'desc' ? 'selected' : '' }}>
+                                                            {{ __('Descending') }}
                                                         </option>
                                                     </select>
                                                 </div>
@@ -602,12 +602,12 @@
                                                             </form>
                                                         </li>
                                                         {{-- <li>
-                                                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                                                    data-bs-target="#paymentModal{{ $booking->id }}">
-                                                                                    <i class="ti tabler-currency-dollar me-2"></i>{{ __('Update
-                                                                                    Payment') }}
-                                                                                </a>
-                                                                            </li> --}}
+                                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                                data-bs-target="#paymentModal{{ $booking->id }}">
+                                                                                <i class="ti tabler-currency-dollar me-2"></i>{{ __('Update
+                                                                                Payment') }}
+                                                                            </a>
+                                                                        </li> --}}
                                                         <li>
                                                             <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                 data-bs-target="#hotelPaymentModal{{ $booking->id }}">
@@ -735,7 +735,7 @@
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <form action="{{ route('bookings.update-hotel-payment', $booking) }}"
-                                                    method="POST">
+                                                    method="POST" onsubmit="return confirmHotelOverpayment(this)">
                                                     @csrf
                                                     <div class="modal-body">
                                                         <div class="mb-3">
@@ -783,9 +783,16 @@
                                                                 id="new_hotel_remaining{{ $booking->id }}"
                                                                 value="{{ \App\Helpers\NumberHelper::format($booking->net_amount - $booking->hotel_paid_amount) . ' ' . $booking->currency->symbol }}"
                                                                 readonly>
-
-
                                                         </div>
+                                                        {{--                                                        <div class="mb-3"> --}}
+                                                        {{--                                                            <div class="form-check"> --}}
+                                                        {{--                                                                <input class="form-check-input" type="checkbox" checked name="deduct_from_wallet" id="deduct_from_wallet_idx{{ $booking->id }}"> --}}
+                                                        {{--                                                                <label class="form-check-label" for="deduct_from_wallet_idx{{ $booking->id }}"> --}}
+                                                        {{--                                                                    {{ __('Deduct booking price from customer wallet') }} --}}
+                                                        {{--                                                                    ({{ \App\Helpers\NumberHelper::format($booking->total_amount) }} {{ $booking->currency->symbol }}) --}}
+                                                        {{--                                                                </label> --}}
+                                                        {{--                                                            </div> --}}
+                                                        {{--                                                        </div> --}}
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary"
@@ -860,6 +867,8 @@
                         }
                     });
                 });
+
+
 
                 // Handle per page change
                 const perPageSelect = document.getElementById('per_page');
@@ -942,6 +951,30 @@
                     }
                 });
             @endif
+            // Global function for Hotel Overpayment Check (Defined globally)
+            window.confirmHotelOverpayment = function(form) {
+                try {
+                    const hotelPaidInput = form.querySelector('input[data-net-amount]');
+
+                    if (hotelPaidInput) {
+                        const netAmountStr = hotelPaidInput.getAttribute('data-net-amount');
+                        if (!netAmountStr) return true;
+
+                        // Remove commas just in case it's formatted string
+                        const netAmount = parseFloat(netAmountStr.toString().replace(/,/g, ''));
+                        const paidAmount = parseFloat(hotelPaidInput.value) || 0;
+
+                        if (paidAmount > netAmount) {
+                            const confirmMessage =
+                                "{{ __('Warning: The amount you are paying is greater than the total net amount. Do you want to proceed?') }}";
+                            return confirm(confirmMessage);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Payment validation error:', e);
+                }
+                return true;
+            };
         </script>
     @endpush
 @endsection

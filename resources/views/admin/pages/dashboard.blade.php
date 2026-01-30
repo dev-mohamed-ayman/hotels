@@ -159,14 +159,29 @@
                                                             </a>
                                                         </li>
                                                         @can('edit bookings')
-                                                            @if ($booking->check_in >= now())
-                                                                <li>
-                                                                    <a class="dropdown-item"
-                                                                        href="{{ route('bookings.edit', $booking) }}">
-                                                                        <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
-                                                                    </a>
-                                                                </li>
-                                                            @endif
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('bookings.edit', $booking) }}">
+                                                                    <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                </a>
+                                                            </li>
+                                                        @endcan
+                                                        @can('delete bookings')
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li>
+                                                                <form action="{{ route('bookings.destroy', $booking) }}"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="dropdown-item text-danger w-100 text-start">
+                                                                        <i class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                                    </button>
+                                                                </form>
+                                                            </li>
                                                         @endcan
                                                     </ul>
                                                 </div>
@@ -190,7 +205,8 @@
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
                             <h5 class="mb-0">{{ __('All Bookings Starting Within 2 Days') }}</h5>
-                            <span class="badge bg-label-info">{{ $upcomingBookings->count() }} {{ __('Bookings') }}</span>
+                            <span class="badge bg-label-info">{{ $upcomingBookings->count() }}
+                                {{ __('Bookings') }}</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -337,14 +353,30 @@
                                                             </a>
                                                         </li>
                                                         @can('edit bookings')
-                                                            @if ($booking->check_in >= now())
-                                                                <li>
-                                                                    <a class="dropdown-item"
-                                                                        href="{{ route('bookings.edit', $booking) }}">
-                                                                        <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
-                                                                    </a>
-                                                                </li>
-                                                            @endif
+                                                            <li>
+                                                                <a class="dropdown-item"
+                                                                    href="{{ route('bookings.edit', $booking) }}">
+                                                                    <i class="ti tabler-edit me-2"></i>{{ __('Edit') }}
+                                                                </a>
+                                                            </li>
+                                                        @endcan
+                                                        @can('delete bookings')
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li>
+                                                                <form action="{{ route('bookings.destroy', $booking) }}"
+                                                                    method="POST"
+                                                                    onsubmit="return confirm('{{ __('Are you sure you want to delete this booking?') }}')">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="dropdown-item text-danger w-100 text-start">
+                                                                        <i
+                                                                            class="ti tabler-trash me-2"></i>{{ __('Delete') }}
+                                                                    </button>
+                                                                </form>
+                                                            </li>
                                                         @endcan
                                                     </ul>
                                                 </div>
@@ -770,10 +802,12 @@
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title">{{ __('Update Hotel Payment') }} -
-                                        {{ $booking->code }}</h5>
+                                        {{ $booking->code }}
+                                    </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
-                                <form action="{{ route('bookings.update-hotel-payment', $booking) }}" method="POST">
+                                <form action="{{ route('bookings.update-hotel-payment', $booking) }}" method="POST"
+                                    onsubmit="return confirmHotelOverpayment(this)">
                                     @csrf
                                     <div class="modal-body">
                                         <div class="mb-3">
@@ -783,45 +817,51 @@
                                                 readonly>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">{{ __('Paid to Hotel') }}</label>
+                                            <label class="form-label">{{ __('Current Paid to Hotel') }}</label>
                                             <input type="text" class="form-control"
-                                                value="{{ $booking->hotel_paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) }} {{ $booking->currency->symbol }}"
+                                                value="{{ $booking->hotel_paid_amount == 0
+                                                    ? ''
+                                                    : \App\Helpers\NumberHelper::format($booking->hotel_paid_amount) . ' ' . $booking->currency->symbol }}"
                                                 readonly>
-                                        </div>
-                                        <div class="mb-3">
-                                            @php
-                                                $hotelRemaining = $booking->net_amount - $booking->hotel_paid_amount;
-                                            @endphp
-                                            <label class="form-label">{{ __('Remaining Amount') }}</label>
-                                            <input type="text" class="form-control"
-                                                id="hotel_remaining{{ $booking->id }}"
-                                                value="{{ $hotelRemaining == 0 ? '' : \App\Helpers\NumberHelper::format($hotelRemaining) }} {{ $booking->currency->symbol }}"
-                                                readonly>
+
+
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label"
-                                                for="hotel_payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                for="hotel_paid_amount{{ $booking->id }}">{{ __('Set New Paid to Hotel Amount') }}
                                                 *</label>
                                             <div class="input-group">
                                                 <input type="number" step="0.01" class="form-control"
-                                                    id="hotel_payment_amount{{ $booking->id }}" name="payment_amount"
-                                                    min="0.01" max="{{ max($hotelRemaining, 0.01) }}"
-                                                    data-remaining="{{ $hotelRemaining }}"
+                                                    id="hotel_paid_amount{{ $booking->id }}" name="hotel_paid_amount"
+                                                    data-net-amount="{{ $booking->net_amount }}"
                                                     data-currency="{{ $booking->currency->symbol }}"
                                                     data-booking-id="{{ $booking->id }}"
-                                                    placeholder="{{ __('Enter amount to pay') }}" required>
+                                                    value="{{ $booking->hotel_paid_amount }}"
+                                                    placeholder="{{ __('Enter total paid amount') }}" required>
                                                 <span class="input-group-text">{{ $booking->currency->symbol }}</span>
                                             </div>
-                                            <small class="text-muted">{{ __('Maximum') }}:
-                                                {{ \App\Helpers\NumberHelper::format(max($hotelRemaining, 0)) }}
-                                                {{ $booking->currency->symbol }}</small>
+                                            <small
+                                                class="text-muted">{{ __('Enter the total amount paid to the hotel. This will replace the current paid amount.') }}</small>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">{{ __('New Remaining Amount') }}</label>
                                             <input type="text" class="form-control"
                                                 id="new_hotel_remaining{{ $booking->id }}"
-                                                value="{{ \App\Helpers\NumberHelper::format($hotelRemaining) }} {{ $booking->currency->symbol }}"
+                                                value="{{ \App\Helpers\NumberHelper::format($booking->net_amount - $booking->hotel_paid_amount) . ' ' . $booking->currency->symbol }}"
                                                 readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" checked
+                                                    name="deduct_from_wallet"
+                                                    id="deduct_from_wallet{{ $booking->id }}">
+                                                <label class="form-check-label"
+                                                    for="deduct_from_wallet{{ $booking->id }}">
+                                                    {{ __('Deduct booking price from customer wallet') }}
+                                                    ({{ \App\Helpers\NumberHelper::format($booking->total_amount) }}
+                                                    {{ $booking->currency->symbol }})
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -971,8 +1011,8 @@
 
         // Payment Update Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // Get all payment amount inputs
-            const paymentInputs = document.querySelectorAll('[id^="payment_amount"], [id^="hotel_payment_amount"]');
+            // 1. Customer Payment Logic (Incremental)
+            const paymentInputs = document.querySelectorAll('[id^="payment_amount"]');
 
             paymentInputs.forEach(input => {
                 input.addEventListener('input', function() {
@@ -985,8 +1025,7 @@
                     const newRemaining = remaining - paymentAmount;
 
                     // Update the new remaining field
-                    const newRemainingField = document.getElementById('new_remaining' +
-                        bookingId) || document.getElementById('new_hotel_remaining' + bookingId);
+                    const newRemainingField = document.getElementById('new_remaining' + bookingId);
                     if (newRemainingField) {
                         newRemainingField.value = newRemaining.toFixed(0) + ' ' + currency;
 
@@ -1001,6 +1040,60 @@
                     }
                 });
             });
+
+            // 2. Hotel Payment Logic (Total)
+            const hotelPaidInputs = document.querySelectorAll('[id^="hotel_paid_amount"]');
+
+            hotelPaidInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const netAmount = parseFloat(this.getAttribute('data-net-amount'));
+                    const currency = this.getAttribute('data-currency');
+                    const paidAmount = parseFloat(this.value) || 0;
+
+                    // Calculate new remaining
+                    const newRemaining = netAmount - paidAmount;
+
+                    // Update the new remaining field
+                    const newRemainingField = document.getElementById('new_hotel_remaining' +
+                        bookingId);
+                    if (newRemainingField) {
+                        newRemainingField.value = newRemaining.toFixed(2) + ' ' + currency;
+
+                        // Add visual feedback
+                        if (newRemaining < 0) {
+                            newRemainingField.classList.add('text-danger');
+                        } else {
+                            newRemainingField.classList.remove('text-danger');
+                        }
+                    }
+                });
+            });
         });
+
+        // Global function for Hotel Overpayment Check (Defined globally)
+        window.confirmHotelOverpayment = function(form) {
+            try {
+                const hotelPaidInput = form.querySelector('input[data-net-amount]');
+
+                if (hotelPaidInput) {
+                    const netAmountStr = hotelPaidInput.getAttribute('data-net-amount');
+                    if (!netAmountStr) return true;
+
+                    // Remove commas just in case it's formatted string
+                    const netAmount = parseFloat(netAmountStr.toString().replace(/,/g, ''));
+                    const paidAmount = parseFloat(hotelPaidInput.value) || 0;
+
+                    if (paidAmount > netAmount) {
+                        const confirmMessage =
+                            "{{ __('Warning: The amount you are paying is greater than the total net amount. Do you want to proceed?') }}";
+                        return confirm(confirmMessage);
+                    }
+                }
+            } catch (e) {
+                console.error('Payment validation error:', e);
+            }
+            return true;
+        };
     </script>
 @endsection

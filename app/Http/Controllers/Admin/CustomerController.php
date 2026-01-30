@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Hotel;
+use App\Models\Currency;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -23,7 +24,7 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::with(['latestFollowUp']);
+        $query = Customer::with(['latestFollowUp', 'walletTransactions.currency']);
 
         // Search by name or phone
         if ($request->filled('search')) {
@@ -81,7 +82,7 @@ class CustomerController extends Controller
      */
     public function create()
     {
-       
+
 
         $hotels = Hotel::where('is_active', true)->get();
         return view('admin.pages.customers.create', compact('hotels'));
@@ -136,10 +137,27 @@ class CustomerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $customer = Customer::with(['hotels', 'bookings.hotel', 'bookings.currency', 'bookings.rooms', 'followUps'])
             ->findOrFail($id);
+
+        // Wallet Transactions with Filters
+        $walletQuery = $customer->walletTransactions()->with('currency')->orderBy('created_at', 'desc');
+
+        if ($request->filled('date_from')) {
+            $walletQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $walletQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('currency_id')) {
+            $walletQuery->where('currency_id', $request->currency_id);
+        }
+
+        $walletTransactions = $walletQuery->get(); // Or paginate if list is long, but get() is fine for now as per previous code
 
         // Calculate statistics
         $totalBookings = $customer->bookings->count();
@@ -157,14 +175,18 @@ class CustomerController extends Controller
         // Get latest follow-up
         $latestFollowUp = $customer->latestFollowUp;
 
+        $currencies = Currency::where('is_active', true)->get();
+
         return view('admin.pages.customers.show', compact(
             'customer',
+            'walletTransactions',
             'totalBookings',
             'totalAmount',
             'paidAmount',
             'pendingAmount',
             'recentBookings',
-            'latestFollowUp'
+            'latestFollowUp',
+            'currencies'
         ));
     }
 
@@ -183,7 +205,6 @@ class CustomerController extends Controller
      */
     public function update(Request $request, string $id)
     {
-       
 
         $customer = Customer::findOrFail($id);
 
