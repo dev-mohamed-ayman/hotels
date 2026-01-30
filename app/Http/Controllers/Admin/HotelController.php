@@ -86,10 +86,28 @@ class HotelController extends Controller
         return redirect()->route('hotels.index')->with('success', __('Hotel created successfully'));
     }
 
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $hotel = Hotel::with(['bankAccounts.currency', 'customers'])->findOrFail($id);
-        return view('admin.pages.hotels.show', compact('hotel'));
+        $currencies = Currency::where('is_active', true)->get();
+
+        $query = $hotel->walletTransactions()->with('currency')->orderBy('created_at', 'desc');
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('currency_id')) {
+            $query->where('currency_id', $request->currency_id);
+        }
+
+        $walletTransactions = $query->paginate(10)->withQueryString();
+
+        return view('admin.pages.hotels.show', compact('hotel', 'currencies', 'walletTransactions'));
     }
 
     public function edit(string $id)

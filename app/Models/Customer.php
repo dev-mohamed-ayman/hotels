@@ -55,6 +55,6 @@ class Customer extends Model
 
     public function walletTransactions()
     {
-        return $this->hasMany(WalletTransaction::class)->orderBy('created_at', 'desc');
+        return $this->morphMany(WalletTransaction::class, 'transactionable')->orderBy('created_at', 'desc');
     }
 }

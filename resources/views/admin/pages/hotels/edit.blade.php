@@ -30,7 +30,8 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label" for="company_name">{{ __('Company Name') }}</label>
                                 <input type="text" class="form-control @error('company_name') is-invalid @enderror"
-                                    id="company_name" name="company_name" value="{{ old('company_name', $hotel->company_name) }}" />
+                                    id="company_name" name="company_name"
+                                    value="{{ old('company_name', $hotel->company_name) }}" />
                                 @error('company_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -128,6 +129,48 @@
                         <button type="button" class="btn btn-secondary mb-4" id="addBankAccount">
                             <i class="ti tabler-plus me-2"></i>{{ __('Add Bank Account') }}
                         </button>
+
+                        <!-- Wallet Transactions Section -->
+                        <hr class="my-4">
+                        <h5 class="mb-3">{{ __('Wallet Transactions') }}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __('Date') }}</th>
+                                        <th>{{ __('Type') }}</th>
+                                        <th>{{ __('Amount') }}</th>
+                                        <th>{{ __('Description') }}</th>
+                                        <th>{{ __('Reference') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($hotel->walletTransactions as $transaction)
+                                        <tr>
+                                            <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
+                                            <td>
+                                                <span
+                                                    class="badge bg-label-{{ $transaction->type === 'credit' ? 'success' : 'danger' }}">
+                                                    {{ ucfirst($transaction->type) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    class="{{ $transaction->type === 'credit' ? 'text-success' : 'text-danger' }}">
+                                                    {{ $transaction->type === 'credit' ? '+' : '-' }} @formatNumber($transaction->amount)
+                                                </span>
+                                            </td>
+                                            <td>{{ $transaction->description }}</td>
+                                            <td>{{ $transaction->reference }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">{{ __('No transactions found') }}</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
                         <div class="mt-4">
                             <button type="submit" class="btn btn-primary">{{ __('Update Hotel') }}</button>

@@ -45,6 +45,8 @@ Route::group(
             // Hotels Routes
             Route::post('hotels/quick-create', [\App\Http\Controllers\Admin\HotelController::class, 'quickCreate'])->name('hotels.quick-create');
             Route::resource('hotels', \App\Http\Controllers\Admin\HotelController::class);
+            Route::post('hotels/{hotel}/wallet/transaction', [\App\Http\Controllers\Admin\WalletController::class, 'storeHotel'])->name('hotels.wallet.transaction');
+            Route::get('hotels/{hotel}/wallet/export-pdf', [\App\Http\Controllers\Admin\WalletController::class, 'exportHotelWalletPdf'])->name('hotels.wallet.export-pdf');
 
             // Customers Routes
             Route::resource('customers', \App\Http\Controllers\Admin\CustomerController::class);

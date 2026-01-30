@@ -4,6 +4,11 @@
 
 @section('content')
     <div class="row">
+        <!-- Wallet Section -->
+        <div class="col-12 mb-4">
+            @include('admin.pages.hotels.partials.wallet')
+        </div>
+
         <!-- Hotel Information Card -->
         <div class="col-md-12 mb-4">
             <div class="card">

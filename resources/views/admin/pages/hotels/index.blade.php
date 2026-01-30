@@ -130,11 +130,11 @@
                         <th>{{ __('Name') }}</th>
                         <th>{{ __('Company_Name') }}</th>
                         <th>{{ __('Address') }}</th>
-                       
+
                         <th>{{ __('Bank Accounts') }}</th>
-                        
+
                         <th>{{ __('Status') }}</th>
-                         
+
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -143,6 +143,11 @@
                         <tr>
                             <td>{{ $hotel->name }}</td>
                             <td>{{ $hotel->company_name }}</td>
+                            {{-- <td>
+                                <span class="badge bg-label-{{ $hotel->wallet >= 0 ? 'success' : 'danger' }}">
+                                    @formatNumber($hotel->wallet)
+                                </span>
+                            </td> --}}
                             <td>{{ $hotel->address }}</td>
                             <td>
                                 @if ($hotel->bankAccounts->count() > 0)

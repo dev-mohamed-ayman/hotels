@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Hotel;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,16 @@ use Mpdf\Mpdf;
 class WalletController extends Controller
 {
     public function store(Request $request, Customer $customer)
+    {
+        return $this->processTransaction($request, $customer);
+    }
+
+    public function storeHotel(Request $request, Hotel $hotel)
+    {
+        return $this->processTransaction($request, $hotel);
+    }
+
+    private function processTransaction(Request $request, $model)
     {
         $request->validate([
             'amount' => 'required|numeric|min:0.01',
@@ -24,17 +35,13 @@ class WalletController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create transaction
-            $customer->walletTransactions()->create([
+            $model->walletTransactions()->create([
                 'amount' => $request->amount,
                 'type' => $request->type,
                 'currency_id' => $request->currency_id,
                 'description' => $request->description,
                 'reference' => $request->reference ?? 'MANUAL',
             ]);
-
-            // Note: We are not updating a single 'wallet' column on the customer table
-            // because we support multiple currencies. The balance is calculated dynamically.
 
             DB::commit();
 
@@ -79,7 +86,17 @@ class WalletController extends Controller
 
     public function exportWalletPdf(Request $request, Customer $customer)
     {
-        $query = $customer->walletTransactions()
+        return $this->generatePdf($request, $customer, 'customer');
+    }
+
+    public function exportHotelWalletPdf(Request $request, Hotel $hotel)
+    {
+        return $this->generatePdf($request, $hotel, 'hotel');
+    }
+
+    private function generatePdf(Request $request, $model, $type)
+    {
+        $query = $model->walletTransactions()
             ->with('currency')
             ->orderBy('created_at', 'desc');
 
@@ -97,19 +114,14 @@ class WalletController extends Controller
 
         $transactions = $query->get();
 
-        $balanceQuery = $customer->walletTransactions()
-            ->select('currency_id', DB::raw('SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as balance'))
+        $balanceQuery = $model->walletTransactions()
+            ->select(
+                'currency_id',
+                DB::raw('SUM(CASE WHEN type = "credit" THEN amount ELSE -amount END) as balance')
+            )
             ->with('currency')
             ->groupBy('currency_id')
             ->reorder();
-
-        if ($request->filled('date_from')) {
-            $balanceQuery->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $balanceQuery->whereDate('created_at', '<=', $request->date_to);
-        }
 
         if ($request->filled('currency_id')) {
             $balanceQuery->where('currency_id', $request->currency_id);
@@ -117,23 +129,25 @@ class WalletController extends Controller
 
         $balances = $balanceQuery->get();
 
-        $html = view('admin.pages.customers.pdf.wallet', compact('customer', 'transactions', 'balances'))->render();
-
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
-            'orientation' => 'P',
             'margin_left' => 15,
             'margin_right' => 15,
-            'margin_top' => 15,
-            'margin_bottom' => 15,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => 'dejavusans',
+            'margin_top' => 16,
+            'margin_bottom' => 16,
+            'margin_header' => 9,
+            'margin_footer' => 9,
         ]);
+
+        $mpdf->SetDirectionality('rtl');
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
+
+        $html = view('admin.pdf.wallet_statement', compact('model', 'transactions', 'balances', 'type'))->render();
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('wallet-statement-'.$customer->name.'.pdf', 'D');
+        return $mpdf->Output('wallet-statement.pdf', 'I');
     }
 }

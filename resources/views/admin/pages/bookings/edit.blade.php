@@ -869,27 +869,15 @@
             const finalTotal = netRateTotal + totalMarginValue;
             const paidAmountInput = document.getElementById('paid_amount');
 
-            // Update max attribute for paid_amount input
+            // Update max attribute for paid_amount input - REMOVED to allow overpayment
             if (paidAmountInput) {
-                paidAmountInput.setAttribute('max', finalTotal);
+                paidAmountInput.removeAttribute('max');
+                paidAmountInput.setCustomValidity('');
             }
 
             let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
 
-            // Validate paid amount doesn't exceed total guest rate
-            if (paidAmount > finalTotal) {
-                if (paidAmountInput) {
-                    paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                    paidAmountInput.value = finalTotal.toFixed(2);
-                }
-                // Use corrected value for calculation
-                paidAmount = finalTotal;
-            } else {
-                if (paidAmountInput) {
-                    paidAmountInput.setCustomValidity('');
-                }
-            }
-
+            // Validation removed to allow overpayment
             const remainingAmount = finalTotal - paidAmount;
 
             // Update display

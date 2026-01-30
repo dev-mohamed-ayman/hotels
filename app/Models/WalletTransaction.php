@@ -11,7 +11,8 @@ class WalletTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'customer_id',
+        'transactionable_id',
+        'transactionable_type',
         'currency_id',
         'reference',
         'description',
@@ -24,9 +25,9 @@ class WalletTransaction extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function customer(): BelongsTo
+    public function transactionable()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->morphTo();
     }
 
     public function currency(): BelongsTo

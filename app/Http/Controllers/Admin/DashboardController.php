@@ -158,7 +158,7 @@ class DashboardController extends Controller
                 ];
             })
             ->sortByDesc('room_nights_production')
-            ->take(5)
+            ->take(8)
             ->values()
             : collect();
 

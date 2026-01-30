@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ __('Wallet Statement') }} - {{ $customer->name }}</title>
+    <title>{{ __('Wallet Statement') }} - {{ $model->name }}</title>
     <style>
         @page {
             margin: 10mm;
@@ -74,12 +74,12 @@
         }
 
         .badge-credit {
-            color: red;
+            color: green;
             font-weight: bold;
         }
 
         .badge-debit {
-            color: green;
+            color: red;
             font-weight: bold;
         }
     </style>
@@ -93,51 +93,62 @@
 
     <div class="header-info">
         <div class="customer-info">
-            {{ __('Customer') }}: {{ $customer->name }}
+            {{ $type == 'customer' ? __('Customer') : __('Hotel') }}: {{ $model->name }}
         </div>
         <div>
             {{ __('Date') }}: {{ now()->format('Y-m-d') }}
         </div>
     </div>
 
+    <!-- Balance Summary -->
+    @if ($balances->count() > 0)
+        <h3>{{ __('Current Balances') }}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('Currency') }}</th>
+                    <th>{{ __('Balance') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($balances as $balance)
+                    <tr>
+                        <td>{{ $balance->currency->name }} ({{ $balance->currency->code }})</td>
+                        <td style="color: {{ $balance->balance < 0 ? 'red' : 'green' }}; font-weight: bold;">
+                            @formatNumber($balance->balance) {{ $balance->currency->symbol }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+    <!-- Transactions Table -->
+    <h3>{{ __('Transactions History') }}</h3>
     <table>
         <thead>
             <tr>
-                <th style="width: 5%;">#</th>
-                <th style="width: 15%;">{{ __('Date') }}</th>
-                <th style="width: 15%;">{{ __('Reference') }}</th>
-                <th style="width: 30%;">{{ __('Description') }}</th>
-                <th style="width: 15%;">{{ __('DR / CR') }}</th>
-                <th style="width: 20%;">{{ __('Amount') }}</th>
+                <th>{{ __('Date') }}</th>
+                <th>{{ __('Type') }}</th>
+                <th>{{ __('Amount') }}</th>
+                <th>{{ __('Currency') }}</th>
+                <th>{{ __('Description') }}</th>
+                <th>{{ __('Reference') }}</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($transactions as $index => $transaction)
+            @foreach ($transactions as $transaction)
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $transaction->created_at->format('Y-m-d') }}</td>
-                    <td>{{ $transaction->reference }}</td>
+                    <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
+                    <td>
+                        <span class="{{ $transaction->type == 'credit' ? 'badge-credit' : 'badge-debit' }}">
+                            {{ $transaction->type == 'credit' ? __('Credit') : __('Debit') }}
+                        </span>
+                    </td>
+                    <td>@formatNumber($transaction->amount)</td>
+                    <td>{{ $transaction->currency->code }}</td>
                     <td>{{ $transaction->description }}</td>
-                    <td>
-                        @if ($transaction->type == 'debit')
-                            <span class="badge-debit">{{ __('DR') }}</span>
-                        @else
-                            <span class="badge-credit">{{ __('CR') }}</span>
-                        @endif
-                    </td>
-                    <td>
-                        <span style="font-weight: bold; font-size: 11pt;">{{ $transaction->currency->symbol ?? '' }}</span> {{ number_format($transaction->amount, 2) }}
-                    </td>
-                </tr>
-            @endforeach
-            @foreach ($balances as $balance)
-                <tr style="background-color: #0d3c47; color: white;">
-                    <td colspan="5" style="background-color: #0d3c47; color: white;">
-                        <span style="font-weight: bold; font-size: 11pt;">{{ $balance->currency->code ?? '' }}</span></td>
-                    <td
-                        style="background-color: #0d3c47; color: white;font-weight: bold; {{ $balance->balance < 0 ? 'color: red;' : 'color: white;' }}">
-                        {{ number_format($balance->balance, 2) }} <span style="font-weight: bold; font-size: 11pt;">{{ $balance->currency->symbol ?? '' }}</span>
-                    </td>
+                    <td>{{ $transaction->reference }}</td>
                 </tr>
             @endforeach
         </tbody>

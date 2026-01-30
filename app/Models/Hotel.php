@@ -15,11 +15,18 @@ class Hotel extends Model
         'company_name',
         'address',
         'is_active',
+        'wallet',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'wallet' => 'decimal:2',
     ];
+
+    public function walletTransactions()
+    {
+        return $this->morphMany(WalletTransaction::class, 'transactionable')->orderBy('created_at', 'desc');
+    }
 
     public function bankAccounts()
     {

@@ -76,7 +76,7 @@ class BookingController extends Controller
 
         // Search by booking code
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%'.$request->search.'%');
+            $query->where('code', 'like', '%' . $request->search . '%');
         }
 
         // Sorting
@@ -85,12 +85,12 @@ class BookingController extends Controller
 
         // Validate sort_by column
         $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
-        if (! in_array($sortBy, $allowedSortColumns)) {
+        if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }
 
         // Validate sort_order
-        if (! in_array($sortOrder, ['asc', 'desc'])) {
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'asc';
         }
 
@@ -103,7 +103,7 @@ class BookingController extends Controller
         $perPage = $request->get('per_page', 10);
         // Validate per_page value (allow only specific values for security)
         $allowedPerPage = [10, 25, 50, 100];
-        if (! in_array($perPage, $allowedPerPage)) {
+        if (!in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
 
@@ -151,11 +151,10 @@ class BookingController extends Controller
         });
 
         // If we have filters in the request, save them to session
-        if (! empty($currentFilters)) {
+        if (!empty($currentFilters)) {
             session(['booking_filters' => $currentFilters]);
-        }
-        // If no filters in request but we have saved filters, apply them
-        elseif (session()->has('booking_filters') && empty($currentFilters) && ! $request->has('page')) {
+        } // If no filters in request but we have saved filters, apply them
+        elseif (session()->has('booking_filters') && empty($currentFilters) && !$request->has('page')) {
             $savedFilters = session('booking_filters');
             $request->merge($savedFilters);
         }
@@ -285,11 +284,11 @@ class BookingController extends Controller
             // Total amount = net rate + margin
             $totalAmount = $netRate + $totalMargin;
 
-            // Validate paid_amount doesn't exceed total_amount
+            // Validate paid_amount doesn't exceed total_amount - REMOVED to allow overpayment
             $paidAmount = $request->paid_amount ?? 0;
-            if ($paidAmount > $totalAmount) {
-                return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
-            }
+            // if ($paidAmount > $totalAmount) {
+            //    return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
+            // }
 
             // Recalculate payment status
             $newStatus = 'unpaid';
@@ -386,7 +385,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error creating booking').': '.$e->getMessage())->withInput();
+            return back()->with('error', __('Error creating booking') . ': ' . $e->getMessage())->withInput();
         }
     }
 
@@ -513,10 +512,41 @@ class BookingController extends Controller
             // Total amount = net rate + margin
             $totalAmount = $netRate + $totalMargin;
 
-            // Validate paid_amount doesn't exceed total_amount
-            $paidAmount = $request->paid_amount ?? $booking->paid_amount;
-            if ($paidAmount > $totalAmount) {
-                return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
+            $currentPaid = $booking->paid_amount;
+            $newPaidAmount = $request->paid_amount ?? $currentPaid;
+
+            // Only auto-refund if the user didn't manually change the paid amount (i.e., it's an auto-adjustment due to price drop)
+            // If user manually entered a higher amount, we accept it as overpayment.
+            // We use a small epsilon for float comparison.
+            if ($newPaidAmount > $totalAmount && abs($newPaidAmount - $currentPaid) < 0.01) {
+                $refundAmount = $newPaidAmount - $totalAmount;
+
+                // Calculate Net Rate Drop (Old Net - New Net)
+                $oldNetRate = $booking->net_amount ?? 0;
+                $netRateDrop = max(0, $oldNetRate - $netRate);
+
+                // Process Refund
+                // Credit Customer (Add money to customer wallet)
+                $booking->customer->walletTransactions()->create([
+                    'currency_id' => $booking->currency_id,
+                    'amount' => $refundAmount,
+                    'type' => 'debit',
+                    'description' => __('Refund for booking modification #:code (Cost + Margin)', ['code' => $booking->code]),
+                    'reference' => $booking->code,
+                ]);
+
+                // Debit Hotel (Deduct money from hotel wallet - Only Net Rate Drop)
+                if ($netRateDrop > 0) {
+                    $booking->hotel->walletTransactions()->create([
+                        'currency_id' => $booking->currency_id,
+                        'amount' => $netRateDrop,
+                        'type' => 'credit',
+                        'description' => __('Refund deduction (Net Rate) for booking modification #:code', ['code' => $booking->code]),
+                        'reference' => $booking->code,
+                    ]);
+                }
+
+                $newPaidAmount = $totalAmount;
             }
 
             // Recalculate payment status
@@ -525,9 +555,9 @@ class BookingController extends Controller
             if ($booking->payment_status === 'revised') {
                 $newStatus = 'revised';
             } else {
-                if ($paidAmount >= $totalAmount) {
+                if ($newPaidAmount >= $totalAmount) {
                     $newStatus = 'paid';
-                } elseif ($paidAmount < $totalAmount && $paidAmount > 0) {
+                } elseif ($newPaidAmount < $totalAmount && $newPaidAmount > 0) {
                     $newStatus = 'partial';
                 }
             }
@@ -547,7 +577,7 @@ class BookingController extends Controller
                 'total_amount' => $totalAmount,
                 'child_price' => $childPrice,
                 'child_margin' => $childMargin,
-                'paid_amount' => $request->paid_amount ?? $booking->paid_amount,
+                'paid_amount' => $newPaidAmount,
 
                 'net_amount' => $netRate,
                 'notes' => $request->notes,
@@ -621,7 +651,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error updating booking').': '.$e->getMessage())->withInput();
+            return back()->with('error', __('Error updating booking') . ': ' . $e->getMessage())->withInput();
         }
     }
 
@@ -634,11 +664,11 @@ class BookingController extends Controller
                 'required',
                 'numeric',
                 'min:0.01',
-                'max:'.$remainingAmount,
+                'max:' . $remainingAmount,
             ],
         ], [
             'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-                'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
+                'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
             ]),
         ]);
 
@@ -717,7 +747,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error deducting from wallet: ').$e->getMessage());
+            return back()->with('error', __('Error deducting from wallet: ') . $e->getMessage());
         }
 
         // Recalculate payment status
@@ -738,7 +768,7 @@ class BookingController extends Controller
         ]);
 
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
-            'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
+            'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
         ]));
     }
 
@@ -749,7 +779,7 @@ class BookingController extends Controller
 
             return redirect()->route('bookings.index')->with('success', __('Booking deleted successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', __('Error deleting booking').': '.$e->getMessage());
+            return back()->with('error', __('Error deleting booking') . ': ' . $e->getMessage());
         }
     }
 
@@ -809,7 +839,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-'.$booking->code.'-bank.pdf', 'D');
+        return $mpdf->Output('booking-' . $booking->code . '-bank.pdf', 'D');
     }
 
     public function downloadDetailedPdf(Booking $booking)
@@ -856,15 +886,15 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-            return ($room->price * $room->room_count * $booking->nights) +
-                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-        }) + $additionsNetTotal - $discountsNetTotal;
+                return ($room->price * $room->room_count * $booking->nights) +
+                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+            }) + $additionsNetTotal - $discountsNetTotal;
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-        }) + $additionsGuestTotal - $discountsGuestTotal;
+                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+            }) + $additionsGuestTotal - $discountsGuestTotal;
 
         // Use calculated totals
         $totalAmount = $totalGuestRate; // For backward compat variable name if needed, but view should use specific ones
@@ -898,7 +928,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-'.$booking->code.'-detailed.pdf', 'D');
+        return $mpdf->Output('booking-' . $booking->code . '-detailed.pdf', 'D');
     }
 
     public function downloadGuestPdf(Booking $booking)
@@ -929,9 +959,9 @@ class BookingController extends Controller
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-        }) + $additionsGuestTotal - $discountsGuestTotal;
+                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+            }) + $additionsGuestTotal - $discountsGuestTotal;
 
         $totalAmount = $totalGuestRate;
 
@@ -960,7 +990,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-'.$booking->code.'-guest.pdf', 'D');
+        return $mpdf->Output('booking-' . $booking->code . '-guest.pdf', 'D');
     }
 
     public function downloadNetRatePdf(Booking $booking)
@@ -997,9 +1027,9 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-            return ($room->price * $room->room_count * $booking->nights) +
-                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-        }) + $additionsNetTotal - $discountsNetTotal;
+                return ($room->price * $room->room_count * $booking->nights) +
+                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+            }) + $additionsNetTotal - $discountsNetTotal;
 
         $html = view('admin.pages.bookings.pdf.netrate', compact(
             'booking',
@@ -1025,7 +1055,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-'.$booking->code.'-netrate.pdf', 'D');
+        return $mpdf->Output('booking-' . $booking->code . '-netrate.pdf', 'D');
     }
 
     /**
@@ -1073,7 +1103,7 @@ class BookingController extends Controller
 
         // Search by booking code
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%'.$request->search.'%');
+            $query->where('code', 'like', '%' . $request->search . '%');
         }
 
         // Sorting
@@ -1082,12 +1112,12 @@ class BookingController extends Controller
 
         // Validate sort_by column
         $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
-        if (! in_array($sortBy, $allowedSortColumns)) {
+        if (!in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }
 
         // Validate sort_order
-        if (! in_array($sortOrder, ['asc', 'desc'])) {
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'desc';
         }
 
@@ -1114,7 +1144,7 @@ class BookingController extends Controller
             ]);
 
             // Set new code (append -copy)
-            $newBooking->code = $booking->code.'-copy';
+            $newBooking->code = $booking->code . '-copy';
 
             // Reset amounts
             $newBooking->net_amount = 0;
@@ -1138,7 +1168,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error duplicating booking').': '.$e->getMessage());
+            return back()->with('error', __('Error duplicating booking') . ': ' . $e->getMessage());
         }
     }
 
@@ -1230,33 +1260,49 @@ class BookingController extends Controller
 
         // Group bookings by code, hotel, meals, dates, and nights
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                   $booking->hotel_id.'|'.
-                   $booking->meals_plan.'|'.
-                   $booking->check_in->format('Y-m-d').'|'.
-                   $booking->check_out->format('Y-m-d').'|'.
-                   $booking->nights;
+            return $booking->code . '|' .
+                $booking->hotel_id . '|' .
+                $booking->meals_plan . '|' .
+                $booking->check_in->format('Y-m-d') . '|' .
+                $booking->check_out->format('Y-m-d') . '|' .
+                $booking->nights;
         });
 
-        // Merge grouped bookings
         $bookings = $groupedBookings->map(function ($group) {
-            if ($group->count() === 1) {
-                return $group->first();
-            }
 
-            // Use the first booking as the base
             $masterBooking = $group->first();
 
-            // Merge rooms from all bookings in the group
-            $allRooms = $group->pluck('rooms')->flatten();
-            $masterBooking->setRelation('rooms', $allRooms);
+            $rooms = collect();
+            $adjustments = collect();
 
-            // Merge adjustments from all bookings in the group
-            $allAdjustments = $group->pluck('adjustments')->flatten();
-            $masterBooking->setRelation('adjustments', $allAdjustments);
+            foreach ($group as $booking) {
+
+                if (!$booking->currency) {
+                    continue;
+                }
+
+                foreach ($booking->rooms as $room) {
+                    $room->currency_id = $booking->currency_id;
+                    $room->currency = $booking->currency;
+                    $room->nights = $booking->nights;
+
+                    $rooms->push($room);
+                }
+
+                foreach ($booking->adjustments as $adj) {
+                    $adj->currency_id = $booking->currency_id;
+                    $adj->currency = $booking->currency;
+
+                    $adjustments->push($adj);
+                }
+            }
+
+            $masterBooking->setRelation('rooms', $rooms);
+            $masterBooking->setRelation('adjustments', $adjustments);
 
             return $masterBooking;
-        })->values(); // Reset keys
+
+        })->values();
 
         $html = view('admin.pages.bookings.pdf.export-detailed', compact('bookings'))->render();
 
@@ -1287,33 +1333,49 @@ class BookingController extends Controller
         }
         // Group bookings by code, hotel, meals, dates, and nights
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                $booking->hotel_id.'|'.
-                $booking->meals_plan.'|'.
-                $booking->check_in->format('Y-m-d').'|'.
-                $booking->check_out->format('Y-m-d').'|'.
+            return $booking->code . '|' .
+                $booking->hotel_id . '|' .
+                $booking->meals_plan . '|' .
+                $booking->check_in->format('Y-m-d') . '|' .
+                $booking->check_out->format('Y-m-d') . '|' .
                 $booking->nights;
         });
 
-        // Merge grouped bookings
         $bookings = $groupedBookings->map(function ($group) {
-            if ($group->count() === 1) {
-                return $group->first();
-            }
 
-            // Use the first booking as the base
             $masterBooking = $group->first();
 
-            // Merge rooms from all bookings in the group
-            $allRooms = $group->pluck('rooms')->flatten();
-            $masterBooking->setRelation('rooms', $allRooms);
+            $rooms = collect();
+            $adjustments = collect();
 
-            // Merge adjustments from all bookings in the group
-            $allAdjustments = $group->pluck('adjustments')->flatten();
-            $masterBooking->setRelation('adjustments', $allAdjustments);
+            foreach ($group as $booking) {
+
+                if (!$booking->currency) {
+                    continue;
+                }
+
+                foreach ($booking->rooms as $room) {
+                    $room->currency_id = $booking->currency_id;
+                    $room->currency = $booking->currency;
+                    $room->nights = $booking->nights;
+
+                    $rooms->push($room);
+                }
+
+                foreach ($booking->adjustments as $adj) {
+                    $adj->currency_id = $booking->currency_id;
+                    $adj->currency = $booking->currency;
+
+                    $adjustments->push($adj);
+                }
+            }
+
+            $masterBooking->setRelation('rooms', $rooms);
+            $masterBooking->setRelation('adjustments', $adjustments);
 
             return $masterBooking;
-        })->values(); // Reset keys
+
+        })->values();
 
         $html = view('admin.pages.bookings.pdf.export-guest', compact('bookings'))->render();
 
@@ -1343,36 +1405,51 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-
         // Group bookings by code, hotel, meals, dates, and nights
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                $booking->hotel_id.'|'.
-                $booking->meals_plan.'|'.
-                $booking->check_in->format('Y-m-d').'|'.
-                $booking->check_out->format('Y-m-d').'|'.
+            return $booking->code . '|' .
+                $booking->hotel_id . '|' .
+                $booking->meals_plan . '|' .
+                $booking->check_in->format('Y-m-d') . '|' .
+                $booking->check_out->format('Y-m-d') . '|' .
                 $booking->nights;
         });
 
-        // Merge grouped bookings
         $bookings = $groupedBookings->map(function ($group) {
-            if ($group->count() === 1) {
-                return $group->first();
-            }
 
-            // Use the first booking as the base
             $masterBooking = $group->first();
 
-            // Merge rooms from all bookings in the group
-            $allRooms = $group->pluck('rooms')->flatten();
-            $masterBooking->setRelation('rooms', $allRooms);
+            $rooms = collect();
+            $adjustments = collect();
 
-            // Merge adjustments from all bookings in the group
-            $allAdjustments = $group->pluck('adjustments')->flatten();
-            $masterBooking->setRelation('adjustments', $allAdjustments);
+            foreach ($group as $booking) {
+
+                if (!$booking->currency) {
+                    continue;
+                }
+
+                foreach ($booking->rooms as $room) {
+                    $room->currency_id = $booking->currency_id;
+                    $room->currency = $booking->currency;
+                    $room->nights = $booking->nights;
+
+                    $rooms->push($room);
+                }
+
+                foreach ($booking->adjustments as $adj) {
+                    $adj->currency_id = $booking->currency_id;
+                    $adj->currency = $booking->currency;
+
+                    $adjustments->push($adj);
+                }
+            }
+
+            $masterBooking->setRelation('rooms', $rooms);
+            $masterBooking->setRelation('adjustments', $adjustments);
 
             return $masterBooking;
-        })->values(); // Reset keys
+
+        })->values();
 
         $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookings'))->render();
 

@@ -906,7 +906,7 @@
     <script src="{{ asset('assets/js/charts-chartjs.js') }}"></script>
 
     <script>
-        // Bar Chart - Room Nights Production (Top 5 Hotels)
+        // Bar Chart - Room Nights Production (Top 8 Hotels)
         // --------------------------------------------------------------------
         document.addEventListener('DOMContentLoaded', function() {
             const barChart = document.getElementById('barChart');

@@ -149,11 +149,11 @@
                         <td style="height: 50px">{{ $room->room_type }}</td>
                         <td style="height: 50px">{{ $room->category }}</td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->price) }}
+                            {{ $room->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->price) }}
                         </td>
                         <td style="height: 50px">{{ $room->child_count }}</td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->child_price) }}
+                            {{ $room->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->child_price) }}
                         </td>
                         @php
                             $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
@@ -169,13 +169,13 @@
                         @endphp
                         @if ($loop->first)
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netExtras) }}
+                                {{ $room->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netExtras) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netReducts) }}
+                                {{ $room->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netReducts) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($totalNetRate) }}
+                                {{ $room->currency->symbol }}{{ \App\Helpers\NumberHelper::format($totalNetRate) }}
                             </td>
                         @endif
                     </tr>
@@ -192,7 +192,7 @@
                 $currencyTotals = [];
                 foreach ($bookings as $booking) {
                     $currencyId = $booking->currency_id;
-                    $currencySymbol = $booking->currency->symbol;
+                    $currencySymbol = $room->currency->symbol;
 
                     if (!isset($currencyTotals[$currencyId])) {
                         $currencyTotals[$currencyId] = [

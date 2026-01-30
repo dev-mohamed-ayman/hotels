@@ -156,23 +156,29 @@
                         <td style="height: 50px">{{ $room->room_type }}</td>
                         <td style="height: 50px">{{ $room->category }}</td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->price) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->price) }}
                         </td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->margin) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->margin) }}
                         </td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->price + $room->margin) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->price + $room->margin) }}
                         </td>
                         <td style="height: 50px">{{ $room->child_count }}</td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->child_price) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->child_price) }}
                         </td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->child_margin) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->child_margin) }}
                         </td>
                         <td style="height: 50px">
-                            {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($room->child_price + $room->child_margin) }}
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($room->child_price + $room->child_margin) }}
                         </td>
                         @php
                             $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
@@ -195,22 +201,28 @@
                         @endphp
                         @if ($loop->first)
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netExtras) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($netExtras) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($netReducts) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($netReducts) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($guestExtras) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($guestExtras) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($guestReducts) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($guestReducts) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($totalNetRate) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($totalNetRate) }}
                             </td>
                             <td rowspan="{{ count($booking->rooms) }}">
-                                {{ $booking->currency->symbol }}{{ \App\Helpers\NumberHelper::format($totalGuestRate) }}
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($totalGuestRate) }}
                             </td>
                         @endif
                     </tr>
@@ -225,7 +237,7 @@
                 $currencyTotals = [];
                 foreach ($bookings as $booking) {
                     $currencyId = $booking->currency_id;
-                    $currencySymbol = $booking->currency->symbol;
+                    $currencySymbol = $room->currency->symbol;
 
                     if (!isset($currencyTotals[$currencyId])) {
                         $currencyTotals[$currencyId] = [
@@ -286,13 +298,15 @@
                 <tr class="total-row">
                     <td style="height: 70px; text-align: center;" class="total-label" colspan="20">
                         {{ __('Total') }}
-                        ({{ $currencyTotal['symbol'] }})
+                        (<span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>)
                     </td>
                     <td style="height: 70px;">
-                        {{ $currencyTotal['symbol'] }}{{ \App\Helpers\NumberHelper::format($currencyTotal['totalNetRate']) }}
+                        <span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>
+                        {{ \App\Helpers\NumberHelper::format($currencyTotal['totalNetRate']) }}
                     </td>
                     <td style="height: 70px;">
-                        {{ $currencyTotal['symbol'] }}{{ \App\Helpers\NumberHelper::format($currencyTotal['totalGuestRate']) }}
+                        <span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>
+                        {{ \App\Helpers\NumberHelper::format($currencyTotal['totalGuestRate']) }}
                     </td>
                 </tr>
             @endforeach
