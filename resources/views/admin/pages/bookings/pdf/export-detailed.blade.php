@@ -142,91 +142,161 @@
         </thead>
         <tbody>
             @foreach ($bookings as $booking)
-                @foreach ($booking->rooms as $room)
-                    <tr>
-                        @if ($loop->first)
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->code }}</td>
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->hotel->name }}</td>
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->meals_plan }}</td>
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->check_in->format('d-M-y') }}</td>
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->check_out->format('d-M-y') }}</td>
-                            <td rowspan="{{ count($booking->rooms) }}">{{ $booking->nights }}</td>
-                        @endif
-                        <td style="height: 50px">{{ $room->room_count }}</td>
-                        <td style="height: 50px">{{ $room->room_type }}</td>
-                        <td style="height: 50px">{{ $room->category }}</td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->price) }}
-                        </td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->margin) }}
-                        </td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->price + $room->margin) }}
-                        </td>
-                        <td style="height: 50px">{{ $room->child_count }}</td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->child_price) }}
-                        </td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->child_margin) }}
-                        </td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($room->child_price + $room->child_margin) }}
-                        </td>
-                        @php
-                            $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
-                            $netReducts = $booking->adjustments->where('type', 'discount')->sum('net_rate');
-                            $guestExtras = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
-                            $guestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
+                @php
+                    $rooms = $booking->rooms;
+                    $additions = $booking->adjustments->where('type', 'addition')->values();
+                    $discounts = $booking->adjustments->where('type', 'discount')->values();
+                    $rowCount = max($rooms->count(), $additions->count(), $discounts->count());
+                    if ($rowCount == 0) {
+                        $rowCount = 1;
+                    }
+                    $currencySymbol = $booking->currency->symbol ?? '';
+                @endphp
 
-                            // Calculate totals for ALL rooms in the booking
-                            $totalNetRate = 0;
-                            $totalGuestRate = 0;
-                            foreach ($booking->rooms as $r) {
-                                $totalNetRate += $r->price * $r->room_count * $booking->nights;
-                                $totalNetRate += $r->child_price * $r->child_count * $booking->nights;
-                                $totalGuestRate += ($r->price + $r->margin) * $r->room_count * $booking->nights;
-                                $totalGuestRate +=
+                @for ($i = 0; $i < $rowCount; $i++)
+                    <tr>
+                        @if ($i == 0)
+                            <td rowspan="{{ $rowCount }}">{{ $booking->code }}</td>
+                            <td rowspan="{{ $rowCount }}">{{ $booking->hotel->name }}</td>
+                            <td rowspan="{{ $rowCount }}">{{ $booking->meals_plan }}</td>
+                            <td rowspan="{{ $rowCount }}">{{ $booking->check_in->format('d-M-y') }}</td>
+                            <td rowspan="{{ $rowCount }}">{{ $booking->check_out->format('d-M-y') }}</td>
+                            <td rowspan="{{ $rowCount }}">{{ $booking->nights }}</td>
+                        @endif
+
+                        {{-- Room Details --}}
+                        @if (isset($rooms[$i]))
+                            @php $room = $rooms[$i]; @endphp
+                            <td style="height: 50px">{{ $room->room_count }}</td>
+                            <td style="height: 50px">{{ $room->room_type }}</td>
+                            <td style="height: 50px">{{ $room->category }}</td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->price) }}
+                            </td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->margin) }}
+                            </td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->price + $room->margin) }}
+                            </td>
+                            <td style="height: 50px">{{ $room->child_count }}</td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->child_price) }}
+                            </td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->child_margin) }}
+                            </td>
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($room->child_price + $room->child_margin) }}
+                            </td>
+                        @else
+                            {{-- Empty Room Cells --}}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        @endif
+
+                        {{-- Extras and Reducts --}}
+                        @php
+                            $netExtra = 0;
+                            $guestExtra = 0;
+                            $netReduct = 0;
+                            $guestReduct = 0;
+                        @endphp
+
+                        {{-- Additions --}}
+                        @if (isset($additions[$i]))
+                            @php
+                                $add = $additions[$i];
+                                $netExtra = $add->net_rate;
+                                $guestExtra = $add->guest_rate;
+                            @endphp
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($netExtra) }}
+                            </td>
+                        @else
+                            <td></td>
+                        @endif
+
+                        {{-- Discounts --}}
+                        @if (isset($discounts[$i]))
+                            @php
+                                $disc = $discounts[$i];
+                                $netReduct = $disc->net_rate;
+                                $guestReduct = $disc->guest_rate;
+                            @endphp
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($netReduct) }}
+                            </td>
+                        @else
+                            <td></td>
+                        @endif
+
+                        {{-- Guest Extra (Column 19) --}}
+                        @if (isset($additions[$i]))
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($guestExtra) }}
+                            </td>
+                        @else
+                            <td></td>
+                        @endif
+
+                        {{-- Guest Reducts (Column 20) --}}
+                        @if (isset($discounts[$i]))
+                            <td style="height: 50px">
+                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                                {{ \App\Helpers\NumberHelper::format($guestReduct) }}
+                            </td>
+                        @else
+                            <td></td>
+                        @endif
+
+                        {{-- Row Totals --}}
+                        @php
+                            $rowNetTotal = 0;
+                            $rowGuestTotal = 0;
+
+                            // Add Room totals
+                            if (isset($rooms[$i])) {
+                                $r = $rooms[$i];
+                                $rowNetTotal += $r->price * $r->room_count * $booking->nights;
+                                $rowNetTotal += $r->child_price * $r->child_count * $booking->nights;
+                                $rowGuestTotal += ($r->price + $r->margin) * $r->room_count * $booking->nights;
+                                $rowGuestTotal +=
                                     ($r->child_price + $r->child_margin) * $r->child_count * $booking->nights;
                             }
-                            $totalNetRate += $netExtras - $netReducts;
-                            $totalGuestRate += $guestExtras - $guestReducts;
+
+                            // Add Adjustments
+                            $rowNetTotal += $netExtra - $netReduct;
+                            $rowGuestTotal += $guestExtra - $guestReduct;
                         @endphp
-                        @if ($loop->first)
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($netExtras) }}
-                            </td>
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($netReducts) }}
-                            </td>
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($guestExtras) }}
-                            </td>
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($guestReducts) }}
-                            </td>
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($totalNetRate) }}
-                            </td>
-                            <td rowspan="{{ count($booking->rooms) }}">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $room->currency->symbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($totalGuestRate) }}
-                            </td>
-                        @endif
+
+                        <td style="height: 50px">
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($rowNetTotal) }}
+                        </td>
+                        <td style="height: 50px">
+                            <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
+                            {{ \App\Helpers\NumberHelper::format($rowGuestTotal) }}
+                        </td>
                     </tr>
-                @endforeach
+                @endfor
                 <tr class="bg-gray">
                     <td colspan="22"></td>
                 </tr>
