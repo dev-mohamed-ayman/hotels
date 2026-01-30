@@ -1259,14 +1259,15 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        // Group bookings by code, hotel, meals, dates, and nights
+        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
             return $booking->code . '|' .
                 $booking->hotel_id . '|' .
                 $booking->meals_plan . '|' .
                 $booking->check_in->format('Y-m-d') . '|' .
                 $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights;
+                $booking->nights . '|' .
+                $booking->currency_id;
         });
 
         $bookings = $groupedBookings->map(function ($group) {
@@ -1332,14 +1333,15 @@ class BookingController extends Controller
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
-        // Group bookings by code, hotel, meals, dates, and nights
+        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
             return $booking->code . '|' .
                 $booking->hotel_id . '|' .
                 $booking->meals_plan . '|' .
                 $booking->check_in->format('Y-m-d') . '|' .
                 $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights;
+                $booking->nights . '|' .
+                $booking->currency_id;
         });
 
         $bookings = $groupedBookings->map(function ($group) {
@@ -1406,14 +1408,15 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        // Group bookings by code, hotel, meals, dates, and nights
+        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
             return $booking->code . '|' .
                 $booking->hotel_id . '|' .
                 $booking->meals_plan . '|' .
                 $booking->check_in->format('Y-m-d') . '|' .
                 $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights;
+                $booking->nights . '|' .
+                $booking->currency_id;
         });
 
         $bookings = $groupedBookings->map(function ($group) {

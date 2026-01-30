@@ -192,7 +192,7 @@
                 $currencyTotals = [];
                 foreach ($bookings as $booking) {
                     $currencyId = $booking->currency_id;
-                    $currencySymbol = $room->currency->symbol;
+                    $currencySymbol = $booking->currency->symbol ?? '';
 
                     if (!isset($currencyTotals[$currencyId])) {
                         $currencyTotals[$currencyId] = [
