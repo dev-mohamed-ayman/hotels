@@ -515,6 +515,7 @@ class BookingController extends Controller
             $currentPaid = $booking->paid_amount;
             $newPaidAmount = $request->paid_amount ?? $currentPaid;
 
+
             // Only auto-refund if the user didn't manually change the paid amount (i.e., it's an auto-adjustment due to price drop)
             // If user manually entered a higher amount, we accept it as overpayment.
             // We use a small epsilon for float comparison.
@@ -529,7 +530,7 @@ class BookingController extends Controller
                 // Credit Customer (Add money to customer wallet)
                 $booking->customer->walletTransactions()->create([
                     'currency_id' => $booking->currency_id,
-                    'amount' => $refundAmount,
+                    'amount' => $booking->total_amount - $totalAmount,
                     'type' => 'debit',
                     'description' => __('Refund for booking modification #:code (Cost + Margin)', ['code' => $booking->code]),
                     'reference' => $booking->code,
