@@ -1145,7 +1145,7 @@ class BookingController extends Controller
             ]);
 
             // Set new code (append -copy)
-            $newBooking->code = $booking->code . '-copy';
+            $newBooking->code = $booking->code;
 
             // Reset amounts
             $newBooking->net_amount = 0;
@@ -1333,6 +1333,7 @@ class BookingController extends Controller
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
+
         // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
             return $booking->code . '|' .
@@ -1379,7 +1380,6 @@ class BookingController extends Controller
             return $masterBooking;
 
         })->values();
-
         $html = view('admin.pages.bookings.pdf.export-guest', compact('bookings'))->render();
 
         $mpdf = new Mpdf([
@@ -1454,7 +1454,6 @@ class BookingController extends Controller
             return $masterBooking;
 
         })->values();
-
         $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookings'))->render();
 
         $mpdf = new Mpdf([
