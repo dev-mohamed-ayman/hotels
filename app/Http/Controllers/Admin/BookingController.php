@@ -226,7 +226,7 @@ class BookingController extends Controller
             'discounts.*.margin' => 'nullable|numeric',
             'discounts.*.description' => 'required|string',
 
-            'payment_status' => 'required|in:paid,unpaid,partial,revised',
+            'payment_status' => 'required|in:paid,unpaid,partial,revised,overpaid',
         ]);
 
         try {
@@ -293,7 +293,9 @@ class BookingController extends Controller
             // Recalculate payment status
             $newStatus = 'unpaid';
 
-            if ($paidAmount >= $totalAmount) {
+            if ($paidAmount > $totalAmount) {
+                $newStatus = 'overpaid';
+            } elseif ($paidAmount == $totalAmount) {
                 $newStatus = 'paid';
             } elseif ($paidAmount < $totalAmount && $paidAmount > 0) {
                 $newStatus = 'partial';
@@ -435,7 +437,7 @@ class BookingController extends Controller
             'option_date' => 'nullable|date',
             'payment_date' => 'nullable|date', // Keep for backward compatibility
             'meals_plan' => 'nullable|string|max:255',
-            'payment_status' => 'nullable|in:paid,unpaid,partial,revised',
+            'payment_status' => 'nullable|in:paid,unpaid,partial,revised,overpaid',
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
@@ -556,7 +558,9 @@ class BookingController extends Controller
             if ($booking->payment_status === 'revised') {
                 $newStatus = 'revised';
             } else {
-                if ($newPaidAmount >= $totalAmount) {
+                if ($newPaidAmount > $totalAmount) {
+                    $newStatus = 'overpaid';
+                } elseif ($newPaidAmount == $totalAmount) {
                     $newStatus = 'paid';
                 } elseif ($newPaidAmount < $totalAmount && $newPaidAmount > 0) {
                     $newStatus = 'partial';
@@ -658,23 +662,26 @@ class BookingController extends Controller
 
     public function updatePayment(Request $request, Booking $booking)
     {
-        $remainingAmount = $booking->total_amount - $booking->paid_amount;
+        // $remainingAmount = $booking->total_amount - $booking->paid_amount;
 
         $request->validate([
             'payment_amount' => [
                 'required',
                 'numeric',
                 'min:0.01',
-                'max:' . $remainingAmount,
+                // 'max:' . $remainingAmount, // Allow overpayment
             ],
-        ], [
-            'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-                'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
-            ]),
         ]);
+        // , [
+        //     'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
+        //         'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
+        //     ]),
+        // ]);
+
+        $newPaidAmount = $booking->paid_amount + $request->payment_amount;
 
         $booking->update([
-            'paid_amount' => $booking->paid_amount + $request->payment_amount,
+            'paid_amount' => $newPaidAmount,
         ]);
 
         // Recalculate payment status
@@ -683,9 +690,11 @@ class BookingController extends Controller
         if ($booking->payment_status === 'revised') {
             $newStatus = 'revised';
         } else {
-            if ($remainingAmount <= 0) {
+            if ($newPaidAmount > $booking->total_amount) {
+                $newStatus = 'overpaid';
+            } elseif ($newPaidAmount == $booking->total_amount) {
                 $newStatus = 'paid';
-            } elseif ($remainingAmount > 0) {
+            } elseif ($newPaidAmount < $booking->total_amount && $newPaidAmount > 0) {
                 $newStatus = 'partial';
             }
         }

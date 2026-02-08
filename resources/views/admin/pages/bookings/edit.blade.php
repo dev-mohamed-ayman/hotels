@@ -963,17 +963,17 @@
         if (paidAmountInput) {
             paidAmountInput.addEventListener('input', function() {
                 calculateSummary();
-                // Additional validation on input
-                const finalTotalEl = document.getElementById('finalTotal');
-                if (finalTotalEl) {
-                    const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
-                    const paidAmount = parseFloat(this.value) || 0;
-                    if (paidAmount > finalTotal) {
-                        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                }
+                // Additional validation on input - REMOVED to allow overpayment
+                // const finalTotalEl = document.getElementById('finalTotal');
+                // if (finalTotalEl) {
+                //    const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
+                //    const paidAmount = parseFloat(this.value) || 0;
+                //    if (paidAmount > finalTotal) {
+                //        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
+                //    } else {
+                //        this.setCustomValidity('');
+                //    }
+                // }
             });
         }
 

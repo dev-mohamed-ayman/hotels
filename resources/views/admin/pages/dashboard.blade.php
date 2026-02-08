@@ -437,7 +437,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
+                    <div class="d-flex justify-content-between mb-4">
                         <div>
                             <p class="mb-1 text-muted">{{ __('Unpaid') }}</p>
                             <h4 class="mb-0 text-danger fw-bold">
@@ -446,6 +446,30 @@
                         <div class="avatar avatar-lg">
                             <div class="avatar-initial bg-label-danger rounded shadow-sm">
                                 <i class="ti tabler-x ti-md"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <div>
+                            <p class="mb-1 text-muted">{{ __('Revised') }}</p>
+                            <h4 class="mb-0 text-info fw-bold">
+                                {{ $revisedBookings == 0 ? '' : \App\Helpers\NumberHelper::format($revisedBookings) }}</h4>
+                        </div>
+                        <div class="avatar avatar-lg">
+                            <div class="avatar-initial bg-label-info rounded shadow-sm">
+                                <i class="ti tabler-edit ti-md"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <p class="mb-1 text-muted">{{ __('Over Paid') }}</p>
+                            <h4 class="mb-0 text-primary fw-bold">
+                                {{ $overpaidBookings == 0 ? '' : \App\Helpers\NumberHelper::format($overpaidBookings) }}</h4>
+                        </div>
+                        <div class="avatar avatar-lg">
+                            <div class="avatar-initial bg-label-primary rounded shadow-sm">
+                                <i class="ti tabler-arrow-up ti-md"></i>
                             </div>
                         </div>
                     </div>

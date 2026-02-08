@@ -7,11 +7,8 @@ use App\Models\Booking;
 use App\Models\BookingRoom;
 use App\Models\Customer;
 use App\Models\Hotel;
-use App\Models\Currency;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\Facades\LogActivity;
 
 class DashboardController extends Controller
 {
@@ -38,128 +35,129 @@ class DashboardController extends Controller
         // Show bookings starting within 2 days and exclude fully paid ones
         $recentBookings = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
-            ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
-            ->where(function ($query) {
-                $query->where('hotel_paid_amount', 0)
-                      ->orWhereRaw('hotel_paid_amount < net_amount');
-            })
-            ->orderBy('check_in', 'asc')
-            ->take(10)
-            ->get()
+                ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
+                ->where(function ($query) {
+                    $query->where('hotel_paid_amount', 0)
+                        ->orWhereRaw('hotel_paid_amount < net_amount');
+                })
+                ->orderBy('check_in', 'asc')
+                ->take(10)
+                ->get()
             : collect();
 
         // All bookings starting within 2 days (only if user can view bookings)
         $upcomingBookings = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
-            ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
-            ->get()
+                ->whereBetween('check_in', [now()->startOfDay(), now()->addDays(2)->endOfDay()])
+                ->get()
             : collect();
-
 
         // Upcoming Option Dates (Next 7 days)
         $upcomingOptionDates = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
-            ->whereBetween('option_date', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
-            ->where(function ($query) {
-                $query->where('hotel_paid_amount', 0)
-                      ->orWhereRaw('hotel_paid_amount < net_amount');
-            })
-            ->orderBy('option_date', 'asc')
-            ->get()
+                ->whereBetween('option_date', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+                ->where(function ($query) {
+                    $query->where('hotel_paid_amount', 0)
+                        ->orWhereRaw('hotel_paid_amount < net_amount');
+                })
+                ->orderBy('option_date', 'asc')
+                ->get()
             : collect();
 
         // Payment Status Statistics (only if user can view bookings)
-        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount >= total_amount')->count() : 0;
+        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount = total_amount')->count() : 0;
         $unpaidBookings = $user->can('view bookings') ? Booking::where('paid_amount', 0)->count() : 0;
         $partialBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > 0 AND paid_amount < total_amount')->count() : 0;
+        $revisedBookings = $user->can('view bookings') ? Booking::where('payment_status', 'revised')->count() : 0;
+        $overpaidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > total_amount')->count() : 0;
 
         // Hotels Sales Statistics (only if user can view hotels and bookings)
         $hotelsSales = ($user->can('view hotels') && $user->can('view bookings'))
             ? Hotel::get()
-            ->map(function ($hotel) {
-                $bookings = Booking::where('hotel_id', $hotel->id)->get();
-                $roomsCount = BookingRoom::whereHas('booking', function ($q) use ($hotel) {
-                    $q->where('hotel_id', $hotel->id);
-                })->sum('room_count');
+                ->map(function ($hotel) {
+                    $bookings = Booking::where('hotel_id', $hotel->id)->get();
+                    $roomsCount = BookingRoom::whereHas('booking', function ($q) use ($hotel) {
+                        $q->where('hotel_id', $hotel->id);
+                    })->sum('room_count');
 
-                return [
-                    'id' => $hotel->id,
-                    'name' => $hotel->name,
-                    'total_sales' => $bookings->sum('total_amount'),
-                    'paid_sales' => $bookings->sum('paid_amount'),
-                    'bookings_count' => $bookings->count(),
-                    'rooms_count' => $roomsCount,
-                ];
-            })
-            ->sortByDesc('total_sales')
-            ->take(10)
+                    return [
+                        'id' => $hotel->id,
+                        'name' => $hotel->name,
+                        'total_sales' => $bookings->sum('total_amount'),
+                        'paid_sales' => $bookings->sum('paid_amount'),
+                        'bookings_count' => $bookings->count(),
+                        'rooms_count' => $roomsCount,
+                    ];
+                })
+                ->sortByDesc('total_sales')
+                ->take(10)
             : collect();
 
         // Most Used Booking Codes (only if user can view bookings)
         $mostUsedCodes = $user->can('view bookings')
             ? Booking::select('code', DB::raw('COUNT(*) as usage_count'))
-            ->groupBy('code')
-            ->orderBy('usage_count', 'desc')
-            ->take(10)
-            ->get()
+                ->groupBy('code')
+                ->orderBy('usage_count', 'desc')
+                ->take(10)
+                ->get()
             : collect();
 
         // Top Customers by Bookings (only if user can view customers and bookings)
         $topCustomers = ($user->can('view customers') && $user->can('view bookings'))
             ? Customer::withCount('bookings')
-            ->get()
-            ->map(function ($customer) {
-                return [
-                    'id' => $customer->id,
-                    'name' => $customer->name,
-                    'bookings_count' => $customer->bookings_count,
-                    'total_revenue' => $customer->bookings->sum('total_amount'),
-                ];
-            })
-            ->sortByDesc('bookings_count')
-            ->take(10)
-            ->values()
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->name,
+                        'bookings_count' => $customer->bookings_count,
+                        'total_revenue' => $customer->bookings->sum('total_amount'),
+                    ];
+                })
+                ->sortByDesc('bookings_count')
+                ->take(10)
+                ->values()
             : collect();
 
         // Top Customers by Revenue (only if user can view customers and bookings)
         $topCustomersByRevenue = ($user->can('view customers') && $user->can('view bookings'))
             ? Customer::get()
-            ->map(function ($customer) {
-                return [
-                    'id' => $customer->id,
-                    'name' => $customer->name,
-                    'total_revenue' => $customer->bookings->sum('total_amount'),
-                    'bookings_count' => $customer->bookings->count(),
-                ];
-            })
-            ->sortByDesc('total_revenue')
-            ->take(10)
-            ->values()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->id,
+                        'name' => $customer->name,
+                        'total_revenue' => $customer->bookings->sum('total_amount'),
+                        'bookings_count' => $customer->bookings->count(),
+                    ];
+                })
+                ->sortByDesc('total_revenue')
+                ->take(10)
+                ->values()
             : collect();
 
         // Top Hotels by Room Nights Production (only if user can view hotels and bookings)
         $topHotelsByRoomNights = ($user->can('view hotels') && $user->can('view bookings'))
             ? Hotel::get()
-            ->map(function ($hotel) {
-                $bookings = Booking::where('hotel_id', $hotel->id)->get();
-                $roomNightsProduction = 0;
+                ->map(function ($hotel) {
+                    $bookings = Booking::where('hotel_id', $hotel->id)->get();
+                    $roomNightsProduction = 0;
 
-                foreach ($bookings as $booking) {
-                    $rooms = BookingRoom::where('booking_id', $booking->id)->get();
-                    foreach ($rooms as $room) {
-                        $roomNightsProduction += $room->room_count * $booking->nights;
+                    foreach ($bookings as $booking) {
+                        $rooms = BookingRoom::where('booking_id', $booking->id)->get();
+                        foreach ($rooms as $room) {
+                            $roomNightsProduction += $room->room_count * $booking->nights;
+                        }
                     }
-                }
 
-                return [
-                    'id' => $hotel->id,
-                    'name' => $hotel->name,
-                    'room_nights_production' => $roomNightsProduction,
-                ];
-            })
-            ->sortByDesc('room_nights_production')
-            ->take(8)
-            ->values()
+                    return [
+                        'id' => $hotel->id,
+                        'name' => $hotel->name,
+                        'room_nights_production' => $roomNightsProduction,
+                    ];
+                })
+                ->sortByDesc('room_nights_production')
+                ->take(8)
+                ->values()
             : collect();
 
         return view('admin.pages.dashboard', compact(
@@ -174,6 +172,8 @@ class DashboardController extends Controller
             'paidBookings',
             'unpaidBookings',
             'partialBookings',
+            'revisedBookings',
+            'overpaidBookings',
             'hotelsSales',
             'mostUsedCodes',
             'topCustomers',
@@ -199,6 +199,7 @@ class DashboardController extends Controller
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect()->route('login')->with('success', __('You have been logged out'));
     }
 }

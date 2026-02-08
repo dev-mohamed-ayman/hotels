@@ -168,6 +168,10 @@
                                                             {{ request('payment_status') == 'revised' ? 'selected' : '' }}>
                                                             {{ __('Revised') }}
                                                         </option>
+                                                        <option value="overpaid"
+                                                            {{ request('payment_status') == 'overpaid' ? 'selected' : '' }}>
+                                                            {{ __('Over Paid') }}
+                                                        </option>
                                                     </select>
                                                 </div>
 
@@ -546,6 +550,11 @@
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-refresh"></i> {{ __('Revised') }}
                                                 </span>
+                                            @elseif ($booking->payment_status == 'overpaid')
+                                                <span class="badge bg-primary" title="{{ __('Over Paid') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-arrow-up"></i> {{ __('Over Paid') }}
+                                                </span>
                                             @endif
                                         </td>
                                         <td class="text-nowrap">
@@ -601,13 +610,13 @@
                                                                 </button>
                                                             </form>
                                                         </li>
-                                                        {{-- <li>
-                                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                                                data-bs-target="#paymentModal{{ $booking->id }}">
-                                                                                <i class="ti tabler-currency-dollar me-2"></i>{{ __('Update
-                                                                                Payment') }}
-                                                                            </a>
-                                                                        </li> --}}
+                                                        <li>
+                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                                data-bs-target="#paymentModal{{ $booking->id }}">
+                                                                <i
+                                                                    class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
+                                                            </a>
+                                                        </li>
                                                         <li>
                                                             <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                 data-bs-target="#hotelPaymentModal{{ $booking->id }}">
@@ -690,7 +699,6 @@
                                                                 <input type="number" step="0.01" class="form-control"
                                                                     id="payment_amount{{ $booking->id }}"
                                                                     name="payment_amount" min="0.01"
-                                                                    max="{{ $remaining }}"
                                                                     data-remaining="{{ $remaining }}"
                                                                     data-currency="{{ $booking->currency->symbol }}"
                                                                     data-booking-id="{{ $booking->id }}"
@@ -699,9 +707,9 @@
                                                                 <span
                                                                     class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
-                                                            <small class="text-muted">{{ __('Maximum') }}:
+                                                            {{-- <small class="text-muted">{{ __('Maximum') }}:
                                                                 {{ \App\Helpers\NumberHelper::format($remaining) }}
-                                                                {{ $booking->currency->symbol }}</small>
+                                                                {{ $booking->currency->symbol }}</small> --}}
                                                         </div>
                                                         <div class="mb-3">
                                                             <label

@@ -738,25 +738,25 @@
             const paidAmountInput = document.getElementById('paid_amount');
 
             // Update max attribute for paid_amount input
-            if (paidAmountInput) {
-                paidAmountInput.setAttribute('max', finalTotal);
-            }
+            // if (paidAmountInput) {
+            //    paidAmountInput.setAttribute('max', finalTotal);
+            // }
 
             let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
 
             // Validate paid amount doesn't exceed total guest rate
-            if (paidAmount > finalTotal) {
-                if (paidAmountInput) {
-                    paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                    paidAmountInput.value = finalTotal.toFixed(2);
-                }
-                // Use corrected value for calculation
-                paidAmount = finalTotal;
-            } else {
-                if (paidAmountInput) {
-                    paidAmountInput.setCustomValidity('');
-                }
-            }
+            // if (paidAmount > finalTotal) {
+            //    if (paidAmountInput) {
+            //        paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
+            //        paidAmountInput.value = finalTotal.toFixed(2);
+            //    }
+            //    // Use corrected value for calculation
+            //    paidAmount = finalTotal;
+            // } else {
+            //    if (paidAmountInput) {
+            //        paidAmountInput.setCustomValidity('');
+            //    }
+            // }
 
             const remainingAmount = finalTotal - paidAmount;
 
