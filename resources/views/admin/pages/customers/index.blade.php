@@ -16,7 +16,7 @@
             <!-- Filters Section -->
             <div class="mb-3">
                 <div class="accordion" id="filterAccordion">
-                    <div class="accordion-item">
+                    <div class="accordion-item active">
                         <h2 class="accordion-header">
                             <button
                                 class="accordion-button {{ request()->hasAny(['search', 'type', 'priority', 'source']) ? '' : 'collapsed' }}"
@@ -44,7 +44,7 @@
                             </button>
                         </h2>
                         <div id="filterCollapse"
-                            class="accordion-collapse collapse {{ request()->hasAny(['search', 'type', 'priority', 'source']) ? 'show' : '' }}">
+                            class="accordion-collapse collapse show {{ request()->hasAny(['search', 'type', 'priority', 'source']) ? 'show' : '' }}">
                             <div class="accordion-body">
                                 <form method="GET" action="{{ route('customers.index') }}">
                                     <div class="row g-3">
