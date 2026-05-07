@@ -76,7 +76,7 @@ class BookingController extends Controller
 
         // Search by booking code
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%' . $request->search . '%');
+            $query->where('code', 'like', '%'.$request->search.'%');
         }
 
         // Sorting
@@ -85,12 +85,12 @@ class BookingController extends Controller
 
         // Validate sort_by column
         $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
-        if (!in_array($sortBy, $allowedSortColumns)) {
+        if (! in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }
 
         // Validate sort_order
-        if (!in_array($sortOrder, ['asc', 'desc'])) {
+        if (! in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'asc';
         }
 
@@ -103,7 +103,7 @@ class BookingController extends Controller
         $perPage = $request->get('per_page', 10);
         // Validate per_page value (allow only specific values for security)
         $allowedPerPage = [10, 25, 50, 100];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
 
@@ -151,10 +151,10 @@ class BookingController extends Controller
         });
 
         // If we have filters in the request, save them to session
-        if (!empty($currentFilters)) {
+        if (! empty($currentFilters)) {
             session(['booking_filters' => $currentFilters]);
         } // If no filters in request but we have saved filters, apply them
-        elseif (session()->has('booking_filters') && empty($currentFilters) && !$request->has('page')) {
+        elseif (session()->has('booking_filters') && empty($currentFilters) && ! $request->has('page')) {
             $savedFilters = session('booking_filters');
             $request->merge($savedFilters);
         }
@@ -387,7 +387,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error creating booking') . ': ' . $e->getMessage())->withInput();
+            return back()->with('error', __('Error creating booking').': '.$e->getMessage())->withInput();
         }
     }
 
@@ -516,7 +516,6 @@ class BookingController extends Controller
 
             $currentPaid = $booking->paid_amount;
             $newPaidAmount = $request->paid_amount ?? $currentPaid;
-
 
             // Only auto-refund if the user didn't manually change the paid amount (i.e., it's an auto-adjustment due to price drop)
             // If user manually entered a higher amount, we accept it as overpayment.
@@ -656,7 +655,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error updating booking') . ': ' . $e->getMessage())->withInput();
+            return back()->with('error', __('Error updating booking').': '.$e->getMessage())->withInput();
         }
     }
 
@@ -757,7 +756,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error deducting from wallet: ') . $e->getMessage());
+            return back()->with('error', __('Error deducting from wallet: ').$e->getMessage());
         }
 
         // Recalculate payment status
@@ -778,7 +777,7 @@ class BookingController extends Controller
         ]);
 
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
-            'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
+            'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
         ]));
     }
 
@@ -789,7 +788,7 @@ class BookingController extends Controller
 
             return redirect()->route('bookings.index')->with('success', __('Booking deleted successfully'));
         } catch (\Exception $e) {
-            return back()->with('error', __('Error deleting booking') . ': ' . $e->getMessage());
+            return back()->with('error', __('Error deleting booking').': '.$e->getMessage());
         }
     }
 
@@ -849,7 +848,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-' . $booking->code . '-bank.pdf', 'D');
+        return $mpdf->Output('booking-'.$booking->code.'-bank.pdf', 'D');
     }
 
     public function downloadDetailedPdf(Booking $booking)
@@ -896,15 +895,15 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
+            return ($room->price * $room->room_count * $booking->nights) +
+                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsNetTotal - $discountsNetTotal;
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
+            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsGuestTotal - $discountsGuestTotal;
 
         // Use calculated totals
         $totalAmount = $totalGuestRate; // For backward compat variable name if needed, but view should use specific ones
@@ -938,7 +937,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-' . $booking->code . '-detailed.pdf', 'D');
+        return $mpdf->Output('booking-'.$booking->code.'-detailed.pdf', 'D');
     }
 
     public function downloadGuestPdf(Booking $booking)
@@ -969,9 +968,9 @@ class BookingController extends Controller
 
         // Calculate totalGuestRate: Rooms Guest + Child Guest + Additions Guest - Discounts Guest
         $totalGuestRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
-                    ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsGuestTotal - $discountsGuestTotal;
+            return (($room->price + $room->margin) * $room->room_count * $booking->nights) +
+                ((($room->child_price ?? 0) + ($room->child_margin ?? 0)) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsGuestTotal - $discountsGuestTotal;
 
         $totalAmount = $totalGuestRate;
 
@@ -1000,7 +999,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-' . $booking->code . '-guest.pdf', 'D');
+        return $mpdf->Output('booking-'.$booking->code.'-guest.pdf', 'D');
     }
 
     public function downloadNetRatePdf(Booking $booking)
@@ -1037,9 +1036,9 @@ class BookingController extends Controller
 
         // Calculate totalNetRate: Rooms Net + Child Net + Additions Net - Discounts Net
         $totalNetRate = $booking->rooms->sum(function ($room) use ($booking) {
-                return ($room->price * $room->room_count * $booking->nights) +
-                    (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
-            }) + $additionsNetTotal - $discountsNetTotal;
+            return ($room->price * $room->room_count * $booking->nights) +
+                (($room->child_price ?? 0) * ($room->child_count ?? 0) * $booking->nights);
+        }) + $additionsNetTotal - $discountsNetTotal;
 
         $html = view('admin.pages.bookings.pdf.netrate', compact(
             'booking',
@@ -1065,15 +1064,19 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('booking-' . $booking->code . '-netrate.pdf', 'D');
+        return $mpdf->Output('booking-'.$booking->code.'-netrate.pdf', 'D');
     }
 
     /**
      * Get filtered bookings query (reusable for export)
      */
-    private function getFilteredBookingsQuery(Request $request)
+    private function getFilteredBookingsQuery(Request $request, $notes = false)
     {
         $query = Booking::with(['customer', 'hotel', 'currency', 'rooms', 'adjustments']);
+
+        if ($notes) {
+            $query->whereNotNull('notes');
+        }
 
         // Filter by hotel
         if ($request->filled('hotel_id')) {
@@ -1113,7 +1116,7 @@ class BookingController extends Controller
 
         // Search by booking code
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%' . $request->search . '%');
+            $query->where('code', 'like', '%'.$request->search.'%');
         }
 
         // Sorting
@@ -1122,12 +1125,12 @@ class BookingController extends Controller
 
         // Validate sort_by column
         $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
-        if (!in_array($sortBy, $allowedSortColumns)) {
+        if (! in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }
 
         // Validate sort_order
-        if (!in_array($sortOrder, ['asc', 'desc'])) {
+        if (! in_array($sortOrder, ['asc', 'desc'])) {
             $sortOrder = 'desc';
         }
 
@@ -1178,7 +1181,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error duplicating booking') . ': ' . $e->getMessage());
+            return back()->with('error', __('Error duplicating booking').': '.$e->getMessage());
         }
     }
 
@@ -1239,6 +1242,7 @@ class BookingController extends Controller
                 'bank_account' => $bankAccount,
             ];
         }
+        //        dd($bookingsData[0]);
 
         $html = view('admin.pages.bookings.pdf.export-bank', compact('bookingsData', 'totalAmount', 'totalBookingsCount'))->render();
 
@@ -1263,59 +1267,26 @@ class BookingController extends Controller
     public function exportDetailedPdf(Request $request)
     {
         $bookings = $this->getFilteredBookingsQuery($request)->get();
+        $bookingNotes = $this->getFilteredBookingsQuery($request, true)->get();
 
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
 
-        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code . '|' .
-                $booking->hotel_id . '|' .
-                $booking->meals_plan . '|' .
-                $booking->check_in->format('Y-m-d') . '|' .
-                $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights . '|' .
-                $booking->currency_id;
+            return $booking->code.'|'.
+                $booking->hotel->name.'|'.
+                $booking->meals_plan.'|'.
+                $booking->check_in->format('Y-m-d').'|'.
+                $booking->check_out->format('Y-m-d').'|'.
+                $booking->nights;
         });
 
-        $bookings = $groupedBookings->map(function ($group) {
-
-            $masterBooking = $group->first();
-
-            $rooms = collect();
-            $adjustments = collect();
-
-            foreach ($group as $booking) {
-
-                if (!$booking->currency) {
-                    continue;
-                }
-
-                foreach ($booking->rooms as $room) {
-                    $room->currency_id = $booking->currency_id;
-                    $room->currency = $booking->currency;
-                    $room->nights = $booking->nights;
-
-                    $rooms->push($room);
-                }
-
-                foreach ($booking->adjustments as $adj) {
-                    $adj->currency_id = $booking->currency_id;
-                    $adj->currency = $booking->currency;
-
-                    $adjustments->push($adj);
-                }
-            }
-
-            $masterBooking->setRelation('rooms', $rooms);
-            $masterBooking->setRelation('adjustments', $adjustments);
-
-            return $masterBooking;
-
-        })->values();
-
-        $html = view('admin.pages.bookings.pdf.export-detailed', compact('bookings'))->render();
+        $html = view('admin.pages.bookings.pdf.export-detailed', [
+            'bookings' => $bookings,
+            'groupedBookings' => $groupedBookings,
+            'bookingNotes' => $bookingNotes,
+        ])->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -1338,58 +1309,26 @@ class BookingController extends Controller
     public function exportGuestPdf(Request $request)
     {
         $bookings = $this->getFilteredBookingsQuery($request)->get();
+        $bookingNotes = $this->getFilteredBookingsQuery($request, true)->get();
 
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
 
-        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code . '|' .
-                $booking->hotel_id . '|' .
-                $booking->meals_plan . '|' .
-                $booking->check_in->format('Y-m-d') . '|' .
-                $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights . '|' .
-                $booking->currency_id;
+            return $booking->code.'|'.
+                $booking->hotel->name.'|'.
+                $booking->meals_plan.'|'.
+                $booking->check_in->format('Y-m-d').'|'.
+                $booking->check_out->format('Y-m-d').'|'.
+                $booking->nights;
         });
 
-        $bookings = $groupedBookings->map(function ($group) {
-
-            $masterBooking = $group->first();
-
-            $rooms = collect();
-            $adjustments = collect();
-
-            foreach ($group as $booking) {
-
-                if (!$booking->currency) {
-                    continue;
-                }
-
-                foreach ($booking->rooms as $room) {
-                    $room->currency_id = $booking->currency_id;
-                    $room->currency = $booking->currency;
-                    $room->nights = $booking->nights;
-
-                    $rooms->push($room);
-                }
-
-                foreach ($booking->adjustments as $adj) {
-                    $adj->currency_id = $booking->currency_id;
-                    $adj->currency = $booking->currency;
-
-                    $adjustments->push($adj);
-                }
-            }
-
-            $masterBooking->setRelation('rooms', $rooms);
-            $masterBooking->setRelation('adjustments', $adjustments);
-
-            return $masterBooking;
-
-        })->values();
-        $html = view('admin.pages.bookings.pdf.export-guest', compact('bookings'))->render();
+        $html = view('admin.pages.bookings.pdf.export-guest', [
+            'bookings' => $bookings,
+            'groupedBookings' => $groupedBookings,
+            'bookingNotes' => $bookingNotes,
+        ])->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -1412,58 +1351,26 @@ class BookingController extends Controller
     public function exportNetRatePdf(Request $request)
     {
         $bookings = $this->getFilteredBookingsQuery($request)->get();
+        $bookingNotes = $this->getFilteredBookingsQuery($request, true)->get();
 
         if ($bookings->isEmpty()) {
             return back()->with('error', __('No bookings found to export'));
         }
 
-        // Group bookings by code, hotel, meals, dates, nights, and currency
         $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code . '|' .
-                $booking->hotel_id . '|' .
-                $booking->meals_plan . '|' .
-                $booking->check_in->format('Y-m-d') . '|' .
-                $booking->check_out->format('Y-m-d') . '|' .
-                $booking->nights . '|' .
-                $booking->currency_id;
+            return $booking->code.'|'.
+                $booking->hotel->name.'|'.
+                $booking->meals_plan.'|'.
+                $booking->check_in->format('Y-m-d').'|'.
+                $booking->check_out->format('Y-m-d').'|'.
+                $booking->nights;
         });
 
-        $bookings = $groupedBookings->map(function ($group) {
-
-            $masterBooking = $group->first();
-
-            $rooms = collect();
-            $adjustments = collect();
-
-            foreach ($group as $booking) {
-
-                if (!$booking->currency) {
-                    continue;
-                }
-
-                foreach ($booking->rooms as $room) {
-                    $room->currency_id = $booking->currency_id;
-                    $room->currency = $booking->currency;
-                    $room->nights = $booking->nights;
-
-                    $rooms->push($room);
-                }
-
-                foreach ($booking->adjustments as $adj) {
-                    $adj->currency_id = $booking->currency_id;
-                    $adj->currency = $booking->currency;
-
-                    $adjustments->push($adj);
-                }
-            }
-
-            $masterBooking->setRelation('rooms', $rooms);
-            $masterBooking->setRelation('adjustments', $adjustments);
-
-            return $masterBooking;
-
-        })->values();
-        $html = view('admin.pages.bookings.pdf.export-netrate', compact('bookings'))->render();
+        $html = view('admin.pages.bookings.pdf.export-netrate', [
+            'bookings' => $bookings,
+            'groupedBookings' => $groupedBookings,
+            'bookingNotes' => $bookingNotes,
+        ])->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',

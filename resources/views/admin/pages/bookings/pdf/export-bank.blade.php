@@ -68,69 +68,79 @@
 </head>
 
 <body>
-<div class="logo-container">
-    <img src="{{ public_path('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="AZHA Travel Logo"
-         class="logo-img"/>
-</div>
+    <div class="logo-container">
+        <img src="{{ public_path('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="AZHA Travel Logo"
+            class="logo-img" />
+    </div>
 
-<div style="margin-bottom: 15px; text-align: center;">
-    <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
-</div>
+    <div style="margin-bottom: 15px; text-align: center;">
+        <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
+    </div>
 
-<table>
-    <thead>
-    <tr style="text-wrap: nowrap">
-        <th>No.</th>
-        <th style="text-wrap: nowrap;">File Code</th>
-        <th style="text-wrap: nowrap;">Hotel Name</th>
-        <th style="text-wrap: nowrap;">Company Name</th>
-        <th class="nowrap" style="width: 130px">Bank Name</th>
-        <th style="text-wrap: nowrap;">Bank Account</th>
-        <th style="text-wrap: nowrap;">Amount</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach ($bookingsData as $index => $data)
-        <tr>
-            <td>{{ $index + 1 }}</td>
-            <td>{{ $data['booking']->code }}</td>
-            <td>{{ $data['booking']->hotel->name }}</td>
-            <td>{{ $data['booking']->hotel->company_name ?? '-' }}</td>
-            <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
-            <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
-            <td>{{ $data['booking']->currency->symbol }}{{ \App\Helpers\NumberHelper::format($data['total']) }}</td>
-        </tr>
-    @endforeach
-    </tbody>
-    @php
-        $currencyTotals = [];
-        foreach ($bookingsData as $data) {
-            $booking = $data['booking'];
-            $currencyId = $booking->currency_id;
-            $currencySymbol = $booking->currency->symbol;
+    <table>
+        <thead>
+            <tr style="text-wrap: nowrap">
+                <th>No.</th>
+                <th style="text-wrap: nowrap;">File Code</th>
+                <th style="text-wrap: nowrap;">Hotel Name</th>
+                <th style="text-wrap: nowrap;">Company Name</th>
+                <th class="nowrap" style="width: 130px">Bank Name</th>
+                <th style="text-wrap: nowrap;">Bank Account</th>
+                <th style="text-wrap: nowrap;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($bookingsData as $index => $data)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $data['booking']->code }}</td>
+                    <td>{{ $data['booking']->hotel->name }}</td>
+                    <td>{{ $data['booking']->hotel->company_name ?? '-' }}</td>
+                    <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
+                    <td>{{ $data['bank_account'] ? $data['bank_account']->account_number : '-' }}</td>
+                    <td>
+                        <span style="font-weight: bold;">
+                            {{ $data['booking']->currency->symbol }}
+                        </span>
+                        {{ \App\Helpers\NumberHelper::format($data['booking']->hotel_paid_amount >= $data['booking']->net_amount ? 0 : $data['booking']->net_amount - $data['booking']->hotel_paid_amount) }}
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+        @php
+            $currencyTotals = [];
+            foreach ($bookingsData as $data) {
+                $booking = $data['booking'];
+                $currencyId = $booking->currency_id;
+                $currencySymbol = $booking->currency->symbol;
 
-            if (!isset($currencyTotals[$currencyId])) {
-                $currencyTotals[$currencyId] = [
-                    'symbol' => $currencySymbol,
-                    'amount' => 0,
-                ];
+                if (!isset($currencyTotals[$currencyId])) {
+                    $currencyTotals[$currencyId] = [
+                        'symbol' => $currencySymbol,
+                        'amount' => 0,
+                    ];
+                }
+                $total =
+                    $booking->hotel_paid_amount >= $booking->net_amount
+                        ? 0
+                        : $booking->net_amount - $booking->hotel_paid_amount;
+                //            $currencyTotals[$currencyId]['amount'] += $data['total'];
+                $currencyTotals[$currencyId]['amount'] += $total;
             }
-            $currencyTotals[$currencyId]['amount'] += $data['total'];
-        }
-    @endphp
-    <tfoot>
-    @foreach ($currencyTotals as $currencyTotal)
-        <tr class="total-row">
-            <td colspan="6" style="text-align: center;">{{ __('Total') }}
-                ({{ $currencyTotal['symbol'] }})
-            </td>
-            <td>
-                {{ $currencyTotal['symbol'] }}{{ \App\Helpers\NumberHelper::format($currencyTotal['amount']) }}
-            </td>
-        </tr>
-    @endforeach
-    </tfoot>
-</table>
+        @endphp
+        <tfoot>
+            @foreach ($currencyTotals as $currencyTotal)
+                <tr class="total-row">
+                    <td colspan="6" style="text-align: center;">{{ __('Total') }}
+                        ({{ $currencyTotal['symbol'] }})
+                    </td>
+                    <td>
+                        {{ $currencyTotal['symbol'] }}{{ \App\Helpers\NumberHelper::format($currencyTotal['amount']) }}
+                    </td>
+                </tr>
+            @endforeach
+        </tfoot>
+    </table>
 
 </body>
 

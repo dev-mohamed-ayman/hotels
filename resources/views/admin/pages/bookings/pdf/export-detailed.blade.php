@@ -141,162 +141,89 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($bookings as $booking)
+            @foreach ($groupedBookings as $group)
                 @php
-                    $rooms = $booking->rooms;
-                    $additions = $booking->adjustments->where('type', 'addition')->values();
-                    $discounts = $booking->adjustments->where('type', 'discount')->values();
-                    $rowCount = max($rooms->count(), $additions->count(), $discounts->count());
-                    if ($rowCount == 0) {
-                        $rowCount = 1;
-                    }
-                    $currencySymbol = $booking->currency->symbol ?? '';
+                    $totalRoomsInGroup = $group->sum(function ($b) {
+                        return count($b->rooms);
+                    });
+                    $isFirstBookingInGroup = true;
                 @endphp
 
-                @for ($i = 0; $i < $rowCount; $i++)
-                    <tr>
-                        @if ($i == 0)
-                            <td rowspan="{{ $rowCount }}">{{ $booking->code }}</td>
-                            <td rowspan="{{ $rowCount }}">{{ $booking->hotel->name }}</td>
-                            <td rowspan="{{ $rowCount }}">{{ $booking->meals_plan }}</td>
-                            <td rowspan="{{ $rowCount }}">{{ $booking->check_in->format('d-M-y') }}</td>
-                            <td rowspan="{{ $rowCount }}">{{ $booking->check_out->format('d-M-y') }}</td>
-                            <td rowspan="{{ $rowCount }}">{{ $booking->nights }}</td>
-                        @endif
-
-                        {{-- Room Details --}}
-                        @if (isset($rooms[$i]))
-                            @php $room = $rooms[$i]; @endphp
+                @foreach ($group as $booking)
+                    @foreach ($booking->rooms as $room)
+                        <tr>
+                            @if ($isFirstBookingInGroup && $loop->first)
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->code }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->hotel->name }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->meals_plan }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->check_in->format('d-M-y') }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->check_out->format('d-M-y') }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->nights }}</td>
+                            @endif
                             <td style="height: 50px">{{ $room->room_count }}</td>
                             <td style="height: 50px">{{ $room->room_type }}</td>
                             <td style="height: 50px">{{ $room->category }}</td>
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->price) }}
+                            <td style="height: 50px"><span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->price) }}
+                            </td>
+                            <td style="height: 50px"><span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->margin) }}
                             </td>
                             <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->margin) }}
-                            </td>
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->price + $room->margin) }}
-                            </td>
+                                <span style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->price + $room->margin) }}
                             <td style="height: 50px">{{ $room->child_count }}</td>
                             <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->child_price) }}
-                            </td>
+                                <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->child_price) }}</td>
                             <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->child_margin) }}
-                            </td>
+                                <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->child_margin) }}</td>
                             <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($room->child_price + $room->child_margin) }}
+                                <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->child_price + $room->child_margin) }}
                             </td>
-                        @else
-                            {{-- Empty Room Cells --}}
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        @endif
-
-                        {{-- Extras and Reducts --}}
-                        @php
-                            $netExtra = 0;
-                            $guestExtra = 0;
-                            $netReduct = 0;
-                            $guestReduct = 0;
-                        @endphp
-
-                        {{-- Additions --}}
-                        @if (isset($additions[$i]))
                             @php
-                                $add = $additions[$i];
-                                $netExtra = $add->net_rate;
-                                $guestExtra = $add->guest_rate;
+                                $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
+                                $netReducts = $booking->adjustments->where('type', 'discount')->sum('net_rate');
+                                $guestExtras = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
+                                $guestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
+
+                                // Calculate totals for ALL rooms in the booking
+                                $totalNetRate = 0;
+                                $totalGuestRate = 0;
+                                foreach ($booking->rooms as $r) {
+                                    $totalNetRate += $r->price * $r->room_count * $booking->nights;
+                                    $totalNetRate += $r->child_price * $r->child_count * $booking->nights;
+                                    $totalGuestRate += ($r->price + $r->margin) * $r->room_count * $booking->nights;
+                                    $totalGuestRate += ($r->child_price + $r->child_margin) * $r->child_count * $booking->nights;
+                                }
+                                $totalNetRate += $netExtras - $netReducts;
+                                $totalGuestRate += $guestExtras - $guestReducts;
                             @endphp
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($netExtra) }}
-                            </td>
-                        @else
-                            <td></td>
-                        @endif
-
-                        {{-- Discounts --}}
-                        @if (isset($discounts[$i]))
-                            @php
-                                $disc = $discounts[$i];
-                                $netReduct = $disc->net_rate;
-                                $guestReduct = $disc->guest_rate;
-                            @endphp
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($netReduct) }}
-                            </td>
-                        @else
-                            <td></td>
-                        @endif
-
-                        {{-- Guest Extra (Column 19) --}}
-                        @if (isset($additions[$i]))
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($guestExtra) }}
-                            </td>
-                        @else
-                            <td></td>
-                        @endif
-
-                        {{-- Guest Reducts (Column 20) --}}
-                        @if (isset($discounts[$i]))
-                            <td style="height: 50px">
-                                <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                                {{ \App\Helpers\NumberHelper::format($guestReduct) }}
-                            </td>
-                        @else
-                            <td></td>
-                        @endif
-
-                        {{-- Row Totals --}}
-                        @php
-                            $rowNetTotal = 0;
-                            $rowGuestTotal = 0;
-
-                            // Add Room totals
-                            if (isset($rooms[$i])) {
-                                $r = $rooms[$i];
-                                $rowNetTotal += $r->price * $r->room_count * $booking->nights;
-                                $rowNetTotal += $r->child_price * $r->child_count * $booking->nights;
-                                $rowGuestTotal += ($r->price + $r->margin) * $r->room_count * $booking->nights;
-                                $rowGuestTotal +=
-                                    ($r->child_price + $r->child_margin) * $r->child_count * $booking->nights;
-                            }
-
-                            // Add Adjustments
-                            $rowNetTotal += $netExtra - $netReduct;
-                            $rowGuestTotal += $guestExtra - $guestReduct;
-                        @endphp
-
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($rowNetTotal) }}
-                        </td>
-                        <td style="height: 50px">
-                            <span style="font-weight: bold; font-size: 14pt;">{{ $currencySymbol }}</span>
-                            {{ \App\Helpers\NumberHelper::format($rowGuestTotal) }}
-                        </td>
-                    </tr>
-                @endfor
+                            @if ($loop->first)
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($netExtras) }}</td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <spa
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($netReducts) }}</td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($guestExtras) }}</td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($guestReducts) }}</td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($totalNetRate) }}</td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    <span
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($totalGuestRate) }}</td>
+                            @endif
+                        </tr>
+                    @endforeach
+                    @php $isFirstBookingInGroup = false; @endphp
+                @endforeach
                 <tr class="bg-gray">
                     <td colspan="22"></td>
                 </tr>
@@ -307,7 +234,7 @@
                 $currencyTotals = [];
                 foreach ($bookings as $booking) {
                     $currencyId = $booking->currency_id;
-                    $currencySymbol = $booking->currency->symbol ?? '';
+                    $currencySymbol = $booking->currency->symbol;
 
                     if (!isset($currencyTotals[$currencyId])) {
                         $currencyTotals[$currencyId] = [
@@ -366,23 +293,58 @@
 
             @foreach ($currencyTotals as $currencyTotal)
                 <tr class="total-row">
-                    <td style="height: 70px; text-align: center;" class="total-label" colspan="20">
-                        {{ __('Total') }}
-                        (<span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>)
+                    <td style="height: 70px; text-align: center;" class="total-label" colspan="20">{{ __('Total') }}
+                        <span style="font-weight: bold; font-size: 19px;">
+                            ({{ $currencyTotal['symbol'] }})
+                        </span>
                     </td>
                     <td style="height: 70px;">
-                        <span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>
-                        {{ \App\Helpers\NumberHelper::format($currencyTotal['totalNetRate']) }}
+                        <span style="font-weight: bold; font-size: 19px;">
+                            {{ $currencyTotal['symbol'] }}
+                        </span>{{ number_format($currencyTotal['totalNetRate']) }}
                     </td>
                     <td style="height: 70px;">
-                        <span style="font-weight: bold; font-size: 14pt;">{{ $currencyTotal['symbol'] }}</span>
-                        {{ \App\Helpers\NumberHelper::format($currencyTotal['totalGuestRate']) }}
-                    </td>
+                        <span style="font-weight: bold; font-size: 19px;">
+                            {{ $currencyTotal['symbol'] }}
+                        </span>{{ number_format($currencyTotal['totalGuestRate']) }}
                 </tr>
             @endforeach
 
         </tbody>
     </table>
+
+    @if(isset($bookingNotes) && $bookingNotes->count() > 0)
+        <div style="page-break-before: always; margin-top: 30px;">
+            <div style="margin-bottom: 15px; text-align: center; border-bottom: 1px solid #000; padding-bottom: 5px;">
+                <strong style="font-size: 14pt;">{{ __('Booking Notes') }}</strong>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th class="bg-light-blush" style="width: 120px; padding: 8px;">{{ __('Booking Code') }}</th>
+                        <th class="bg-light-blush" style="width: 200px; padding: 8px;">{{ __('Hotel Name') }}</th>
+                        <th class="bg-light-blush" style="padding: 8px;">{{ __('Notes') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($bookingNotes as $note)
+                        <tr class="{{ $loop->even ? 'bg-gray' : '' }}">
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center; vertical-align: top; font-weight: bold;">
+                                {{ $note->code }}
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #000; text-align: center; vertical-align: top;">
+                                {{ $note->hotel->name }}
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #000; text-align: left; vertical-align: top;">
+                                {!! nl2br(e($note->notes)) !!}
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 
 </body>
 
