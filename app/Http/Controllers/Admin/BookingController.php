@@ -551,17 +551,17 @@ class BookingController extends Controller
                 $newPaidAmount = $totalAmount;
             }
 
-            // Recalculate payment status
+            // Recalculate payment status based on net_amount (hotel's amount)
             $newStatus = 'unpaid';
             // If it was explicitly revised, keep it revised regardless of payment amount
             if ($booking->payment_status === 'revised') {
                 $newStatus = 'revised';
             } else {
-                if ($newPaidAmount > $totalAmount) {
+                if ($newPaidAmount > $netRate) {
                     $newStatus = 'overpaid';
-                } elseif ($newPaidAmount == $totalAmount) {
+                } elseif ($newPaidAmount == $netRate) {
                     $newStatus = 'paid';
-                } elseif ($newPaidAmount < $totalAmount && $newPaidAmount > 0) {
+                } elseif ($newPaidAmount < $netRate && $newPaidAmount > 0) {
                     $newStatus = 'partial';
                 }
             }
@@ -683,17 +683,17 @@ class BookingController extends Controller
             'paid_amount' => $newPaidAmount,
         ]);
 
-        // Recalculate payment status
+        // Recalculate payment status based on net_amount (hotel's amount)
         $newStatus = 'unpaid';
         // If it was explicitly revised, keep it revised regardless of payment amount
         if ($booking->payment_status === 'revised') {
             $newStatus = 'revised';
         } else {
-            if ($newPaidAmount > $booking->total_amount) {
+            if ($newPaidAmount >= $booking->net_amount) {
                 $newStatus = 'overpaid';
-            } elseif ($newPaidAmount == $booking->total_amount) {
+            } elseif ($newPaidAmount == $booking->net_amount) {
                 $newStatus = 'paid';
-            } elseif ($newPaidAmount < $booking->total_amount && $newPaidAmount > 0) {
+            } elseif ($newPaidAmount < $booking->net_amount && $newPaidAmount > 0) {
                 $newStatus = 'partial';
             }
         }

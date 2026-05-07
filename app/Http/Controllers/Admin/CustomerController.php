@@ -161,7 +161,7 @@ class CustomerController extends Controller
 
         // Calculate statistics
         $totalBookings = $customer->bookings->count();
-        $totalAmount = $customer->bookings->sum('total_amount');
+        $totalAmount = $customer->bookings->sum('net_amount');
         $paidAmount = $customer->bookings->sum('paid_amount');
         $pendingAmount = $totalAmount - $paidAmount;
 

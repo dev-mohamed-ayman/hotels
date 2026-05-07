@@ -247,7 +247,7 @@
 
                 <td colspan="3" style="border: 2px solid #000; font-weight: bold;">{{ __('Remaining Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    {{ $booking->total_amount - $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->total_amount - $booking->paid_amount) }}
+                    {{ $booking->net_amount - $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->net_amount - $booking->paid_amount) }}
                 </td>
                 <td colspan="4" style="border: 1px solid #000;"></td>
             </tr>

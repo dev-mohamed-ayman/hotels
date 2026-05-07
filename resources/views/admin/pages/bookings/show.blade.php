@@ -590,9 +590,9 @@
                         <div class="col-md-3 mb-3">
                             <div class="card bg-light">
                                 <div class="card-body text-center">
-                                    <h6 class="text-muted mb-2">{{ __('Total Amount') }}</h6>
+                                    <h6 class="text-muted mb-2">{{ __('Net Amount') }}</h6>
                                     <h4 class="mb-0 text-success">
-                                        {{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }}<br>
+                                        {{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>
@@ -614,7 +614,7 @@
                                 <div class="card-body text-center">
                                     <h6 class="text-muted mb-2">{{ __('Pending Amount') }}</h6>
                                     <h4 class="mb-0 text-warning">
-                                        {{ $booking->total_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount - $booking->paid_amount) }}<br>
+                                        {{ $booking->net_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount - $booking->paid_amount) }}<br>
                                         <small class="text-muted">{{ $booking->currency->symbol ?? '' }}</small>
                                     </h4>
                                 </div>

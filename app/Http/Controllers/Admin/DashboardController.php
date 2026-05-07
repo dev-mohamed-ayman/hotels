@@ -28,7 +28,7 @@ class DashboardController extends Controller
         $cancelledBookings = $user->can('view bookings') ? Booking::where('status', 'cancelled')->count() : 0;
 
         // Financial Statistics (only if user can view bookings)
-        $totalAmount = $user->can('view bookings') ? Booking::sum('total_amount') : 0;
+        $totalAmount = $user->can('view bookings') ? Booking::sum('net_amount') : 0;
         $paidAmount = $user->can('view bookings') ? Booking::sum('paid_amount') : 0;
 
         // Recent Bookings (only if user can view bookings)
@@ -65,11 +65,11 @@ class DashboardController extends Controller
             : collect();
 
         // Payment Status Statistics (only if user can view bookings)
-        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount = total_amount')->count() : 0;
+        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount = net_amount')->count() : 0;
         $unpaidBookings = $user->can('view bookings') ? Booking::where('paid_amount', 0)->count() : 0;
-        $partialBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > 0 AND paid_amount < total_amount')->count() : 0;
+        $partialBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > 0 AND paid_amount < net_amount')->count() : 0;
         $revisedBookings = $user->can('view bookings') ? Booking::where('payment_status', 'revised')->count() : 0;
-        $overpaidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > total_amount')->count() : 0;
+        $overpaidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > net_amount')->count() : 0;
 
         // Hotels Sales Statistics (only if user can view hotels and bookings)
         $hotelsSales = ($user->can('view hotels') && $user->can('view bookings'))
@@ -83,7 +83,7 @@ class DashboardController extends Controller
                     return [
                         'id' => $hotel->id,
                         'name' => $hotel->name,
-                        'total_sales' => $bookings->sum('total_amount'),
+                        'total_sales' => $bookings->sum('net_amount'),
                         'paid_sales' => $bookings->sum('paid_amount'),
                         'bookings_count' => $bookings->count(),
                         'rooms_count' => $roomsCount,
@@ -111,7 +111,7 @@ class DashboardController extends Controller
                         'id' => $customer->id,
                         'name' => $customer->name,
                         'bookings_count' => $customer->bookings_count,
-                        'total_revenue' => $customer->bookings->sum('total_amount'),
+                        'total_revenue' => $customer->bookings->sum('net_amount'),
                     ];
                 })
                 ->sortByDesc('bookings_count')
@@ -126,7 +126,7 @@ class DashboardController extends Controller
                     return [
                         'id' => $customer->id,
                         'name' => $customer->name,
-                        'total_revenue' => $customer->bookings->sum('total_amount'),
+                        'total_revenue' => $customer->bookings->sum('net_amount'),
                         'bookings_count' => $customer->bookings->count(),
                     ];
                 })
