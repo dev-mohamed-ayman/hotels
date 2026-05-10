@@ -65,11 +65,11 @@ class DashboardController extends Controller
             : collect();
 
         // Payment Status Statistics (only if user can view bookings)
-        $paidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount = net_amount')->count() : 0;
-        $unpaidBookings = $user->can('view bookings') ? Booking::where('paid_amount', 0)->count() : 0;
-        $partialBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > 0 AND paid_amount < net_amount')->count() : 0;
+        $paidBookings = $user->can('view bookings') ? Booking::where('payment_status', 'paid')->count() : 0;
+        $unpaidBookings = $user->can('view bookings') ? Booking::where('payment_status', 'unpaid')->count() : 0;
+        $partialBookings = $user->can('view bookings') ? Booking::where('payment_status', 'partial')->count() : 0;
         $revisedBookings = $user->can('view bookings') ? Booking::where('payment_status', 'revised')->count() : 0;
-        $overpaidBookings = $user->can('view bookings') ? Booking::whereRaw('paid_amount > net_amount')->count() : 0;
+        $overpaidBookings = $user->can('view bookings') ? Booking::where('payment_status', 'overpaid')->count() : 0;
 
         // Hotels Sales Statistics (only if user can view hotels and bookings)
         $hotelsSales = ($user->can('view hotels') && $user->can('view bookings'))

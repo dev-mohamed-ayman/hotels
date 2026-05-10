@@ -295,9 +295,9 @@ class BookingController extends Controller
 
             if ($paidAmount > $totalAmount) {
                 $newStatus = 'overpaid';
-            } elseif ($paidAmount == $totalAmount) {
+            } elseif ($paidAmount >= $totalAmount || $paidAmount >= $netRate) {
                 $newStatus = 'paid';
-            } elseif ($paidAmount < $totalAmount && $paidAmount > 0) {
+            } elseif ($paidAmount > 0) {
                 $newStatus = 'partial';
             }
 
@@ -551,17 +551,17 @@ class BookingController extends Controller
                 $newPaidAmount = $totalAmount;
             }
 
-            // Recalculate payment status based on net_amount (hotel's amount)
+            // Recalculate payment status
             $newStatus = 'unpaid';
             // If it was explicitly revised, keep it revised regardless of payment amount
             if ($booking->payment_status === 'revised') {
                 $newStatus = 'revised';
             } else {
-                if ($newPaidAmount > $netRate) {
+                if ($newPaidAmount > $totalAmount) {
                     $newStatus = 'overpaid';
-                } elseif ($newPaidAmount == $netRate) {
+                } elseif ($newPaidAmount >= $totalAmount || $newPaidAmount >= $netRate) {
                     $newStatus = 'paid';
-                } elseif ($newPaidAmount < $netRate && $newPaidAmount > 0) {
+                } elseif ($newPaidAmount > 0) {
                     $newStatus = 'partial';
                 }
             }
@@ -683,17 +683,17 @@ class BookingController extends Controller
             'paid_amount' => $newPaidAmount,
         ]);
 
-        // Recalculate payment status based on net_amount (hotel's amount)
+        // Recalculate payment status
         $newStatus = 'unpaid';
         // If it was explicitly revised, keep it revised regardless of payment amount
         if ($booking->payment_status === 'revised') {
             $newStatus = 'revised';
         } else {
-            if ($newPaidAmount >= $booking->net_amount) {
+            if ($newPaidAmount > $booking->total_amount) {
                 $newStatus = 'overpaid';
-            } elseif ($newPaidAmount == $booking->net_amount) {
+            } elseif ($newPaidAmount >= $booking->total_amount || $newPaidAmount >= $booking->net_amount) {
                 $newStatus = 'paid';
-            } elseif ($newPaidAmount < $booking->net_amount && $newPaidAmount > 0) {
+            } elseif ($newPaidAmount > 0) {
                 $newStatus = 'partial';
             }
         }
@@ -743,13 +743,16 @@ class BookingController extends Controller
                     'reference' => $booking->code,
                 ]);
 
-                // Update Booking Payment Status (Customer Side) if fully paid?
-                // User didn't ask to update paid_amount, but usually if we deduct from wallet, it means customer paid us.
-                // Let's update paid_amount as well by the same amount.
-
-                $booking->update([
-                    'paid_amount' => $booking->paid_amount + $amountJustPaid,
-                ]);
+                // If hotel is fully paid, mark customer payment as fully paid too
+                if ($newPaidAmount >= $booking->net_amount) {
+                    $booking->update([
+                        'paid_amount' => $booking->total_amount,
+                    ]);
+                } else {
+                    $booking->update([
+                        'paid_amount' => $booking->paid_amount + $amountJustPaid,
+                    ]);
+                }
             }
 
             DB::commit();
@@ -759,15 +762,19 @@ class BookingController extends Controller
             return back()->with('error', __('Error deducting from wallet: ').$e->getMessage());
         }
 
+        $booking->refresh();
+
         // Recalculate payment status
         $newStatus = 'unpaid';
         // If it was explicitly revised, keep it revised regardless of payment amount
         if ($booking->payment_status === 'revised') {
             $newStatus = 'revised';
         } else {
-            if ($remainingAmount <= 0) {
+            if ($booking->paid_amount > $booking->total_amount) {
+                $newStatus = 'overpaid';
+            } elseif ($booking->paid_amount >= $booking->total_amount || $booking->paid_amount >= $booking->net_amount) {
                 $newStatus = 'paid';
-            } elseif ($remainingAmount > 0) {
+            } elseif ($booking->paid_amount > 0) {
                 $newStatus = 'partial';
             }
         }
