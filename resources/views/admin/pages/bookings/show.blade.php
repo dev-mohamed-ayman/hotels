@@ -225,7 +225,7 @@
                                                 class="d-flex justify-content-between align-items-center p-2 bg-label-warning rounded">
                                                 <span class="text-muted small">{{ __('Pending') }}</span>
                                                 <span
-                                                    class="fw-semibold text-warning">{{ $booking->total_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount - $booking->paid_amount) }}</span>
+                                                    class="fw-semibold text-warning">{{ $booking->net_amount - $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount - $booking->paid_amount) }}</span>
                                             </div>
                                         </div>
                                         @if ($booking->child_price > 0 || $booking->child_margin > 0)

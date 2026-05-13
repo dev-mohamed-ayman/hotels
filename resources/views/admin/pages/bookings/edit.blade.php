@@ -193,38 +193,34 @@
                                 @enderror
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
-                                <select class="form-select @error('payment_status') is-invalid @enderror"
-                                    id="payment_status" name="payment_status">
-                                    <option value="paid"
-                                        {{ old('payment_status', $booking->payment_status ?? '') == 'paid' ? 'selected' : '' }}>
-                                        {{ __('Paid') }}
-                                    </option>
-                                    <option value="unpaid"
-                                        {{ old('payment_status', $booking->payment_status ?? 'unpaid') == 'unpaid' ? 'selected' : '' }}>
-                                        {{ __('Unpaid') }}
-                                    </option>
-                                    <option value="partial"
-                                        {{ old('payment_status', $booking->payment_status ?? '') == 'partial' ? 'selected' : '' }}>
-                                        {{ __('Partial') }}
-                                    </option>
-                                    <option value="revised"
-                                        {{ old('payment_status', $booking->payment_status ?? '') == 'revised' ? 'selected' : '' }}>
-                                        {{ __('Revised') }}
-                                    </option>
-                                </select>
-                                <small class="text-muted" id="paymentStatusHint">
-                                    @if ($booking->hotel_paid_amount == 0)
-                                        {{ __('No payments recorded') }}
-                                    @elseif ($booking->hotel_paid_amount >= $booking->net_amount)
-                                        {{ __('Fully paid based on recorded payments') }}
-                                    @else
-                                        {{ __('Partially paid based on recorded payments') }}
-                                    @endif
+                                <label class="form-label">{{ __('Payment Status') }}</label>
+                                @php
+                                    $statusColors = [
+                                        'paid'    => 'success',
+                                        'partial' => 'warning',
+                                        'unpaid'  => 'danger',
+                                        'overpaid'=> 'primary',
+                                        'revised' => 'info',
+                                    ];
+                                    $statusLabels = [
+                                        'paid'    => __('Paid'),
+                                        'partial' => __('Partial Payment'),
+                                        'unpaid'  => __('Unpaid'),
+                                        'overpaid'=> __('Over Paid'),
+                                        'revised' => __('Revised'),
+                                    ];
+                                    $currentStatus = $booking->payment_status ?? 'unpaid';
+                                    $statusColor = $statusColors[$currentStatus] ?? 'secondary';
+                                    $statusLabel = $statusLabels[$currentStatus] ?? ucfirst($currentStatus);
+                                @endphp
+                                <div class="form-control bg-light d-flex align-items-center gap-2" style="cursor: default;">
+                                    <span class="badge bg-{{ $statusColor }}">{{ $statusLabel }}</span>
+                                    <small class="text-muted">{{ __('Auto-calculated') }}</small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="ti tabler-info-circle me-1"></i>
+                                    {{ __('Status is auto-calculated from paid amount vs net amount. Use "Update Payment" to change.') }}
                                 </small>
-                                @error('payment_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
                             </div>
 
 
@@ -878,7 +874,7 @@
             let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
 
             // Validation removed to allow overpayment
-            const remainingAmount = finalTotal - paidAmount;
+            const remainingAmount = netRateTotal - paidAmount;
 
             // Update display
             const premarginTotalEl = document.getElementById('premarginTotal');

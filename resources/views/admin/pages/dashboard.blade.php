@@ -656,20 +656,30 @@
                                             @endif
                                         </td>
                                         <td class="text-nowrap py-2">
-                                            @if ($booking->hotel_paid_amount == 0)
+                                            @if (empty($booking->payment_status) || $booking->payment_status == 'unpaid')
                                                 <span class="badge bg-danger" title="{{ __('Unpaid') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-x"></i>
                                                 </span>
-                                            @elseif ($booking->hotel_paid_amount >= $booking->net_amount && $booking->net_amount > 0)
+                                            @elseif ($booking->payment_status == 'paid')
                                                 <span class="badge bg-success" title="{{ __('Paid') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-check"></i>
                                                 </span>
-                                            @elseif ($booking->net_amount > 0)
-                                                <span class="badge bg-warning" title="{{ __('Partial Payment') }}"
+                                            @elseif ($booking->payment_status == 'partial')
+                                                <span class="badge bg-warning" title="{{ __('Partial') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-question-mark"></i>
+                                                </span>
+                                            @elseif ($booking->payment_status == 'overpaid')
+                                                <span class="badge bg-primary" title="{{ __('Over Paid') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-plus"></i>
+                                                </span>
+                                            @elseif ($booking->payment_status == 'revised')
+                                                <span class="badge bg-info" title="{{ __('Revised') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-refresh"></i>
                                                 </span>
                                             @else
                                                 <span class="text-muted">-</span>
@@ -749,7 +759,7 @@
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <form action="{{ route('bookings.update-payment', $booking) }}"
+                                                <form action="{{ route('bookings.update-guest-payment', $booking) }}"
                                                     method="POST">
                                                     @csrf
                                                     <div class="modal-body">
@@ -761,51 +771,27 @@
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
-                                                                class="form-label">{{ __('Current Paid Amount') }}</label>
+                                                                class="form-label">{{ __('Net Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            @php
-                                                                $remaining =
-                                                                    $booking->total_amount - $booking->paid_amount;
-                                                            @endphp
-                                                            <label
-                                                                class="form-label">{{ __('Remaining Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                id="remaining{{ $booking->id }}"
-                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label"
-                                                                for="payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                                for="guest_paid_amount{{ $booking->id }}">{{ __('Guest Paid Amount') }}
                                                                 *</label>
                                                             <div class="input-group">
                                                                 <input type="number" step="0.01" class="form-control"
-                                                                    id="payment_amount{{ $booking->id }}"
-                                                                    name="payment_amount" min="1"
-                                                                    max="{{ $remaining }}" step="1"
-                                                                    data-remaining="{{ $remaining }}"
+                                                                    id="guest_paid_amount{{ $booking->id }}"
+                                                                    name="guest_paid_amount" min="0"
+                                                                    value="{{ $booking->paid_amount }}"
                                                                     data-currency="{{ $booking->currency->symbol }}"
                                                                     data-booking-id="{{ $booking->id }}"
-                                                                    placeholder="{{ __('Enter amount to pay') }}"
+                                                                    placeholder="{{ __('Enter total paid amount') }}"
                                                                     required>
                                                                 <span
                                                                     class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
-                                                            <small class="text-muted">{{ __('Maximum') }}:
-                                                                {{ \App\Helpers\NumberHelper::format($remaining) }}
-                                                                {{ $booking->currency->symbol }}</small>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label
-                                                                class="form-label">{{ __('New Remaining Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                id="new_remaining{{ $booking->id }}"
-                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -1035,32 +1021,20 @@
 
         // Payment Update Logic
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Customer Payment Logic (Incremental)
-            const paymentInputs = document.querySelectorAll('[id^="payment_amount"]');
+            // 1. Guest Payment Logic (Total)
+            const guestPaidInputs = document.querySelectorAll('[id^="guest_paid_amount"]');
 
-            paymentInputs.forEach(input => {
+            guestPaidInputs.forEach(input => {
                 input.addEventListener('input', function() {
                     const bookingId = this.getAttribute('data-booking-id');
-                    const remaining = parseFloat(this.getAttribute('data-remaining'));
                     const currency = this.getAttribute('data-currency');
-                    const paymentAmount = parseFloat(this.value) || 0;
+                    const paidAmount = parseFloat(this.value) || 0;
 
-                    // Calculate new remaining
-                    const newRemaining = remaining - paymentAmount;
-
-                    // Update the new remaining field
-                    const newRemainingField = document.getElementById('new_remaining' + bookingId);
-                    if (newRemainingField) {
-                        newRemainingField.value = newRemaining.toFixed(0) + ' ' + currency;
-
-                        // Add visual feedback
-                        if (paymentAmount > remaining) {
-                            this.classList.add('is-invalid');
-                            newRemainingField.classList.add('text-danger');
-                        } else {
-                            this.classList.remove('is-invalid');
-                            newRemainingField.classList.remove('text-danger');
-                        }
+                    // Add visual feedback
+                    if (paidAmount < 0) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
                     }
                 });
             });

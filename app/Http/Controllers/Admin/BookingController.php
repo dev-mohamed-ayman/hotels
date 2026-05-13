@@ -18,7 +18,7 @@ class BookingController extends Controller
     {
         $this->middleware('permission:view bookings')->only(['index', 'show']);
         $this->middleware('permission:create bookings')->only(['create', 'store']);
-        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updatePayment', 'updateHotelPayment']);
+        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updateGuestPayment', 'updateHotelPayment']);
         $this->middleware('permission:delete bookings')->only(['destroy']);
         $this->middleware('permission:export bookings')->only([
             'downloadBankPdf',
@@ -30,6 +30,32 @@ class BookingController extends Controller
             'exportGuestPdf',
             'exportNetRatePdf',
         ]);
+    }
+
+    /**
+     * Calculate payment status based solely on paid_amount vs net_amount.
+     * Uses round(,2) to avoid floating-point == comparison bugs.
+     *
+     * Rules:
+     *  paid == 0           → unpaid
+     *  0 < paid < net      → partial
+     *  paid == net         → paid
+     *  paid > net          → overpaid
+     */
+    private function calcPaymentStatus(float $paidAmount, float $netAmount): string
+    {
+        $paid = round($paidAmount, 2);
+        $net  = round($netAmount, 2);
+
+        if ($paid <= 0) {
+            return 'unpaid';
+        } elseif ($paid < $net) {
+            return 'partial';
+        } elseif ($paid === $net) {
+            return 'paid';
+        } else {
+            return 'overpaid';
+        }
     }
 
     public function index(Request $request)
@@ -225,8 +251,7 @@ class BookingController extends Controller
             'discounts.*.guest_rate' => 'required|numeric',
             'discounts.*.margin' => 'nullable|numeric',
             'discounts.*.description' => 'required|string',
-
-            'payment_status' => 'required|in:paid,unpaid,partial,revised,overpaid',
+            'paid_amount' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -290,16 +315,8 @@ class BookingController extends Controller
             //    return back()->withErrors(['paid_amount' => __('Paid amount cannot exceed total guest rate')])->withInput();
             // }
 
-            // Recalculate payment status
-            $newStatus = 'unpaid';
-
-            if ($paidAmount > $totalAmount) {
-                $newStatus = 'overpaid';
-            } elseif ($paidAmount >= $totalAmount || $paidAmount >= $netRate) {
-                $newStatus = 'paid';
-            } elseif ($paidAmount > 0) {
-                $newStatus = 'partial';
-            }
+            // Recalculate payment status based on net rate only
+            $newStatus = $this->calcPaymentStatus((float) $paidAmount, (float) $netRate);
 
             $booking = Booking::create([
                 'code' => $request->code,
@@ -437,7 +454,7 @@ class BookingController extends Controller
             'option_date' => 'nullable|date',
             'payment_date' => 'nullable|date', // Keep for backward compatibility
             'meals_plan' => 'nullable|string|max:255',
-            'payment_status' => 'nullable|in:paid,unpaid,partial,revised,overpaid',
+            'payment_status' => 'nullable|in:paid,unpaid,partial,revised,overpaid', // ignored, auto-calculated
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
@@ -517,54 +534,12 @@ class BookingController extends Controller
             $currentPaid = $booking->paid_amount;
             $newPaidAmount = $request->paid_amount ?? $currentPaid;
 
-            // Only auto-refund if the user didn't manually change the paid amount (i.e., it's an auto-adjustment due to price drop)
-            // If user manually entered a higher amount, we accept it as overpayment.
-            // We use a small epsilon for float comparison.
-            if ($newPaidAmount > $totalAmount && abs($newPaidAmount - $currentPaid) < 0.01) {
-                $refundAmount = $newPaidAmount - $totalAmount;
+            // Note: We no longer auto-refund on booking edit.
+            // The paid_amount stays as-is, and payment_status reflects the actual state.
+            // If paid > net, status = overpaid. User can manually adjust paid_amount if needed.
 
-                // Calculate Net Rate Drop (Old Net - New Net)
-                $oldNetRate = $booking->net_amount ?? 0;
-                $netRateDrop = max(0, $oldNetRate - $netRate);
-
-                // Process Refund
-                // Credit Customer (Add money to customer wallet)
-                $booking->customer->walletTransactions()->create([
-                    'currency_id' => $booking->currency_id,
-                    'amount' => $booking->total_amount - $totalAmount,
-                    'type' => 'debit',
-                    'description' => __('Refund for booking modification #:code (Cost + Margin)', ['code' => $booking->code]),
-                    'reference' => $booking->code,
-                ]);
-
-                // Debit Hotel (Deduct money from hotel wallet - Only Net Rate Drop)
-                if ($netRateDrop > 0) {
-                    $booking->hotel->walletTransactions()->create([
-                        'currency_id' => $booking->currency_id,
-                        'amount' => $netRateDrop,
-                        'type' => 'credit',
-                        'description' => __('Refund deduction (Net Rate) for booking modification #:code', ['code' => $booking->code]),
-                        'reference' => $booking->code,
-                    ]);
-                }
-
-                $newPaidAmount = $totalAmount;
-            }
-
-            // Recalculate payment status
-            $newStatus = 'unpaid';
-            // If it was explicitly revised, keep it revised regardless of payment amount
-            if ($booking->payment_status === 'revised') {
-                $newStatus = 'revised';
-            } else {
-                if ($newPaidAmount > $totalAmount) {
-                    $newStatus = 'overpaid';
-                } elseif ($newPaidAmount >= $totalAmount || $newPaidAmount >= $netRate) {
-                    $newStatus = 'paid';
-                } elseif ($newPaidAmount > 0) {
-                    $newStatus = 'partial';
-                }
-            }
+            // Recalculate payment status based on net rate only
+            $newStatus = $this->calcPaymentStatus((float) $newPaidAmount, (float) $netRate);
 
             $booking->update([
                 'code' => $request->code,
@@ -659,129 +634,74 @@ class BookingController extends Controller
         }
     }
 
-    public function updatePayment(Request $request, Booking $booking)
-    {
-        // $remainingAmount = $booking->total_amount - $booking->paid_amount;
-
-        $request->validate([
-            'payment_amount' => [
-                'required',
-                'numeric',
-                'min:0.01',
-                // 'max:' . $remainingAmount, // Allow overpayment
-            ],
-        ]);
-        // , [
-        //     'payment_amount.max' => __('Payment amount cannot exceed remaining amount of :amount', [
-        //         'amount' => number_format($remainingAmount, 0) . ' ' . $booking->currency->symbol,
-        //     ]),
-        // ]);
-
-        $newPaidAmount = $booking->paid_amount + $request->payment_amount;
-
-        $booking->update([
-            'paid_amount' => $newPaidAmount,
-        ]);
-
-        // Recalculate payment status
-        $newStatus = 'unpaid';
-        // If it was explicitly revised, keep it revised regardless of payment amount
-        if ($booking->payment_status === 'revised') {
-            $newStatus = 'revised';
-        } else {
-            if ($newPaidAmount > $booking->total_amount) {
-                $newStatus = 'overpaid';
-            } elseif ($newPaidAmount >= $booking->total_amount || $newPaidAmount >= $booking->net_amount) {
-                $newStatus = 'paid';
-            } elseif ($newPaidAmount > 0) {
-                $newStatus = 'partial';
-            }
-        }
-
-        $booking->update([
-            'payment_status' => $newStatus,
-        ]);
-
-        return back()->with('success', __('Payment updated successfully.'));
-    }
-
-    public function updateHotelPayment(Request $request, Booking $booking)
+    public function updateGuestPayment(Request $request, Booking $booking)
     {
         $request->validate([
-            'hotel_paid_amount' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
+            'guest_paid_amount' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $currentHotelPaid = $booking->hotel_paid_amount;
-        $newPaidAmount = $request->hotel_paid_amount;
-
-        $remainingAmount = $booking->net_amount - $newPaidAmount;
-
-        $booking->update([
-            'hotel_paid_amount' => $newPaidAmount,
-        ]);
+        $currentPaidAmount = $booking->paid_amount;
+        $newPaidAmount     = (float) $request->guest_paid_amount;
+        $newStatus         = $this->calcPaymentStatus($newPaidAmount, (float) $booking->net_amount);
 
         try {
             DB::beginTransaction();
 
-            // Calculate amount to deduct: The difference between new and old paid amount
-            // This represents the amount "just paid" in this transaction
-            $amountJustPaid = $newPaidAmount - $currentHotelPaid;
+            // Update paid_amount AND payment_status together atomically
+            $booking->update([
+                'paid_amount'    => $newPaidAmount,
+                'payment_status' => $newStatus,
+            ]);
 
-            // If amount is positive, deduct from customer wallet
-            // If negative (refund?), we currently don't handle it or ignore it based on user request "deduct what I paid"
-
+            // Record wallet transaction for the difference
+            $amountJustPaid = $newPaidAmount - $currentPaidAmount;
             if ($amountJustPaid > 0) {
                 $booking->customer->walletTransactions()->create([
-                    'amount' => $amountJustPaid,
-                    'type' => 'credit',
+                    'amount'      => $amountJustPaid,
+                    'type'        => 'credit',
                     'currency_id' => $booking->currency_id,
-                    'description' => __('Payment for Booking #:code (Hotel Payment)', ['code' => $booking->code]),
-                    'reference' => $booking->code,
+                    'description' => __('Payment for Booking #:code (Guest Payment)', ['code' => $booking->code]),
+                    'reference'   => $booking->code,
                 ]);
-
-                // If hotel is fully paid, mark customer payment as fully paid too
-                if ($newPaidAmount >= $booking->net_amount) {
-                    $booking->update([
-                        'paid_amount' => $booking->total_amount,
-                    ]);
-                } else {
-                    $booking->update([
-                        'paid_amount' => $booking->paid_amount + $amountJustPaid,
-                    ]);
-                }
             }
 
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', __('Error deducting from wallet: ').$e->getMessage());
+            return back()->with('error', __('Error updating guest payment: ').$e->getMessage());
         }
 
-        $booking->refresh();
+        return back()->with('success', __('Guest payment updated successfully.'));
+    }
 
-        // Recalculate payment status
-        $newStatus = 'unpaid';
-        // If it was explicitly revised, keep it revised regardless of payment amount
-        if ($booking->payment_status === 'revised') {
-            $newStatus = 'revised';
-        } else {
-            if ($booking->paid_amount > $booking->total_amount) {
-                $newStatus = 'overpaid';
-            } elseif ($booking->paid_amount >= $booking->total_amount || $booking->paid_amount >= $booking->net_amount) {
-                $newStatus = 'paid';
-            } elseif ($booking->paid_amount > 0) {
-                $newStatus = 'partial';
-            }
-        }
-
-        $booking->update([
-            'payment_status' => $newStatus,
+    public function updateHotelPayment(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'hotel_paid_amount' => ['required', 'numeric', 'min:0'],
         ]);
+
+        $newHotelPaidAmount = (float) $request->hotel_paid_amount;
+        $remainingAmount    = $booking->net_amount - $newHotelPaidAmount;
+
+        // payment_status is based on hotel_paid_amount vs net_amount
+        $newStatus = $this->calcPaymentStatus($newHotelPaidAmount, (float) $booking->net_amount);
+
+        try {
+            DB::beginTransaction();
+
+            // Update hotel_paid_amount AND payment_status together atomically
+            $booking->update([
+                'hotel_paid_amount' => $newHotelPaidAmount,
+                'payment_status'    => $newStatus,
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', __('Error updating hotel payment: ').$e->getMessage());
+        }
 
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
             'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
@@ -1196,13 +1116,8 @@ class BookingController extends Controller
     {
         // If current status is revised, switch to auto-calculate (which might be paid, partial, or unpaid)
         if ($booking->payment_status === 'revised') {
-            // Auto calculate based on amounts
-            $newStatus = 'unpaid';
-            if ($booking->paid_amount >= $booking->total_amount && $booking->total_amount > 0) {
-                $newStatus = 'paid';
-            } elseif ($booking->paid_amount > 0) {
-                $newStatus = 'partial';
-            }
+            // Auto calculate based on net amount only (paid_amount vs net_amount)
+            $newStatus = $this->calcPaymentStatus((float) $booking->paid_amount, (float) $booking->net_amount);
             $booking->update(['payment_status' => $newStatus]);
             $message = __('Booking status set to Auto Calculate (:status)', ['status' => ucfirst($newStatus)]);
         } else {

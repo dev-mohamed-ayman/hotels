@@ -658,7 +658,7 @@
                                                     <button type="button" class="btn-close"
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <form action="{{ route('bookings.update-payment', $booking) }}"
+                                                <form action="{{ route('bookings.update-guest-payment', $booking) }}"
                                                     method="POST">
                                                     @csrf
                                                     <div class="modal-body">
@@ -670,54 +670,27 @@
                                                         </div>
                                                         <div class="mb-3">
                                                             <label
-                                                                class="form-label">{{ __('Current Paid Amount') }}</label>
+                                                                class="form-label">{{ __('Net Amount') }}</label>
                                                             <input type="text" class="form-control"
-                                                                value="{{ $booking->paid_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->paid_amount) }} {{ $booking->currency->symbol }}"
+                                                                value="{{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }} {{ $booking->currency->symbol }}"
                                                                 readonly>
-
-
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            @php
-                                                                $remaining =
-                                                                    $booking->total_amount - $booking->paid_amount;
-                                                            @endphp
-                                                            <label
-                                                                class="form-label">{{ __('Remaining Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                id="remaining{{ $booking->id }}"
-                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
-
-
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label"
-                                                                for="payment_amount{{ $booking->id }}">{{ __('Payment Amount') }}
+                                                                for="guest_paid_amount{{ $booking->id }}">{{ __('Guest Paid Amount') }}
                                                                 *</label>
                                                             <div class="input-group">
                                                                 <input type="number" step="0.01" class="form-control"
-                                                                    id="payment_amount{{ $booking->id }}"
-                                                                    name="payment_amount" min="0.01"
-                                                                    data-remaining="{{ $remaining }}"
+                                                                    id="guest_paid_amount{{ $booking->id }}"
+                                                                    name="guest_paid_amount" min="0"
+                                                                    value="{{ $booking->paid_amount }}"
                                                                     data-currency="{{ $booking->currency->symbol }}"
                                                                     data-booking-id="{{ $booking->id }}"
-                                                                    placeholder="{{ __('Enter amount to pay') }}"
+                                                                    placeholder="{{ __('Enter total paid amount') }}"
                                                                     required>
                                                                 <span
                                                                     class="input-group-text">{{ $booking->currency->symbol }}</span>
                                                             </div>
-                                                            {{-- <small class="text-muted">{{ __('Maximum') }}:
-                                                                {{ \App\Helpers\NumberHelper::format($remaining) }}
-                                                                {{ $booking->currency->symbol }}</small> --}}
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label
-                                                                class="form-label">{{ __('New Remaining Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                id="new_remaining{{ $booking->id }}"
-                                                                value="{{ \App\Helpers\NumberHelper::format($remaining) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">

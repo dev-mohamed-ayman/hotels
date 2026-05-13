@@ -18,8 +18,12 @@ class Booking extends Model
         'check_out' => 'date',
         'option_date' => 'date',
         'payment_date' => 'date',
-        
-         // Keep for backward compatibility
+        'paid_amount' => 'float',
+        'net_amount' => 'float',
+        'total_amount' => 'float',
+        'hotel_paid_amount' => 'float',
+        'child_price' => 'float',
+        'child_margin' => 'float',
     ];
 
     public function customer(): BelongsTo

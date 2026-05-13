@@ -182,26 +182,15 @@
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label" for="payment_status">{{ __('Payment Status') }}</label>
-                                <select class="form-select @error('payment_status') is-invalid @enderror"
-                                    id="payment_status" name="payment_status" required>
-                                    <option value="unpaid"
-                                        {{ old('payment_status', 'unpaid') == 'unpaid' ? 'selected' : '' }}>
-                                        {{ __('Unpaid') }}
-                                    </option>
-                                    <option value="partial" {{ old('payment_status') == 'partial' ? 'selected' : '' }}>
-                                        {{ __('Partial') }}
-                                    </option>
-                                    <option value="paid" {{ old('payment_status') == 'paid' ? 'selected' : '' }}>
-                                        {{ __('Paid') }}
-                                    </option>
-                                    <option value="revised" {{ old('payment_status') == 'revised' ? 'selected' : '' }}>
-                                        {{ __('Revised') }}
-                                    </option>
-                                </select>
-                                @error('payment_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <label class="form-label">{{ __('Payment Status') }}</label>
+                                <div class="form-control bg-light text-muted" style="cursor: default;">
+                                    <i class="ti tabler-calculator me-1"></i>
+                                    {{ __('Auto-calculated from paid amount') }}
+                                </div>
+                                <small class="text-muted">
+                                    <i class="ti tabler-info-circle me-1"></i>
+                                    {{ __('0 = Unpaid · Partial > 0 · Full = Paid · Over = Overpaid') }}
+                                </small>
                             </div>
                         </div>
 
@@ -352,7 +341,7 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
                                 <input type="number" step="0.01" name="paid_amount" id="paid_amount"
-                                    class="form-control form-control-lg" value="0" min="0" />
+                                    class="form-control form-control-lg" value="{{ old('paid_amount', 0) }}" min="0" />
                             </div>
                         </div>
 
@@ -758,7 +747,7 @@
             //    }
             // }
 
-            const remainingAmount = finalTotal - paidAmount;
+            const remainingAmount = netRateTotal - paidAmount;
 
             // Update display
             const premarginTotalEl = document.getElementById('premarginTotal');

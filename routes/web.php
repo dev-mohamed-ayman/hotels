@@ -63,7 +63,7 @@ Route::group(
             });
 
             // Bookings Routes
-            Route::post('bookings/{booking}/update-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updatePayment'])->name('bookings.update-payment');
+            Route::post('bookings/{booking}/update-guest-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updateGuestPayment'])->name('bookings.update-guest-payment');
             Route::post('bookings/{booking}/update-hotel-payment', [\App\Http\Controllers\Admin\BookingController::class, 'updateHotelPayment'])->name('bookings.update-hotel-payment');
             Route::get('bookings/{booking}/pdf/bank', [\App\Http\Controllers\Admin\BookingController::class, 'downloadBankPdf'])->name('bookings.pdf.bank');
             Route::get('bookings/{booking}/pdf/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'downloadDetailedPdf'])->name('bookings.pdf.detailed');
