@@ -60,10 +60,12 @@
                                             <label class="form-label">{{ __('Type') }}</label>
                                             <select name="type" class="form-select">
                                                 <option value="">{{ __('All') }}</option>
-                                                <option value="B2C" {{ request('type') == 'B2C' ? 'selected' : '' }}>
+                                                <option value="individual"
+                                                    {{ request('type') == 'individual' ? 'selected' : '' }}>
                                                     {{ __('B2C (Individual)') }}
                                                 </option>
-                                                <option value="B2B" {{ request('type') == 'B2B' ? 'selected' : '' }}>
+                                                <option value="corporate"
+                                                    {{ request('type') == 'corporate' ? 'selected' : '' }}>
                                                     {{ __('B2B (Corporate)') }}
                                                 </option>
                                             </select>
