@@ -116,12 +116,12 @@
                                                                 {{ __('Paid') }}
                                                             </span>
                                                         @else
-                                                            @if ($booking->option_date->isPast())
-                                                                <span class="badge bg-label-warning"
-                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
-                                                            @elseif ($booking->option_date->isToday())
+                                                            @if ($booking->option_date->isToday())
                                                                 <span class="badge bg-label-info"
                                                                     style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                            @elseif ($booking->option_date->isPast())
+                                                                <span class="badge bg-label-warning"
+                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
                                                             @else
                                                                 <span class="badge bg-label-success"
                                                                     style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
@@ -311,12 +311,12 @@
                                                                 {{ __('Paid') }}
                                                             </span>
                                                         @else
-                                                            @if ($booking->option_date->isPast())
-                                                                <span class="badge bg-label-warning"
-                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
-                                                            @elseif ($booking->option_date->isToday())
+                                                            @if ($booking->option_date->isToday())
                                                                 <span class="badge bg-label-info"
                                                                     style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                            @elseif ($booking->option_date->isPast())
+                                                                <span class="badge bg-label-warning"
+                                                                    style="font-size: 0.65rem;">{{ __('Past') }}</span>
                                                             @else
                                                                 <span class="badge bg-label-success"
                                                                     style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
@@ -638,12 +638,12 @@
                                                             {{ __('Paid') }}
                                                         </span>
                                                     @else
-                                                        @if ($booking->option_date->isPast())
-                                                            <span class="badge bg-label-warning"
-                                                                style="font-size: 0.65rem;">{{ __('Past') }}</span>
-                                                        @elseif ($booking->option_date->isToday())
+                                                        @if ($booking->option_date->isToday())
                                                             <span class="badge bg-label-info"
                                                                 style="font-size: 0.65rem;">{{ __('Today') }}</span>
+                                                        @elseif ($booking->option_date->isPast())
+                                                            <span class="badge bg-label-warning"
+                                                                style="font-size: 0.65rem;">{{ __('Past') }}</span>
                                                         @else
                                                             <span class="badge bg-label-success"
                                                                 style="font-size: 0.65rem;">{{ __('Upcoming') }}</span>
