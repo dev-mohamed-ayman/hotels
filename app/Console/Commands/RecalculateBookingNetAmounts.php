@@ -53,8 +53,9 @@ class RecalculateBookingNetAmounts extends Command
             $netAmount -= $discounts;
 
             // Recalculate payment_status based on new net_amount (use round() to avoid float == bugs)
-            $paid = round((float) $booking->paid_amount, 2);
-            $net  = round((float) $netAmount,            2);
+            $decimals = (int) config('numbers.decimals', 3);
+            $paid = round((float) $booking->paid_amount, $decimals);
+            $net  = round((float) $netAmount,            $decimals);
             if ($paid <= 0) {
                 $paymentStatus = 'unpaid';
             } elseif ($paid < $net) {

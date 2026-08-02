@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use App\Models\WalletTransaction;
 use App\Observers\WalletTransactionObserver;
@@ -26,9 +27,11 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrap();
 
-        // Custom directive to format numbers without trailing zeros
-        \Blade::directive('formatNumber', function ($expression) {
-            return "<?php echo preg_replace('/\.0+$|\.00+$/', '', number_format($expression, 2)); ?>";
+        // Custom directive to format numbers without trailing zeros.
+        // Decimal places come from config/numbers.php; an explicit count can be
+        // passed as a second argument: @formatNumber($value, 2)
+        Blade::directive('formatNumber', function ($expression) {
+            return "<?php echo \App\Helpers\NumberHelper::format($expression); ?>";
         });
     }
 }

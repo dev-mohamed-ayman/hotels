@@ -781,7 +781,7 @@
                                                                 for="guest_paid_amount{{ $booking->id }}">{{ __('Guest Paid Amount') }}
                                                                 *</label>
                                                             <div class="input-group">
-                                                                <input type="number" step="0.01" class="form-control"
+                                                                <input type="number" step="any" class="form-control"
                                                                     id="guest_paid_amount{{ $booking->id }}"
                                                                     name="guest_paid_amount" min="0"
                                                                     value="{{ $booking->paid_amount }}"
@@ -841,7 +841,7 @@
                                                 for="hotel_paid_amount{{ $booking->id }}">{{ __('Set New Paid to Hotel Amount') }}
                                                 *</label>
                                             <div class="input-group">
-                                                <input type="number" step="0.01" class="form-control"
+                                                <input type="number" step="any" class="form-control"
                                                     id="hotel_paid_amount{{ $booking->id }}" name="hotel_paid_amount"
                                                     data-net-amount="{{ $booking->net_amount }}"
                                                     data-currency="{{ $booking->currency->symbol }}"
@@ -1056,7 +1056,7 @@
                     const newRemainingField = document.getElementById('new_hotel_remaining' +
                         bookingId);
                     if (newRemainingField) {
-                        newRemainingField.value = newRemaining.toFixed(2) + ' ' + currency;
+                        newRemainingField.value = roundNumber(newRemaining) + ' ' + currency;
 
                         // Add visual feedback
                         if (newRemaining < 0) {

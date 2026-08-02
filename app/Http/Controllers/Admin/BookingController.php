@@ -34,7 +34,8 @@ class BookingController extends Controller
 
     /**
      * Calculate payment status based solely on paid_amount vs net_amount.
-     * Uses round(,2) to avoid floating-point == comparison bugs.
+     * Rounds to the configured decimal places to avoid floating-point
+     * == comparison bugs.
      *
      * Rules:
      *  paid == 0           → unpaid
@@ -44,8 +45,10 @@ class BookingController extends Controller
      */
     private function calcPaymentStatus(float $paidAmount, float $netAmount): string
     {
-        $paid = round($paidAmount, 2);
-        $net  = round($netAmount, 2);
+        $decimals = (int) config('numbers.decimals', 3);
+
+        $paid = round($paidAmount, $decimals);
+        $net  = round($netAmount, $decimals);
 
         if ($paid <= 0) {
             return 'unpaid';
@@ -704,7 +707,7 @@ class BookingController extends Controller
         }
 
         return back()->with('success', __('Hotel payment updated successfully. New remaining: :amount', [
-            'amount' => number_format($remainingAmount, 0).' '.$booking->currency->symbol,
+            'amount' => formatNumber($remainingAmount).' '.$booking->currency->symbol,
         ]));
     }
 

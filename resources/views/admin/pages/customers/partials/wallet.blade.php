@@ -67,7 +67,7 @@
                                 <div>
                                     <h6 class="mb-1 text-muted">{{ $balance->currency->code ?? '???' }}</h6>
                                     <h4 class="mb-0 {{ $balance->balance < 0 ? 'text-danger' : 'text-success' }}">
-                                        {{ number_format($balance->balance, 2) }}
+                                        {{ formatNumber($balance->balance) }}
                                         {{ $balance->currency->symbol ?? '' }}
                                     </h4>
                                 </div>
@@ -109,7 +109,7 @@
                             <td>{{ $transaction->reference }}</td>
                             <td>{{ $transaction->description }}</td>
                             <td>
-                                {{ number_format($transaction->amount, 2) }}
+                                {{ formatNumber($transaction->amount) }}
                                 {{ $transaction->currency->code ?? '' }}
                             </td>
                             <td>
@@ -184,7 +184,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Amount') }}</label>
-                        <input type="number" step="0.01" name="amount" id="edit_amount" class="form-control"
+                        <input type="number" step="any" name="amount" id="edit_amount" class="form-control"
                             required min="0.01">
                     </div>
                     <div class="mb-3">
@@ -292,7 +292,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ __('Amount') }}</label>
-                        <input type="number" step="0.01" name="amount" class="form-control" required
+                        <input type="number" step="any" name="amount" class="form-control" required
                             min="0.01">
                     </div>
                     <div class="mb-3">

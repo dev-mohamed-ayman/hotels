@@ -21,9 +21,12 @@ class WalletTransaction extends Model
         'created_at',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:'.config('numbers.decimals', 3),
+        ];
+    }
 
     public function transactionable()
     {

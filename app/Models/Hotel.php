@@ -18,10 +18,13 @@ class Hotel extends Model
         'wallet',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'wallet' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'wallet' => 'decimal:'.config('numbers.decimals', 3),
+        ];
+    }
 
     public function walletTransactions()
     {

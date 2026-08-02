@@ -67,3 +67,30 @@ if (!function_exists('formatDateTime')) {
         return $dateTime->format($format);
     }
 }
+
+if (!function_exists('formatNumber')) {
+    /**
+     * Format a numeric value for display using the app-wide decimal settings
+     * (config/numbers.php). Trailing zeros are trimmed: 1.500 => "1.5".
+     *
+     * @param  mixed  $number
+     * @param  int|null  $decimals  Override the configured decimal places
+     * @return string
+     */
+    function formatNumber($number, ?int $decimals = null)
+    {
+        return \App\Helpers\NumberHelper::format($number, $decimals);
+    }
+}
+
+if (!function_exists('numberStep')) {
+    /**
+     * Value for the `step` attribute of a numeric input.
+     *
+     * @return string
+     */
+    function numberStep()
+    {
+        return \App\Helpers\NumberHelper::step();
+    }
+}

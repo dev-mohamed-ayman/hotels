@@ -17,9 +17,10 @@ class FixBookingPaymentStatuses extends Command
         $bar->start();
 
         $fixed = 0;
+        $decimals = (int) config('numbers.decimals', 3);
         foreach ($bookings as $booking) {
-            $paid = round((float) $booking->paid_amount, 2);
-            $net  = round((float) $booking->net_amount,  2);
+            $paid = round((float) $booking->paid_amount, $decimals);
+            $net  = round((float) $booking->net_amount,  $decimals);
             if ($paid <= 0) {
                 $newStatus = 'unpaid';
             } elseif ($paid < $net) {

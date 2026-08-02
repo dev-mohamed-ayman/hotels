@@ -200,6 +200,37 @@
     </script>
 
     @include('admin.layouts.toast')
+
+    <!-- Shared number formatting (decimal places come from config/numbers.php) -->
+    <script>
+        window.NUMBER_DECIMALS = {{ (int) config('numbers.decimals', 3) }};
+        window.NUMBER_TRIM_ZEROS = @json((bool) config('numbers.trim_trailing_zeros', true));
+
+        // Plain numeric string, safe to write into an <input value>. No separators.
+        window.roundNumber = function(value, decimals) {
+            var d = decimals === undefined ? window.NUMBER_DECIMALS : decimals;
+            var n = parseFloat(value);
+            if (isNaN(n)) n = 0;
+            var out = n.toFixed(d);
+            if (window.NUMBER_TRIM_ZEROS && out.indexOf('.') !== -1) {
+                out = out.replace(/0+$/, '').replace(/\.$/, '');
+            }
+            return out;
+        };
+
+        // Display string with thousand separators, for textContent only.
+        window.formatNumber = function(value, decimals) {
+            var d = decimals === undefined ? window.NUMBER_DECIMALS : decimals;
+            var n = parseFloat(value);
+            if (isNaN(n)) n = 0;
+            var out = n.toLocaleString('en-US', {
+                minimumFractionDigits: window.NUMBER_TRIM_ZEROS ? 0 : d,
+                maximumFractionDigits: d
+            });
+            return out;
+        };
+    </script>
+
     @yield('scripts')
 
     <!-- Timezone Search Script -->

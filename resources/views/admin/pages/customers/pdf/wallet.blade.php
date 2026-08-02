@@ -126,7 +126,7 @@
                         @endif
                     </td>
                     <td>
-                        <span style="font-weight: bold; font-size: 11pt;">{{ $transaction->currency->symbol ?? '' }}</span> {{ number_format($transaction->amount, 2) }}
+                        <span style="font-weight: bold; font-size: 11pt;">{{ $transaction->currency->symbol ?? '' }}</span> {{ formatNumber($transaction->amount) }}
                     </td>
                 </tr>
             @endforeach
@@ -136,7 +136,7 @@
                         <span style="font-weight: bold; font-size: 11pt;">{{ $balance->currency->code ?? '' }}</span></td>
                     <td
                         style="background-color: #0d3c47; color: white;font-weight: bold; {{ $balance->balance < 0 ? 'color: red;' : 'color: white;' }}">
-                        {{ number_format($balance->balance, 2) }} <span style="font-weight: bold; font-size: 11pt;">{{ $balance->currency->symbol ?? '' }}</span>
+                        {{ formatNumber($balance->balance) }} <span style="font-weight: bold; font-size: 11pt;">{{ $balance->currency->symbol ?? '' }}</span>
                     </td>
                 </tr>
             @endforeach

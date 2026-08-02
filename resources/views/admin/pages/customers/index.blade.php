@@ -283,7 +283,7 @@
                                     @endphp
                                     @if ($balance != 0)
                                         <div>
-                                            <small>{{ number_format($balance, 2) }} {{ $currency->code ?? '' }}</small>
+                                            <small>{{ formatNumber($balance) }} {{ $currency->code ?? '' }}</small>
                                         </div>
                                     @endif
                                 @endforeach

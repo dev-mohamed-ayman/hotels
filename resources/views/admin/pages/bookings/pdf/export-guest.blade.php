@@ -157,11 +157,11 @@
                             <td style="height: 50px">{{ $room->room_type }}</td>
                             <td style="height: 50px">{{ $room->category }}</td>
                             <td style="height: 50px"><span
-                                    style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->price + $room->margin) }}
+                                    style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($room->price + $room->margin) }}
                             </td>
                             <td style="height: 50px">{{ $room->child_count }}</td>
                             <td style="height: 50px"><span
-                                    style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($room->child_price + $room->child_margin) }}
+                                    style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($room->child_price + $room->child_margin) }}
                             </td>
                             @php
                                 $netExtras = $booking->adjustments->where('type', 'addition')->sum('net_rate');
@@ -181,15 +181,15 @@
                             @if ($loop->first)
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($guestExtras) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($guestExtras) }}
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;"></span>{{ $booking->currency->symbol }}</span>{{ number_format($guestReducts) }}
+                                        style="font-weight: bold; font-size: 19px;"></span>{{ $booking->currency->symbol }}</span>{{ formatNumber($guestReducts) }}
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ number_format($totalGuestRate) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate) }}
                                 </td>
                             @endif
                         </tr>
@@ -256,7 +256,7 @@
                     <td style="height: 70px;">
                         <span style="font-weight: bold; font-size: 19px;">
                             {{ $currencyTotal['symbol'] }}
-                        </span>{{ number_format($currencyTotal['totalGuestRate']) }}
+                        </span>{{ formatNumber($currencyTotal['totalGuestRate']) }}
                     </td>
                 </tr>
             @endforeach

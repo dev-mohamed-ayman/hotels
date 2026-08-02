@@ -25,13 +25,16 @@ class Customer extends Model
         'wallet',
     ];
 
-    protected $casts = [
-        'type' => 'string',
-        'status' => 'string',
-        'priority' => 'string',
-        'source' => 'string',
-        'wallet' => 'decimal:2',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'type' => 'string',
+            'status' => 'string',
+            'priority' => 'string',
+            'source' => 'string',
+            'wallet' => 'decimal:'.config('numbers.decimals', 3),
+        ];
+    }
 
     public function hotels()
     {
