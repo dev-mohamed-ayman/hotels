@@ -90,10 +90,20 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($bookingsData as $index => $data)
+            @php
+                // Group the rows by File Code so the same code is printed once
+                // and merged (rowspan) across all of its rows.
+                $rowsByFileCode = collect($bookingsData)->groupBy(fn($data) => $data['booking']->code);
+                $rowNumber = 0;
+            @endphp
+            @foreach ($rowsByFileCode as $fileCodeRows)
+                @foreach ($fileCodeRows as $data)
+                    @php $rowNumber++; @endphp
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $data['booking']->code }}</td>
+                    <td>{{ $rowNumber }}</td>
+                    @if ($loop->first)
+                        <td rowspan="{{ count($fileCodeRows) }}">{{ $data['booking']->code }}</td>
+                    @endif
                     <td>{{ $data['booking']->hotel->name }}</td>
                     <td>{{ $data['booking']->hotel->company_name ?? '-' }}</td>
                     <td>{{ $data['bank_account'] ? $data['bank_account']->bank_name : '-' }}</td>
@@ -105,6 +115,7 @@
                         {{ \App\Helpers\NumberHelper::format($data['booking']->hotel_paid_amount >= $data['booking']->net_amount ? 0 : $data['booking']->net_amount - $data['booking']->hotel_paid_amount) }}
                     </td>
                 </tr>
+                @endforeach
             @endforeach
         </tbody>
         @php

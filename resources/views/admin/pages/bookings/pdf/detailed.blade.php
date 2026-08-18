@@ -130,7 +130,10 @@
                     $childGuestRate = $childNetRate + $childMargin; // Per night
                 @endphp
                 <tr>
-                    <td class="text-red" style="border: 1px solid #000;"><strong>{{ $booking->code }}</strong></td>
+                    @if ($loop->first)
+                        <td class="text-red" style="border: 1px solid #000;"
+                            rowspan="{{ count($booking->rooms) }}"><strong>{{ $booking->code }}</strong></td>
+                    @endif
                     <td style="border: 1px solid #000;"><strong>{{ $booking->hotel->name }}</strong></td>
                     <td>{{ $booking->meals_plan ?? '-' }}</td>
                     <td>{{ $booking->check_in->format('d-m-Y') }}</td>
@@ -240,14 +243,14 @@
 
                 <td colspan="2" style="border: 2px solid #000; font-weight: bold;">{{ __('Paid Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->paid_amount) }}
+                    {{ $booking->paid_amount == 0 ? '' : $booking->currency->symbol . formatNumber($booking->paid_amount) }}
                 </td>
 
                 <td colspan="3" style="border: 1px solid #000;"></td>
 
                 <td colspan="3" style="border: 2px solid #000; font-weight: bold;">{{ __('Remaining Amount') }}</td>
                 <td style="border: 2px solid #000;">
-                    {{ $booking->net_amount - $booking->paid_amount == 0 ? '' : $booking->currency->symbol . @formatNumber($booking->net_amount - $booking->paid_amount) }}
+                    {{ $booking->net_amount - $booking->paid_amount == 0 ? '' : $booking->currency->symbol . formatNumber($booking->net_amount - $booking->paid_amount) }}
                 </td>
                 <td colspan="4" style="border: 1px solid #000;"></td>
             </tr>

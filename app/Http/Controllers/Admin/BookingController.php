@@ -1107,6 +1107,31 @@ class BookingController extends Controller
         return back()->with('success', $message);
     }
 
+    /**
+     * Group bookings by file code first, then by the booking details that share
+     * a merged (rowspan) row block in the exports. Grouping by code first keeps
+     * every booking with the same file code together, so the File Code cell can
+     * be merged across all of its rows instead of repeating per row.
+     *
+     * @return \Illuminate\Support\Collection<string, \Illuminate\Support\Collection>
+     */
+    private function groupBookingsByFileCode($bookings)
+    {
+        return $bookings
+            ->groupBy(function ($booking) {
+                return $booking->code;
+            })
+            ->map(function ($bookingsWithSameCode) {
+                return $bookingsWithSameCode->groupBy(function ($booking) {
+                    return $booking->hotel->name.'|'.
+                        $booking->meals_plan.'|'.
+                        $booking->check_in->format('Y-m-d').'|'.
+                        $booking->check_out->format('Y-m-d').'|'.
+                        $booking->nights;
+                });
+            });
+    }
+
     public function exportBankPdf(Request $request)
     {
         $bookings = $this->getFilteredBookingsQuery($request)->get();
@@ -1173,14 +1198,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                $booking->hotel->name.'|'.
-                $booking->meals_plan.'|'.
-                $booking->check_in->format('Y-m-d').'|'.
-                $booking->check_out->format('Y-m-d').'|'.
-                $booking->nights;
-        });
+        $groupedBookings = $this->groupBookingsByFileCode($bookings);
 
         $html = view('admin.pages.bookings.pdf.export-detailed', [
             'bookings' => $bookings,
@@ -1215,14 +1233,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                $booking->hotel->name.'|'.
-                $booking->meals_plan.'|'.
-                $booking->check_in->format('Y-m-d').'|'.
-                $booking->check_out->format('Y-m-d').'|'.
-                $booking->nights;
-        });
+        $groupedBookings = $this->groupBookingsByFileCode($bookings);
 
         $html = view('admin.pages.bookings.pdf.export-guest', [
             'bookings' => $bookings,
@@ -1257,14 +1268,7 @@ class BookingController extends Controller
             return back()->with('error', __('No bookings found to export'));
         }
 
-        $groupedBookings = $bookings->groupBy(function ($booking) {
-            return $booking->code.'|'.
-                $booking->hotel->name.'|'.
-                $booking->meals_plan.'|'.
-                $booking->check_in->format('Y-m-d').'|'.
-                $booking->check_out->format('Y-m-d').'|'.
-                $booking->nights;
-        });
+        $groupedBookings = $this->groupBookingsByFileCode($bookings);
 
         $html = view('admin.pages.bookings.pdf.export-netrate', [
             'bookings' => $bookings,

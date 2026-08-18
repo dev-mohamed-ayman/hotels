@@ -141,19 +141,34 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($groupedBookings as $group)
+            @foreach ($groupedBookings as $fileCodeGroups)
                 @php
-                    $totalRoomsInGroup = $group->sum(function ($b) {
-                        return count($b->rooms);
+                    // Every booking sharing this File Code, so the code is printed once
+                    // and merged (rowspan) across all of its rows.
+                    $totalRoomsForFileCode = $fileCodeGroups->sum(function ($group) {
+                        return $group->sum(function ($b) {
+                            return count($b->rooms);
+                        });
                     });
-                    $isFirstBookingInGroup = true;
+                    $isFirstRowForFileCode = true;
                 @endphp
+
+                @foreach ($fileCodeGroups as $group)
+                    @php
+                        $totalRoomsInGroup = $group->sum(function ($b) {
+                            return count($b->rooms);
+                        });
+                        $isFirstBookingInGroup = true;
+                    @endphp
 
                 @foreach ($group as $booking)
                     @foreach ($booking->rooms as $room)
                         <tr>
+                            @if ($isFirstRowForFileCode)
+                                <td rowspan="{{ $totalRoomsForFileCode }}">{{ $booking->code }}</td>
+                                @php $isFirstRowForFileCode = false; @endphp
+                            @endif
                             @if ($isFirstBookingInGroup && $loop->first)
-                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->code }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->hotel->name }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->meals_plan }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->check_in->format('d-M-y') }}</td>
@@ -171,6 +186,7 @@
                             </td>
                             <td style="height: 50px">
                                 <span style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($room->price + $room->margin) }}
+                            </td>
                             <td style="height: 50px">{{ $room->child_count }}</td>
                             <td style="height: 50px">
                                 <span
@@ -205,7 +221,7 @@
                                     <span
                                         style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($netExtras) }}</td>
                                 <td rowspan="{{ count($booking->rooms) }}">
-                                    <spa
+                                    <span
                                         style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($netReducts) }}</td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
@@ -223,6 +239,7 @@
                         </tr>
                     @endforeach
                     @php $isFirstBookingInGroup = false; @endphp
+                @endforeach
                 @endforeach
                 <tr class="bg-gray">
                     <td colspan="22"></td>
@@ -307,6 +324,7 @@
                         <span style="font-weight: bold; font-size: 19px;">
                             {{ $currencyTotal['symbol'] }}
                         </span>{{ formatNumber($currencyTotal['totalGuestRate']) }}
+                    </td>
                 </tr>
             @endforeach
 

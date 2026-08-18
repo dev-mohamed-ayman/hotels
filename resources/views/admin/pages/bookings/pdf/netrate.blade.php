@@ -112,7 +112,10 @@
                     $childNetRate = $room->child_price ?? 0;
                 @endphp
                 <tr>
-                    <td class="text-red" style="border: 1px solid #000;"><strong>{{ $booking->code }}</strong></td>
+                    @if ($loop->first)
+                        <td class="text-red" style="border: 1px solid #000;"
+                            rowspan="{{ count($booking->rooms) }}"><strong>{{ $booking->code }}</strong></td>
+                    @endif
                     <td style="border: 1px solid #000;"><strong>{{ $booking->hotel->name }}</strong></td>
                     <td>{{ $booking->meals_plan ?? '-' }}</td>
                     <td>{{ $booking->check_in->format('d-m-Y') }}</td>
