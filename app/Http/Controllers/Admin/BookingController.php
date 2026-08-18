@@ -105,6 +105,14 @@ class BookingController extends Controller
             $query->whereDate('check_out', '<=', $request->check_out_to);
         }
 
+        // Filter by option date range
+        if ($request->filled('option_date_from')) {
+            $query->whereDate('option_date', '>=', $request->option_date_from);
+        }
+        if ($request->filled('option_date_to')) {
+            $query->whereDate('option_date', '<=', $request->option_date_to);
+        }
+
         // Filter by currency
         if ($request->filled('currency_id')) {
             $query->where('currency_id', $request->currency_id);
@@ -179,6 +187,8 @@ class BookingController extends Controller
             'check_in_to',
             'check_out_from',
             'check_out_to',
+            'option_date_from',
+            'option_date_to',
             'currency_id',
             'search',
             'sort_by',
@@ -744,6 +754,14 @@ class BookingController extends Controller
         }
         if ($request->filled('check_out_to')) {
             $query->whereDate('check_out', '<=', $request->check_out_to);
+        }
+
+        // Filter by option date range
+        if ($request->filled('option_date_from')) {
+            $query->whereDate('option_date', '>=', $request->option_date_from);
+        }
+        if ($request->filled('option_date_to')) {
+            $query->whereDate('option_date', '<=', $request->option_date_to);
         }
 
         // Filter by currency

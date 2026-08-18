@@ -103,6 +103,9 @@
                                             if (request('check_out_from') || request('check_out_to')) {
                                                 $activeFilters++;
                                             }
+                                            if (request('option_date_from') || request('option_date_to')) {
+                                                $activeFilters++;
+                                            }
                                             if (request('currency_id')) {
                                                 $activeFilters++;
                                             }
@@ -216,6 +219,22 @@
                                                         value="{{ request('check_out_to') }}">
                                                 </div>
 
+                                                <!-- Option Date From -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label">{{ __('Option Date') }} -
+                                                        {{ __('From Date') }}</label>
+                                                    <input type="date" name="option_date_from" class="form-control"
+                                                        value="{{ request('option_date_from') }}">
+                                                </div>
+
+                                                <!-- Option Date To -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label">{{ __('Option Date') }} -
+                                                        {{ __('To Date') }}</label>
+                                                    <input type="date" name="option_date_to" class="form-control"
+                                                        value="{{ request('option_date_to') }}">
+                                                </div>
+
                                                 <!-- Currency Filter -->
                                                 <div class="col-md-3">
                                                     <label class="form-label">{{ __('Currency') }}</label>
@@ -314,6 +333,8 @@
                             'check_in_to',
                             'check_out_from',
                             'check_out_to',
+                            'option_date_from',
+                            'option_date_to',
                             'currency_id',
                             'search',
                             'sort_by',
@@ -377,6 +398,17 @@
                                         →
                                         {{ request('check_out_to') ? request('check_out_to') : '...' }}
                                         <a href="{{ request()->fullUrlWithQuery(['check_out_from' => null, 'check_out_to' => null]) }}"
+                                            class="text-white ms-1">×</a>
+                                    </span>
+                                @endif
+
+                                @if (request('option_date_from') || request('option_date_to'))
+                                    <span class="badge bg-label-primary">
+                                        {{ __('Option Date') }}:
+                                        {{ request('option_date_from') ? request('option_date_from') : '...' }}
+                                        →
+                                        {{ request('option_date_to') ? request('option_date_to') : '...' }}
+                                        <a href="{{ request()->fullUrlWithQuery(['option_date_from' => null, 'option_date_to' => null]) }}"
                                             class="text-white ms-1">×</a>
                                     </span>
                                 @endif

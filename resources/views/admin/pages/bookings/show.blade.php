@@ -170,9 +170,14 @@
                                             <span class="text-muted small">{{ __('Check Out') }}:</span>
                                             <span class="fw-semibold">{{ $booking->check_out->format('d-m-Y') }}</span>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="text-muted small">{{ __('Nights') }}:</span>
                                             <span class="badge bg-label-primary">{{ $booking->nights }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted small">{{ __('Room Nights') }}:</span>
+                                            <span
+                                                class="badge bg-label-info">{{ $booking->rooms->sum('room_count') * $booking->nights }}</span>
                                         </div>
                                     </div>
                                 </div>
