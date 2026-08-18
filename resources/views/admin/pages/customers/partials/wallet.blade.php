@@ -3,8 +3,8 @@
         <h5 class="mb-0">{{ __('Wallet') }}</h5>
         <div class="d-flex gap-2">
             <a href="{{ route('customers.wallet.export-pdf', ['customer' => $customer->id] + request()->query()) }}"
-                class="btn btn-outline-secondary">
-                <i class="ti tabler-file-type-pdf me-2"></i>{{ __('Export PDF') }}
+                class="btn btn-success" target="_blank">
+                <i class="ti tabler-file-download me-2"></i>{{ __('Export PDF') }}
             </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                 data-bs-target="#addWalletTransactionModal">

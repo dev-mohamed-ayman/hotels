@@ -72,16 +72,6 @@
         .text-left {
             text-align: left;
         }
-
-        .badge-credit {
-            color: green;
-            font-weight: bold;
-        }
-
-        .badge-debit {
-            color: red;
-            font-weight: bold;
-        }
     </style>
 </head>
 
@@ -141,13 +131,21 @@
                 <tr>
                     <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
                     <td>
-                        <span class="{{ $transaction->type == 'credit' ? 'badge-credit' : 'badge-debit' }}">
+                        <span style="color: {{ $transaction->type == 'credit' ? '#dc3545' : '#198754' }}; font-weight: bold;">
                             {{ $transaction->type == 'credit' ? __('Credit') : __('Debit') }}
                         </span>
                     </td>
-                    <td>@formatNumber($transaction->amount)</td>
+                    <td style="color: {{ $transaction->type == 'credit' ? '#dc3545' : '#198754' }}; font-weight: bold;">
+                        @formatNumber($transaction->type == 'credit' ? -$transaction->amount : $transaction->amount)
+                    </td>
                     <td>{{ $transaction->currency->code }}</td>
-                    <td>{{ $transaction->description }}</td>
+                    <td>
+                        @if ($type == 'hotel')
+                            {{ $model->name }}{{ filled($transaction->description) ? ' — ' . $transaction->description : '' }}
+                        @else
+                            {{ $transaction->description }}
+                        @endif
+                    </td>
                     <td>{{ $transaction->reference }}</td>
                 </tr>
             @endforeach

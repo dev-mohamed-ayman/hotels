@@ -3,8 +3,8 @@
         <h5 class="mb-0">{{ __('Wallet') }}</h5>
         <div class="d-flex gap-2">
             <a href="{{ route('hotels.wallet.export-pdf', ['hotel' => $hotel->id] + request()->query()) }}"
-                class="btn btn-outline-secondary">
-                <i class="ti tabler-file-type-pdf me-2"></i>{{ __('Export PDF') }}
+                class="btn btn-success" target="_blank">
+                <i class="ti tabler-file-download me-2"></i>{{ __('Export PDF') }}
             </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                 data-bs-target="#addHotelWalletTransactionModal">
@@ -50,7 +50,7 @@
                     ->select(
                         'currency_id',
                         \Illuminate\Support\Facades\DB::raw(
-                            'SUM(CASE WHEN type = "credit" THEN amount ELSE -amount END) as balance',
+                            'SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as balance',
                         ),
                     )
                     ->with('currency')

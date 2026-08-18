@@ -117,7 +117,7 @@ class WalletController extends Controller
         $balanceQuery = $model->walletTransactions()
             ->select(
                 'currency_id',
-                DB::raw('SUM(CASE WHEN type = "credit" THEN amount ELSE -amount END) as balance')
+                DB::raw('SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as balance')
             )
             ->with('currency')
             ->groupBy('currency_id')
