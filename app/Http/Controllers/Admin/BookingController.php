@@ -118,6 +118,11 @@ class BookingController extends Controller
             $query->where('currency_id', $request->currency_id);
         }
 
+        // Show only the bookings marked as part of the payment list
+        if ($request->boolean('in_payment_list')) {
+            $query->where('in_payment_list', true);
+        }
+
         // Search by booking code
         if ($request->filled('search')) {
             $query->where('code', 'like', '%'.$request->search.'%');
@@ -190,6 +195,7 @@ class BookingController extends Controller
             'option_date_from',
             'option_date_to',
             'currency_id',
+            'in_payment_list',
             'search',
             'sort_by',
             'sort_order',
@@ -858,6 +864,21 @@ class BookingController extends Controller
             $booking->update(['payment_status' => 'revised']);
             $message = __('Booking status set to Revised');
         }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Add or remove a booking from the payment list, which the bookings filter
+     * can then narrow the list down to.
+     */
+    public function togglePaymentList(Booking $booking)
+    {
+        $booking->update(['in_payment_list' => ! $booking->in_payment_list]);
+
+        $message = $booking->in_payment_list
+            ? __('Booking added to the payment list')
+            : __('Booking removed from the payment list');
 
         return back()->with('success', $message);
     }

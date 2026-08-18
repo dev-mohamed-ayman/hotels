@@ -71,6 +71,9 @@ Route::group(
             // Toggle Payment Status Route
             Route::post('bookings/{booking}/toggle-status', [\App\Http\Controllers\Admin\BookingController::class, 'togglePaymentStatus'])->name('bookings.toggle-status');
 
+            // Toggle Payment List Route
+            Route::post('bookings/{booking}/toggle-payment-list', [\App\Http\Controllers\Admin\BookingController::class, 'togglePaymentList'])->name('bookings.toggle-payment-list');
+
             // Bulk export routes
             Route::get('bookings/export/bank', [\App\Http\Controllers\Admin\BookingController::class, 'exportBankPdf'])->name('bookings.export.bank');
             Route::get('bookings/export/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'exportDetailedPdf'])->name('bookings.export.detailed');

@@ -109,6 +109,9 @@
                                             if (request('currency_id')) {
                                                 $activeFilters++;
                                             }
+                                            if (request()->boolean('in_payment_list')) {
+                                                $activeFilters++;
+                                            }
                                             if (request('search')) {
                                                 $activeFilters++;
                                             }
@@ -249,6 +252,21 @@
                                                     </select>
                                                 </div>
 
+                                                <!-- Payment List Filter -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label d-block">{{ __('Payment List') }}</label>
+                                                    {{-- Always submitted so unchecking the box actually clears the filter --}}
+                                                    <input type="hidden" name="in_payment_list" value="0">
+                                                    <div class="form-check mt-2">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="in_payment_list" value="1" id="inPaymentListFilter"
+                                                            {{ request()->boolean('in_payment_list') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="inPaymentListFilter">
+                                                            {{ __('Only Payment List') }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Sort By -->
                                                 <div class="col-md-3">
                                                     <label class="form-label">{{ __('Sort By') }}</label>
@@ -338,7 +356,7 @@
                             'currency_id',
                             'search',
                             'sort_by',
-                        ]))
+                        ]) || request()->boolean('in_payment_list'))
                         <div class="mb-3">
                             <strong>{{ __('Active Filters') }}:</strong>
                             <div class="d-flex flex-wrap gap-2 mt-2">
@@ -420,6 +438,14 @@
                                     <span class="badge bg-label-primary">
                                         {{ __('Currency') }}: {{ $selectedCurrency?->code }}
                                         <a href="{{ request()->fullUrlWithQuery(['currency_id' => null]) }}"
+                                            class="text-white ms-1">×</a>
+                                    </span>
+                                @endif
+
+                                @if (request()->boolean('in_payment_list'))
+                                    <span class="badge bg-label-primary">
+                                        {{ __('Only Payment List') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['in_payment_list' => null]) }}"
                                             class="text-white ms-1">×</a>
                                     </span>
                                 @endif
@@ -651,6 +677,23 @@
                                                                     @else
                                                                         <i
                                                                             class="ti tabler-refresh me-2"></i>{{ __('Set as Revised') }}
+                                                                    @endif
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form
+                                                                action="{{ route('bookings.toggle-payment-list', $booking->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="dropdown-item {{ $booking->in_payment_list ? 'text-warning' : '' }}">
+                                                                    @if ($booking->in_payment_list)
+                                                                        <i
+                                                                            class="ti tabler-playlist-x me-2"></i>{{ __('Remove from Payment List') }}
+                                                                    @else
+                                                                        <i
+                                                                            class="ti tabler-playlist-add me-2"></i>{{ __('Add to Payment List') }}
                                                                     @endif
                                                                 </button>
                                                             </form>

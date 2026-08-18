@@ -24,6 +24,7 @@ class Booking extends Model
         'hotel_paid_amount' => 'float',
         'child_price' => 'float',
         'child_margin' => 'float',
+        'in_payment_list' => 'boolean',
     ];
 
     /**
