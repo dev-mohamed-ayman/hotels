@@ -133,7 +133,12 @@ class BookingController extends Controller
             $sortOrder = 'asc';
         }
 
-        $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
+        if ($sortBy === 'code') {
+            // Same file code = one group, ordered by check-in date inside the group.
+            $query->orderBy('code', $sortOrder)->orderBy('check_in', 'asc');
+        } else {
+            $query->orderBy($sortBy, $sortOrder)->orderBy('code', 'asc');
+        }
 
         // Get total count before pagination for export
         $totalFilteredBookings = (clone $query)->count();
@@ -1039,7 +1044,12 @@ class BookingController extends Controller
             $sortOrder = 'desc';
         }
 
-        $query->orderBy($sortBy, $sortOrder)->orderBy('code', $sortOrder);
+        if ($sortBy === 'code') {
+            // Same file code = one group, ordered by check-in date inside the group.
+            $query->orderBy('code', $sortOrder)->orderBy('check_in', 'asc');
+        } else {
+            $query->orderBy($sortBy, $sortOrder)->orderBy('code', $sortOrder);
+        }
 
         return $query;
     }
