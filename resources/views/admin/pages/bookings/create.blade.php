@@ -345,14 +345,9 @@
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label class="form-label fw-semibold" for="notes">{{ __('Notes') }}</label>
                                 <textarea class="form-control" id="notes" name="notes" rows="3">{{ old('notes') }}</textarea>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
-                                <input type="number" step="any" name="paid_amount" id="paid_amount"
-                                    class="form-control form-control-lg" value="{{ old('paid_amount', 0) }}" min="0" />
                             </div>
                         </div>
 
@@ -740,30 +735,8 @@
             // Margin Value includes additions margin and discounts margin
             const totalMarginValue = marginValue + additionsMarginTotal + discountsMarginTotal;
             const finalTotal = netRateTotal + totalMarginValue;
-            const paidAmountInput = document.getElementById('paid_amount');
-
-            // Update max attribute for paid_amount input
-            // if (paidAmountInput) {
-            //    paidAmountInput.setAttribute('max', finalTotal);
-            // }
-
-            let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
-
-            // Validate paid amount doesn't exceed total guest rate
-            // if (paidAmount > finalTotal) {
-            //    if (paidAmountInput) {
-            //        paidAmountInput.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-            //        paidAmountInput.value = finalTotal.toFixed(2);
-            //    }
-            //    // Use corrected value for calculation
-            //    paidAmount = finalTotal;
-            // } else {
-            //    if (paidAmountInput) {
-            //        paidAmountInput.setCustomValidity('');
-            //    }
-            // }
-
-            const remainingAmount = netRateTotal - paidAmount;
+            // A new booking starts with nothing paid, so the whole net rate is remaining.
+            const remainingAmount = netRateTotal;
 
             // Update display
             const premarginTotalEl = document.getElementById('premarginTotal');
@@ -840,24 +813,6 @@
                         calculateDiscountMargin(input);
                         calculateSummary();
                     });
-                }
-            });
-        }
-
-        const paidAmountInput = document.getElementById('paid_amount');
-        if (paidAmountInput) {
-            paidAmountInput.addEventListener('input', function() {
-                calculateSummary();
-                // Additional validation on input
-                const finalTotalEl = document.getElementById('finalTotal');
-                if (finalTotalEl) {
-                    const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
-                    const paidAmount = parseFloat(this.value) || 0;
-                    if (paidAmount > finalTotal) {
-                        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                    } else {
-                        this.setCustomValidity('');
-                    }
                 }
             });
         }

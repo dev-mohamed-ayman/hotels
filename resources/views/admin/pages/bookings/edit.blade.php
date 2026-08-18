@@ -481,15 +481,9 @@
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label class="form-label fw-semibold" for="notes">{{ __('Notes') }}</label>
                                 <textarea class="form-control" id="notes" name="notes" rows="3">{{ old('notes', $booking->notes) }}</textarea>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="paid_amount">{{ __('Paid Amount') }}</label>
-                                <input type="number" step="any" name="paid_amount" id="paid_amount"
-                                    class="form-control form-control-lg"
-                                    value="{{ old('paid_amount', $booking->paid_amount) }}" min="0" />
                             </div>
                         </div>
 
@@ -521,6 +515,8 @@
         let roomIndex = {{ $booking->rooms->count() }};
         let additionIndex = {{ $booking->adjustments->where('type', 'addition')->count() }};
         let discountIndex = {{ $booking->adjustments->where('type', 'discount')->count() }};
+        // Paid amount is managed outside this form; kept here for the summary only.
+        const bookingPaidAmount = {{ (float) $booking->paid_amount }};
 
         // Prevent negative values in number inputs
         document.addEventListener('input', function(e) {
@@ -878,18 +874,8 @@
             // Margin Value includes additions margin and discounts margin
             const totalMarginValue = marginValue + additionsMarginTotal + discountsMarginTotal;
             const finalTotal = netRateTotal + totalMarginValue;
-            const paidAmountInput = document.getElementById('paid_amount');
-
-            // Update max attribute for paid_amount input - REMOVED to allow overpayment
-            if (paidAmountInput) {
-                paidAmountInput.removeAttribute('max');
-                paidAmountInput.setCustomValidity('');
-            }
-
-            let paidAmount = paidAmountInput ? parseFloat(paidAmountInput.value) || 0 : 0;
-
-            // Validation removed to allow overpayment
-            const remainingAmount = netRateTotal - paidAmount;
+            // Paid amount is not editable from this form, so the booking's stored value is used.
+            const remainingAmount = netRateTotal - bookingPaidAmount;
 
             // Update display
             const premarginTotalEl = document.getElementById('premarginTotal');
@@ -967,24 +953,6 @@
                         calculateSummary();
                     });
                 }
-            });
-        }
-
-        const paidAmountInput = document.getElementById('paid_amount');
-        if (paidAmountInput) {
-            paidAmountInput.addEventListener('input', function() {
-                calculateSummary();
-                // Additional validation on input - REMOVED to allow overpayment
-                // const finalTotalEl = document.getElementById('finalTotal');
-                // if (finalTotalEl) {
-                //    const finalTotal = parseFloat(finalTotalEl.textContent) || 0;
-                //    const paidAmount = parseFloat(this.value) || 0;
-                //    if (paidAmount > finalTotal) {
-                //        this.setCustomValidity('{{ __('Paid amount cannot exceed total guest rate') }}');
-                //    } else {
-                //        this.setCustomValidity('');
-                //    }
-                // }
             });
         }
 
