@@ -79,6 +79,7 @@ Route::group(
             Route::get('bookings/export/bank', [\App\Http\Controllers\Admin\BookingController::class, 'exportBankPdf'])->name('bookings.export.bank');
             Route::get('bookings/export/detailed', [\App\Http\Controllers\Admin\BookingController::class, 'exportDetailedPdf'])->name('bookings.export.detailed');
             Route::get('bookings/export/guest', [\App\Http\Controllers\Admin\BookingController::class, 'exportGuestPdf'])->name('bookings.export.guest');
+            Route::get('bookings/export/client', [\App\Http\Controllers\Admin\BookingController::class, 'exportClientPdf'])->name('bookings.export.client');
             Route::get('bookings/export/netrate', [\App\Http\Controllers\Admin\BookingController::class, 'exportNetRatePdf'])->name('bookings.export.netrate');
             Route::resource('bookings', \App\Http\Controllers\Admin\BookingController::class);
 

@@ -48,6 +48,15 @@
                                             </a>
                                         </li>
                                     @endcan
+                                    @can('export Client')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.client') }}?{{ http_build_query(request()->query()) }}"
+                                                target="_blank">
+                                                <i class="ti tabler-users me-2"></i>{{ __('Client Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
                                     @can('export Net Rate')
                                         <li>
                                             <a class="dropdown-item"

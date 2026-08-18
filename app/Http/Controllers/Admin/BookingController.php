@@ -26,6 +26,7 @@ class BookingController extends Controller
             'downloadGuestPdf',
             'downloadNetRatePdf',
             'exportBankPdf',
+            'exportClientPdf',
             'exportDetailedPdf',
             'exportGuestPdf',
             'exportNetRatePdf',
@@ -1232,6 +1233,41 @@ class BookingController extends Controller
         $mpdf->WriteHTML($html);
 
         return $mpdf->Output('bookings-detailed-export.pdf', 'D');
+    }
+
+    public function exportClientPdf(Request $request)
+    {
+        $bookings = $this->getFilteredBookingsQuery($request)->get();
+        $bookingNotes = $this->getFilteredBookingsQuery($request, true)->get();
+
+        if ($bookings->isEmpty()) {
+            return back()->with('error', __('No bookings found to export'));
+        }
+
+        $groupedBookings = $this->groupBookingsByFileCode($bookings);
+
+        $html = view('admin.pages.bookings.pdf.export-client', [
+            'bookings' => $bookings,
+            'groupedBookings' => $groupedBookings,
+            'bookingNotes' => $bookingNotes,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'L',
+            'margin_left' => 10,
+            'margin_right' => 10,
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+            'default_font' => '',
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        return $mpdf->Output('bookings-client-export.pdf', 'D');
     }
 
     public function exportGuestPdf(Request $request)

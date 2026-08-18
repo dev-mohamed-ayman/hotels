@@ -26,6 +26,51 @@ class Booking extends Model
         'child_margin' => 'float',
     ];
 
+    /**
+     * Client name shortened for exports: "Mohamed Ayman" => "M. Ayman".
+     * Falls back to the legacy client_name column, then to the customer name.
+     */
+    public function getShortClientNameAttribute(): ?string
+    {
+        $fullName = trim(trim((string) $this->client_first_name).' '.trim((string) $this->client_last_name));
+
+        if ($fullName === '') {
+            $fullName = trim((string) $this->client_name);
+        }
+
+        if ($fullName === '') {
+            $customer = $this->customer;
+            $customerName = trim((string) ($customer->name ?? ''));
+
+            // A corporate customer's name is a company, not a person: keep it as it is.
+            if (($customer->type ?? null) === 'corporate') {
+                return $customerName !== '' ? $customerName : null;
+            }
+
+            $fullName = $customerName;
+        }
+
+        $parts = preg_split('/\s+/', $fullName, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        // Drop a leading title so "Mr. Edet Cyril" shortens to "E. Cyril".
+        $titles = ['mr', 'mrs', 'ms', 'miss', 'mister', 'dr', 'prof', 'eng', 'sir', 'madam'];
+        if (count($parts) >= 2 && in_array(mb_strtolower(rtrim($parts[0], '.')), $titles, true)) {
+            array_shift($parts);
+        }
+
+        if ($parts === []) {
+            return null;
+        }
+
+        if (count($parts) === 1) {
+            return $parts[0];
+        }
+
+        $first = array_shift($parts);
+
+        return mb_substr($first, 0, 1).'. '.implode(' ', $parts);
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
