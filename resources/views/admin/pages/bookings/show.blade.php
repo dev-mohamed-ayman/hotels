@@ -16,35 +16,56 @@
                     <div class="d-flex gap-2 flex-wrap">
                         @can('export bookings')
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="ti tabler-file-download me-2"></i>{{ __('Download PDF') }}
+                                <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-expanded="true">
+                                    <i class="ti tabler-file-download me-2"></i>{{ __('Export PDF') }}
                                 </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('bookings.pdf.bank', $booking->id) }}"
-                                            target="_blank">
-                                            <i class="ti tabler-building-bank me-2"></i>{{ __('Bank Export') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item " href="{{ route('bookings.pdf.detailed', $booking->id) }}"
-                                            target="_blank">
-                                            <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('bookings.pdf.guest', $booking->id) }}"
-                                            target="_blank">
-                                            <i class="ti tabler-user me-2"></i>{{ __('Guest Export') }}
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('bookings.pdf.netrate', $booking->id) }}"
-                                            target="_blank">
-                                            <i class="ti tabler-currency-dollar me-2"></i>{{ __('Net Rate Export') }}
-                                        </a>
-                                    </li>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    @can('export Bank')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.bank') }}?booking_id={{ $booking->id }}"
+                                                target="_blank">
+                                                <i class="ti tabler-building-bank me-2"></i>{{ __('Bank Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('export Detailed')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.detailed') }}?booking_id={{ $booking->id }}"
+                                                target="_blank">
+                                                <i class="ti tabler-file-text me-2"></i>{{ __('Detailed Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('export Guest')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.guest') }}?booking_id={{ $booking->id }}"
+                                                target="_blank">
+                                                <i class="ti tabler-user me-2"></i>{{ __('Guest Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('export Client')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.client') }}?booking_id={{ $booking->id }}"
+                                                target="_blank">
+                                                <i class="ti tabler-users me-2"></i>{{ __('Client Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('export Net Rate')
+                                        <li>
+                                            <a class="dropdown-item"
+                                                href="{{ route('bookings.export.netrate') }}?booking_id={{ $booking->id }}"
+                                                target="_blank">
+                                                <i class="ti tabler-currency-dollar me-2"></i>{{ __('Net Rate Export') }}
+                                            </a>
+                                        </li>
+                                    @endcan
                                 </ul>
                             </div>
                         @endcan
