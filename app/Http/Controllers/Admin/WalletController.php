@@ -29,7 +29,6 @@ class WalletController extends Controller
             'type' => 'required|in:credit,debit',
             'currency_id' => 'required|exists:currencies,id',
             'description' => 'nullable|string|max:255',
-            'reference' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -40,7 +39,6 @@ class WalletController extends Controller
                 'type' => $request->type,
                 'currency_id' => $request->currency_id,
                 'description' => $request->description,
-                'reference' => $request->reference ?? 'MANUAL',
             ]);
 
             DB::commit();
@@ -62,7 +60,6 @@ class WalletController extends Controller
             'type' => 'required|in:credit,debit',
             'currency_id' => 'required|exists:currencies,id',
             'description' => 'nullable|string|max:255',
-            'reference' => 'nullable|string|max:255',
         ]);
 
         $transaction->update([
@@ -71,7 +68,6 @@ class WalletController extends Controller
             'type' => $request->type,
             'currency_id' => $request->currency_id,
             'description' => $request->description,
-            'reference' => $request->reference,
         ]);
 
         return back()->with('success', __('Transaction updated successfully'));
@@ -96,9 +92,12 @@ class WalletController extends Controller
 
     private function generatePdf(Request $request, $model, $type)
     {
+        // Oldest first: the statement reads downwards from the opening balance.
         $query = $model->walletTransactions()
             ->with('currency')
-            ->orderBy('created_at', 'desc');
+            ->reorder()
+            ->orderBy('created_at')
+            ->orderBy('id');
 
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
@@ -114,10 +113,28 @@ class WalletController extends Controller
 
         $transactions = $query->get();
 
+        // Balance after each transaction, plus what the wallet held before the
+        // filtered range starts. The opening row is only meaningful when the
+        // range is narrowed, so unfiltered exports simply start from zero.
+        $openingBalances = WalletTransaction::attachRunningBalance($model, $transactions);
+
+        $isFiltered = $request->filled('date_from')
+            || $request->filled('date_to')
+            || $request->filled('currency_id');
+
+        $openingRows = $isFiltered
+            ? collect($openingBalances)
+                ->map(fn ($balance, $currencyId) => [
+                    'balance' => $balance,
+                    'currency' => $transactions->firstWhere('currency_id', $currencyId)?->currency,
+                ])
+                ->values()
+            : collect();
+
         $balanceQuery = $model->walletTransactions()
             ->select(
                 'currency_id',
-                DB::raw('SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as balance')
+                DB::raw(WalletTransaction::balanceExpression())
             )
             ->with('currency')
             ->groupBy('currency_id')
@@ -144,7 +161,7 @@ class WalletController extends Controller
         $mpdf->autoScriptToLang = true;
         $mpdf->autoLangToFont = true;
 
-        $html = view('admin.pdf.wallet_statement', compact('model', 'transactions', 'balances', 'type'))->render();
+        $html = view('admin.pdf.wallet_statement', compact('model', 'transactions', 'balances', 'openingRows', 'type'))->render();
 
         $mpdf->WriteHTML($html);
 

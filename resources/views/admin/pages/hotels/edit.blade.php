@@ -141,7 +141,7 @@
                                         <th>{{ __('Type') }}</th>
                                         <th>{{ __('Amount') }}</th>
                                         <th>{{ __('Description') }}</th>
-                                        <th>{{ __('Reference') }}</th>
+                                        <th>{{ __('Cumulative Balance') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -150,18 +150,21 @@
                                             <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
                                             <td>
                                                 <span
-                                                    class="badge bg-label-{{ $transaction->type === 'credit' ? 'success' : 'danger' }}">
+                                                    class="badge bg-label-{{ $transaction->type === 'credit' ? 'danger' : 'success' }}">
                                                     {{ ucfirst($transaction->type) }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span
-                                                    class="{{ $transaction->type === 'credit' ? 'text-success' : 'text-danger' }}">
-                                                    {{ $transaction->type === 'credit' ? '+' : '-' }} @formatNumber($transaction->amount)
+                                                    class="{{ $transaction->type === 'credit' ? 'text-danger' : 'text-success' }}">
+                                                    @formatNumber($transaction->signed_amount)
                                                 </span>
                                             </td>
                                             <td>{{ $transaction->description }}</td>
-                                            <td>{{ $transaction->reference }}</td>
+                                            <td class="{{ $transaction->running_balance < 0 ? 'text-danger' : 'text-success' }} fw-semibold">
+                                                {{ formatNumber($transaction->running_balance) }}
+                                                {{ $transaction->currency->code ?? '' }}
+                                            </td>
                                         </tr>
                                     @empty
                                         <tr>

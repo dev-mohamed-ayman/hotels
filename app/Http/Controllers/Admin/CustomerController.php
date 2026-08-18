@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Hotel;
 use App\Models\Currency;
+use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -158,6 +159,9 @@ class CustomerController extends Controller
         }
 
         $walletTransactions = $walletQuery->get(); // Or paginate if list is long, but get() is fine for now as per previous code
+
+        // Balance after each transaction, carried over from the dates not shown.
+        WalletTransaction::attachRunningBalance($customer, $walletTransactions);
 
         // Calculate statistics
         $totalBookings = $customer->bookings->count();

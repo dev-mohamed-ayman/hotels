@@ -123,10 +123,25 @@
                 <th>{{ __('Amount') }}</th>
                 <th>{{ __('Currency') }}</th>
                 <th>{{ __('Description') }}</th>
-                <th>{{ __('Reference') }}</th>
+                <th>{{ __('Cumulative Balance') }}</th>
             </tr>
         </thead>
         <tbody>
+            {{-- With filters applied, open the statement with the balance carried into the range. --}}
+            @foreach ($openingRows as $openingRow)
+                <tr>
+                    <td colspan="5" style="font-weight: bold;">
+                        {{ __('Opening Balance') }}
+                        @if ($openingRow['currency'])
+                            ({{ $openingRow['currency']->code }})
+                        @endif
+                    </td>
+                    <td style="color: {{ $openingRow['balance'] < 0 ? '#dc3545' : '#198754' }}; font-weight: bold;">
+                        @formatNumber($openingRow['balance'])
+                    </td>
+                </tr>
+            @endforeach
+
             @foreach ($transactions as $transaction)
                 <tr>
                     <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
@@ -146,7 +161,9 @@
                             {{ $transaction->description }}
                         @endif
                     </td>
-                    <td>{{ $transaction->reference }}</td>
+                    <td style="color: {{ $transaction->running_balance < 0 ? '#dc3545' : '#198754' }}; font-weight: bold;">
+                        @formatNumber($transaction->running_balance)
+                    </td>
                 </tr>
             @endforeach
         </tbody>

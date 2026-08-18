@@ -49,9 +49,7 @@
                     ->where('transactionable_id', $hotel->id)
                     ->select(
                         'currency_id',
-                        \Illuminate\Support\Facades\DB::raw(
-                            'SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as balance',
-                        ),
+                        \Illuminate\Support\Facades\DB::raw(\App\Models\WalletTransaction::balanceExpression()),
                     )
                     ->with('currency')
                     ->groupBy('currency_id')
@@ -95,10 +93,10 @@
                 <thead>
                     <tr>
                         <th>{{ __('Date') }}</th>
-                        <th>{{ __('Reference') }}</th>
                         <th>{{ __('Description') }}</th>
                         <th>{{ __('Amount') }}</th>
                         <th>{{ __('Type') }}</th>
+                        <th>{{ __('Cumulative Balance') }}</th>
                         <th>{{ __('Actions') }}</th>
                     </tr>
                 </thead>
@@ -106,7 +104,6 @@
                     @foreach ($walletTransactions as $transaction)
                         <tr>
                             <td>{{ $transaction->created_at->format('Y-m-d') }}</td>
-                            <td>{{ $transaction->reference }}</td>
                             <td>{{ $transaction->description }}</td>
                             <td>
                                 {{ formatNumber($transaction->amount) }}
@@ -119,6 +116,10 @@
                                     <span class="badge bg-label-danger">{{ __('Credit (Deduct)') }}</span>
                                 @endif
                             </td>
+                            <td class="{{ $transaction->running_balance < 0 ? 'text-danger' : 'text-success' }} fw-semibold">
+                                {{ formatNumber($transaction->running_balance) }}
+                                {{ $transaction->currency->code ?? '' }}
+                            </td>
                             <td>
                                 <button type="button" class="btn btn-icon btn-label-info btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#editHotelWalletTransactionModal" data-id="{{ $transaction->id }}"
@@ -126,7 +127,6 @@
                                     data-type="{{ $transaction->type }}"
                                     data-currency="{{ $transaction->currency_id }}"
                                     data-amount="{{ $transaction->amount }}"
-                                    data-reference="{{ $transaction->reference }}"
                                     data-description="{{ $transaction->description }}"
                                     onclick="editHotelWalletTransaction(this)">
                                     <i class="ti tabler-edit"></i>
@@ -185,11 +185,6 @@
                             min="0.01">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Reference') }}</label>
-                        <input type="text" name="reference" class="form-control"
-                            placeholder="{{ __('Optional') }}">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" class="form-control" rows="2"></textarea>
                     </div>
@@ -243,11 +238,6 @@
                             required min="0.01">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Reference') }}</label>
-                        <input type="text" name="reference" id="edit_reference" class="form-control"
-                            placeholder="{{ __('Optional') }}">
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">{{ __('Description') }}</label>
                         <textarea name="description" id="edit_description" class="form-control" rows="2"></textarea>
                     </div>
@@ -280,7 +270,6 @@
         var type = button.getAttribute('data-type');
         var currency = button.getAttribute('data-currency');
         var amount = button.getAttribute('data-amount');
-        var reference = button.getAttribute('data-reference');
         var description = button.getAttribute('data-description');
 
         var form = document.getElementById('editHotelWalletTransactionForm');
@@ -298,7 +287,6 @@
         document.getElementById('edit_type').value = type;
         document.getElementById('edit_currency_id').value = currency;
         document.getElementById('edit_amount').value = amount;
-        document.getElementById('edit_reference').value = reference;
         document.getElementById('edit_description').value = description;
     }
 </script>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Hotel;
 use App\Models\HotelBankAccount;
+use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 
 class HotelController extends Controller
@@ -107,13 +108,19 @@ class HotelController extends Controller
 
         $walletTransactions = $query->paginate(10)->withQueryString();
 
+        // Balance after each transaction, carried over from the pages/dates not shown.
+        WalletTransaction::attachRunningBalance($hotel, $walletTransactions);
+
         return view('admin.pages.hotels.show', compact('hotel', 'currencies', 'walletTransactions'));
     }
 
     public function edit(string $id)
     {
-        $hotel = Hotel::with('bankAccounts')->findOrFail($id);
+        $hotel = Hotel::with(['bankAccounts', 'walletTransactions.currency'])->findOrFail($id);
         $currencies = Currency::where('is_active', true)->get();
+
+        WalletTransaction::attachRunningBalance($hotel, $hotel->walletTransactions);
+
         return view('admin.pages.hotels.edit', compact('hotel', 'currencies'));
     }
 
