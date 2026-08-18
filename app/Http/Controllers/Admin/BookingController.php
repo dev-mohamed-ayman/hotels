@@ -18,7 +18,7 @@ class BookingController extends Controller
     {
         $this->middleware('permission:view bookings')->only(['index', 'show']);
         $this->middleware('permission:create bookings')->only(['create', 'store']);
-        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updateGuestPayment', 'updateHotelPayment']);
+        $this->middleware('permission:edit bookings')->only(['edit', 'update', 'updateHotelPayment']);
         $this->middleware('permission:delete bookings')->only(['destroy']);
         $this->middleware('permission:export bookings')->only([
             'downloadBankPdf',
@@ -59,6 +59,16 @@ class BookingController extends Controller
         } else {
             return 'overpaid';
         }
+    }
+
+    /**
+     * Combine the client first/last name into the legacy single client_name column.
+     */
+    private function buildClientName(?string $firstName, ?string $lastName): ?string
+    {
+        $name = trim(trim((string) $firstName).' '.trim((string) $lastName));
+
+        return $name !== '' ? $name : null;
     }
 
     public function index(Request $request)
@@ -113,7 +123,7 @@ class BookingController extends Controller
         $sortOrder = $request->get('sort_order', 'asc');
 
         // Validate sort_by column
-        $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
+        $allowedSortColumns = ['code', 'check_in', 'check_out', 'option_date', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
         if (! in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }
@@ -228,7 +238,8 @@ class BookingController extends Controller
         $request->validate([
             'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
-            'client_name' => 'nullable|string|max:255',
+            'client_first_name' => 'nullable|string|max:255',
+            'client_last_name' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
@@ -324,7 +335,9 @@ class BookingController extends Controller
             $booking = Booking::create([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
-                'client_name' => $request->client_name,
+                'client_first_name' => $request->client_first_name,
+                'client_last_name' => $request->client_last_name,
+                'client_name' => $this->buildClientName($request->client_first_name, $request->client_last_name),
                 'hotel_id' => $request->hotel_id,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
@@ -448,7 +461,8 @@ class BookingController extends Controller
         $request->validate([
             'code' => 'required',
             'customer_id' => 'required|exists:customers,id',
-            'client_name' => 'nullable|string|max:255',
+            'client_first_name' => 'nullable|string|max:255',
+            'client_last_name' => 'nullable|string|max:255',
             'customer_nationality' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
             'currency_id' => 'required|exists:currencies,id',
@@ -547,7 +561,9 @@ class BookingController extends Controller
             $booking->update([
                 'code' => $request->code,
                 'customer_id' => $request->customer_id,
-                'client_name' => $request->client_name,
+                'client_first_name' => $request->client_first_name,
+                'client_last_name' => $request->client_last_name,
+                'client_name' => $this->buildClientName($request->client_first_name, $request->client_last_name),
                 'hotel_id' => $request->hotel_id,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
@@ -635,47 +651,6 @@ class BookingController extends Controller
 
             return back()->with('error', __('Error updating booking').': '.$e->getMessage())->withInput();
         }
-    }
-
-    public function updateGuestPayment(Request $request, Booking $booking)
-    {
-        $request->validate([
-            'guest_paid_amount' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $currentPaidAmount = $booking->paid_amount;
-        $newPaidAmount     = (float) $request->guest_paid_amount;
-        $newStatus         = $this->calcPaymentStatus($newPaidAmount, (float) $booking->net_amount);
-
-        try {
-            DB::beginTransaction();
-
-            // Update paid_amount AND payment_status together atomically
-            $booking->update([
-                'paid_amount'    => $newPaidAmount,
-                'payment_status' => $newStatus,
-            ]);
-
-            // Record wallet transaction for the difference
-            $amountJustPaid = $newPaidAmount - $currentPaidAmount;
-            if ($amountJustPaid > 0) {
-                $booking->customer->walletTransactions()->create([
-                    'amount'      => $amountJustPaid,
-                    'type'        => 'credit',
-                    'currency_id' => $booking->currency_id,
-                    'description' => __('Payment for Booking #:code (Guest Payment)', ['code' => $booking->code]),
-                    'reference'   => $booking->code,
-                ]);
-            }
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()->with('error', __('Error updating guest payment: ').$e->getMessage());
-        }
-
-        return back()->with('success', __('Guest payment updated successfully.'));
     }
 
     public function updateHotelPayment(Request $request, Booking $booking)
@@ -1054,7 +1029,7 @@ class BookingController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
 
         // Validate sort_by column
-        $allowedSortColumns = ['code', 'check_in', 'check_out', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
+        $allowedSortColumns = ['code', 'check_in', 'check_out', 'option_date', 'total_amount', 'paid_amount', 'status', 'created_at', 'updated_at'];
         if (! in_array($sortBy, $allowedSortColumns)) {
             $sortBy = 'created_at';
         }

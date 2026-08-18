@@ -81,12 +81,22 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-4 mb-3 d-none" id="client_name_container">
-                                <label class="form-label" for="client_name">{{ __('Client Name') }}</label>
-                                <input type="text" class="form-control @error('client_name') is-invalid @enderror"
-                                    id="client_name" name="client_name"
-                                    value="{{ old('client_name', $booking->client_name) }}" />
-                                @error('client_name')
+                            <div class="col-md-4 mb-3 d-none client-name-field" id="client_first_name_container">
+                                <label class="form-label" for="client_first_name">{{ __('Client First Name') }}</label>
+                                <input type="text" class="form-control @error('client_first_name') is-invalid @enderror"
+                                    id="client_first_name" name="client_first_name"
+                                    value="{{ old('client_first_name', $booking->client_first_name) }}" />
+                                @error('client_first_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3 d-none client-name-field" id="client_last_name_container">
+                                <label class="form-label" for="client_last_name">{{ __('Client Last Name') }}</label>
+                                <input type="text" class="form-control @error('client_last_name') is-invalid @enderror"
+                                    id="client_last_name" name="client_last_name"
+                                    value="{{ old('client_last_name', $booking->client_last_name) }}" />
+                                @error('client_last_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -585,17 +595,22 @@
         function toggleClientName() {
             const customerSelect = document.getElementById('customer_id');
             const selectedOption = customerSelect.options[customerSelect.selectedIndex];
-            const clientNameContainer = document.getElementById('client_name_container');
-            const clientNameInput = document.getElementById('client_name');
+            const isCorporate = selectedOption && selectedOption.dataset.type === 'corporate';
+            const inputs = [
+                document.getElementById('client_first_name'),
+                document.getElementById('client_last_name'),
+            ];
 
-            if (selectedOption && selectedOption.dataset.type === 'corporate') {
-                clientNameContainer.classList.remove('d-none');
-                clientNameInput.required = true;
-            } else {
-                clientNameContainer.classList.add('d-none');
-                clientNameInput.required = false;
-                clientNameInput.value = '';
-            }
+            document.querySelectorAll('.client-name-field').forEach(container => {
+                container.classList.toggle('d-none', !isCorporate);
+            });
+
+            inputs.forEach(input => {
+                input.required = isCorporate;
+                if (!isCorporate) {
+                    input.value = '';
+                }
+            });
         }
 
         // Calculate nights and manage dates

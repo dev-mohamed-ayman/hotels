@@ -241,6 +241,10 @@
                                                             {{ request('sort_by') == 'check_out' ? 'selected' : '' }}>
                                                             {{ __('Check Out') }}
                                                         </option>
+                                                        <option value="option_date"
+                                                            {{ request('sort_by') == 'option_date' ? 'selected' : '' }}>
+                                                            {{ __('Option Date') }}
+                                                        </option>
                                                         <option value="total_amount"
                                                             {{ request('sort_by') == 'total_amount' ? 'selected' : '' }}>
                                                             {{ __('Total Amount') }}
@@ -612,13 +616,6 @@
                                                         </li>
                                                         <li>
                                                             <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                                data-bs-target="#paymentModal{{ $booking->id }}">
-                                                                <i
-                                                                    class="ti tabler-currency-dollar me-2"></i>{{ __('Update Payment') }}
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                                 data-bs-target="#hotelPaymentModal{{ $booking->id }}">
                                                                 <i
                                                                     class="ti tabler-building me-2"></i>{{ __('Update Hotel Payment') }}
@@ -646,63 +643,6 @@
                                             </div>
                                         </td>
                                     </tr>
-
-                                    <!-- Payment Update Modal -->
-                                    <div class="modal fade" id="paymentModal{{ $booking->id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">{{ __('Update Payment') }} -
-                                                        {{ $booking->code }}
-                                                    </h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form action="{{ route('bookings.update-guest-payment', $booking) }}"
-                                                    method="POST">
-                                                    @csrf
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">{{ __('Total Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                value="{{ $booking->total_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->total_amount) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label
-                                                                class="form-label">{{ __('Net Amount') }}</label>
-                                                            <input type="text" class="form-control"
-                                                                value="{{ $booking->net_amount == 0 ? '' : \App\Helpers\NumberHelper::format($booking->net_amount) }} {{ $booking->currency->symbol }}"
-                                                                readonly>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label"
-                                                                for="guest_paid_amount{{ $booking->id }}">{{ __('Guest Paid Amount') }}
-                                                                *</label>
-                                                            <div class="input-group">
-                                                                <input type="number" step="any" class="form-control"
-                                                                    id="guest_paid_amount{{ $booking->id }}"
-                                                                    name="guest_paid_amount" min="0"
-                                                                    value="{{ $booking->paid_amount }}"
-                                                                    data-currency="{{ $booking->currency->symbol }}"
-                                                                    data-booking-id="{{ $booking->id }}"
-                                                                    placeholder="{{ __('Enter total paid amount') }}"
-                                                                    required>
-                                                                <span
-                                                                    class="input-group-text">{{ $booking->currency->symbol }}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">{{ __('Close') }}</button>
-                                                        <button type="submit"
-                                                            class="btn btn-primary">{{ __('Update') }}</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                     <!-- Hotel Payment Update Modal -->
                                     <div class="modal fade" id="hotelPaymentModal{{ $booking->id }}" tabindex="-1">
