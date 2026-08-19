@@ -252,10 +252,10 @@ class BookingController extends Controller
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
             'rooms.*.price' => 'required|numeric|min:0',
-            'rooms.*.margin' => 'required|numeric|min:0',
+            'rooms.*.guest_rate' => 'required|numeric|min:0',
             'rooms.*.child_count' => 'nullable|integer|min:0',
             'rooms.*.child_price' => 'nullable|numeric|min:0',
-            'rooms.*.child_margin' => 'nullable|numeric|min:0',
+            'rooms.*.child_guest_rate' => 'nullable|numeric|min:0',
             'additions' => 'nullable|array',
             'additions.*.net_rate' => 'required|numeric',
             'additions.*.guest_rate' => 'required|numeric',
@@ -291,13 +291,15 @@ class BookingController extends Controller
                 $roomNetRate = $room['price'] * $roomCount * $nights;
                 $netRate += $roomNetRate;
 
-                $roomMargin = $room['margin'] * $roomCount * $nights;
+                // Margin is derived from the guest rate, not entered directly
+                $roomMargin = (($room['guest_rate'] ?? 0) - $room['price']) * $roomCount * $nights;
                 $totalMargin += $roomMargin;
 
                 // Child price and margin are multiplied by nights
                 if (isset($room['child_count']) && $room['child_count'] > 0) {
+                    $childUnitMargin = ($room['child_guest_rate'] ?? 0) - ($room['child_price'] ?? 0);
                     $childPrice += ($room['child_count'] ?? 0) * ($room['child_price'] ?? 0) * $nights;
-                    $childMargin += ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0) * $nights;
+                    $childMargin += ($room['child_count'] ?? 0) * $childUnitMargin * $nights;
                 }
             }
 
@@ -373,10 +375,10 @@ class BookingController extends Controller
                     'room_count' => $room['room_count'] ?? 1,
                     'category' => $room['category'] ?? null,
                     'price' => $room['price'],
-                    'margin' => $room['margin'],
+                    'margin' => ($room['guest_rate'] ?? 0) - $room['price'],
                     'child_count' => $room['child_count'] ?? 0,
                     'child_price' => $room['child_price'] ?? 0,
-                    'child_margin' => $room['child_margin'] ?? 0,
+                    'child_margin' => ($room['child_guest_rate'] ?? 0) - ($room['child_price'] ?? 0),
                 ]);
             }
 
@@ -478,10 +480,10 @@ class BookingController extends Controller
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
             'rooms.*.price' => 'required|numeric|min:0',
-            'rooms.*.margin' => 'required|numeric|min:0',
+            'rooms.*.guest_rate' => 'required|numeric|min:0',
             'rooms.*.child_count' => 'nullable|integer|min:0',
             'rooms.*.child_price' => 'nullable|numeric|min:0',
-            'rooms.*.child_margin' => 'nullable|numeric|min:0',
+            'rooms.*.child_guest_rate' => 'nullable|numeric|min:0',
             'additions' => 'nullable|array',
             'additions.*.net_rate' => 'required|numeric',
             'additions.*.guest_rate' => 'required|numeric',
@@ -517,13 +519,15 @@ class BookingController extends Controller
                 $roomNetRate = $room['price'] * $roomCount * $nights;
                 $netRate += $roomNetRate;
 
-                $roomMargin = $room['margin'] * $roomCount * $nights;
+                // Margin is derived from the guest rate, not entered directly
+                $roomMargin = (($room['guest_rate'] ?? 0) - $room['price']) * $roomCount * $nights;
                 $totalMargin += $roomMargin;
 
                 // Child price and margin are multiplied by nights
                 if (isset($room['child_count']) && $room['child_count'] > 0) {
+                    $childUnitMargin = ($room['child_guest_rate'] ?? 0) - ($room['child_price'] ?? 0);
                     $childPrice += ($room['child_count'] ?? 0) * ($room['child_price'] ?? 0) * $nights;
-                    $childMargin += ($room['child_count'] ?? 0) * ($room['child_margin'] ?? 0) * $nights;
+                    $childMargin += ($room['child_count'] ?? 0) * $childUnitMargin * $nights;
                 }
             }
 
@@ -603,10 +607,10 @@ class BookingController extends Controller
                     'room_count' => $room['room_count'] ?? 1,
                     'category' => $room['category'] ?? null,
                     'price' => $room['price'],
-                    'margin' => $room['margin'],
+                    'margin' => ($room['guest_rate'] ?? 0) - $room['price'],
                     'child_count' => $room['child_count'] ?? 0,
                     'child_price' => $room['child_price'] ?? 0,
-                    'child_margin' => $room['child_margin'] ?? 0,
+                    'child_margin' => ($room['child_guest_rate'] ?? 0) - ($room['child_price'] ?? 0),
                 ]);
             }
 

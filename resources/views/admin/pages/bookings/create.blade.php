@@ -230,7 +230,7 @@
                                     </div>
                                 </div>
                                 <div class="row g-2 mt-2">
-                                    <div class="col-md-3">
+                                    <div class="col-md-2">
                                         <label class="form-label fw-semibold">{{ __('Count') }} <span
                                                 class="text-danger">*</span></label>
                                         <input type="number" name="rooms[0][room_count]" class="form-control room-count"
@@ -243,32 +243,42 @@
                                             class="form-control room-price" min="0" required />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label fw-semibold">{{ __('Margin') }} <span
+                                        <label class="form-label fw-semibold">{{ __('Guest Rate') }} <span
                                                 class="text-danger">*</span></label>
-                                        <input type="number" step="any" name="rooms[0][margin]"
-                                            class="form-control room-margin" min="0" required />
+                                        <input type="number" step="any" name="rooms[0][guest_rate]"
+                                            class="form-control room-guest-rate" min="0" required />
                                     </div>
-                                    <div class="col-md-3 d-flex align-items-end">
+                                    <div class="col-md-2">
+                                        <label class="form-label fw-semibold">{{ __('Margin') }}</label>
+                                        <input type="number" step="any" class="form-control room-margin" value="0"
+                                            readonly />
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
                                         <button type="button" class="btn btn-danger btn-sm remove-room w-100" disabled>
                                             <i class="ti tabler-trash"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="row g-2 mt-2">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                                         <input type="number" name="rooms[0][child_count]"
                                             class="form-control room-child-count" value="0" min="0" />
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
                                         <input type="number" step="any" name="rooms[0][child_price]"
                                             class="form-control room-child-price" value="0" min="0" />
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold text-info">{{ __('Child Guest Rate') }}</label>
+                                        <input type="number" step="any" name="rooms[0][child_guest_rate]"
+                                            class="form-control room-child-guest-rate" value="0" min="0" />
+                                    </div>
+                                    <div class="col-md-3">
                                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                                        <input type="number" step="any" name="rooms[0][child_margin]"
-                                            class="form-control room-child-margin" value="0" min="0" />
+                                        <input type="number" step="any" class="form-control room-child-margin"
+                                            value="0" readonly />
                                     </div>
                                 </div>
                             </div>
@@ -535,7 +545,7 @@
                     </div>
                 </div>
                 <div class="row g-2 mt-2">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-semibold">{{ __('Count') }} <span class="text-danger">*</span></label>
                         <input type="number" name="rooms[${roomIndex}][room_count]" class="form-control room-count" value="1" min="1" required />
                     </div>
@@ -544,27 +554,35 @@
                         <input type="number" step="any" name="rooms[${roomIndex}][price]" class="form-control room-price" min="0" required />
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">{{ __('Margin') }} <span class="text-danger">*</span></label>
-                        <input type="number" step="any" name="rooms[${roomIndex}][margin]" class="form-control room-margin" min="0" required />
+                        <label class="form-label fw-semibold">{{ __('Guest Rate') }} <span class="text-danger">*</span></label>
+                        <input type="number" step="any" name="rooms[${roomIndex}][guest_rate]" class="form-control room-guest-rate" min="0" required />
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">{{ __('Margin') }}</label>
+                        <input type="number" step="any" class="form-control room-margin" value="0" readonly />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
                         <button type="button" class="btn btn-danger btn-sm remove-room w-100">
                             <i class="ti tabler-trash"></i>
                         </button>
                     </div>
                 </div>
                 <div class="row g-2 mt-2">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold text-info">{{ __('Children') }}</label>
                         <input type="number" name="rooms[${roomIndex}][child_count]" class="form-control room-child-count" value="0" min="0" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold text-info">{{ __('Child Net Rate') }}</label>
                         <input type="number" step="any" name="rooms[${roomIndex}][child_price]" class="form-control room-child-price" value="0" min="0" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold text-info">{{ __('Child Guest Rate') }}</label>
+                        <input type="number" step="any" name="rooms[${roomIndex}][child_guest_rate]" class="form-control room-child-guest-rate" value="0" min="0" />
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold text-info">{{ __('Child Margin') }}</label>
-                        <input type="number" step="any" name="rooms[${roomIndex}][child_margin]" class="form-control room-child-margin" value="0" min="0" />
+                        <input type="number" step="any" class="form-control room-child-margin" value="0" readonly />
                     </div>
                 </div>
             `;
@@ -694,10 +712,19 @@
             document.querySelectorAll('.room-row').forEach(row => {
                 const roomCount = parseFloat(row.querySelector('.room-count').value) || 1;
                 const price = parseFloat(row.querySelector('.room-price').value) || 0;
-                const margin = parseFloat(row.querySelector('.room-margin').value) || 0;
+                const guestRate = parseFloat(row.querySelector('.room-guest-rate').value) || 0;
                 const childCount = parseFloat(row.querySelector('.room-child-count').value) || 0;
                 const childPrice = parseFloat(row.querySelector('.room-child-price').value) || 0;
-                const childMargin = parseFloat(row.querySelector('.room-child-margin').value) || 0;
+                const childGuestRate = parseFloat(row.querySelector('.room-child-guest-rate').value) || 0;
+
+                // Margin is derived from the guest rate the customer pays, not entered by hand
+                const margin = guestRate - price;
+                const childMargin = childGuestRate - childPrice;
+
+                const marginDisplay = row.querySelector('.room-margin');
+                const childMarginDisplay = row.querySelector('.room-child-margin');
+                if (marginDisplay) marginDisplay.value = roundNumber(margin);
+                if (childMarginDisplay) childMarginDisplay.value = roundNumber(childMargin);
 
                 premarginTotal += price * roomCount * nights;
                 marginValue += margin * roomCount * nights;
@@ -786,7 +813,7 @@
 
         function attachCalculationListeners() {
             document.querySelectorAll(
-                '.room-count, .room-price, .room-margin, .room-child-count, .room-child-price, .room-child-margin, .addition-net-rate, .addition-guest-rate, .discount-net-rate, .discount-guest-rate, #nights'
+                '.room-count, .room-price, .room-guest-rate, .room-child-count, .room-child-price, .room-child-guest-rate, .addition-net-rate, .addition-guest-rate, .discount-net-rate, .discount-guest-rate, #nights'
             ).forEach(input => {
                 input.removeEventListener('input', calculateSummary);
                 input.addEventListener('input', calculateSummary);
