@@ -70,6 +70,7 @@ class DashboardController extends Controller
         $partialBookings = $user->can('view bookings') ? Booking::where('payment_status', 'partial')->count() : 0;
         $revisedBookings = $user->can('view bookings') ? Booking::where('payment_status', 'revised')->count() : 0;
         $overpaidBookings = $user->can('view bookings') ? Booking::where('payment_status', 'overpaid')->count() : 0;
+        $missedBookings = $user->can('view bookings') ? Booking::where('payment_status', 'missed')->count() : 0;
 
         // Hotels Sales Statistics (only if user can view hotels and bookings)
         $hotelsSales = ($user->can('view hotels') && $user->can('view bookings'))
@@ -174,6 +175,7 @@ class DashboardController extends Controller
             'partialBookings',
             'revisedBookings',
             'overpaidBookings',
+            'missedBookings',
             'hotelsSales',
             'mostUsedCodes',
             'topCustomers',

@@ -30,32 +30,15 @@ class BookingController extends Controller
     }
 
     /**
-     * Calculate payment status based solely on paid_amount vs net_amount.
-     * Rounds to the configured decimal places to avoid floating-point
-     * == comparison bugs.
+     * Calculate payment status from paid_amount vs net_amount, downgrading to
+     * "missed" when the booking is still owing after its option_date passed.
      *
-     * Rules:
-     *  paid == 0           → unpaid
-     *  0 < paid < net      → partial
-     *  paid == net         → paid
-     *  paid > net          → overpaid
+     * See Booking::derivePaymentStatus() for the rules — it is the single
+     * source of truth, shared with the console commands.
      */
-    private function calcPaymentStatus(float $paidAmount, float $netAmount): string
+    private function calcPaymentStatus(float $paidAmount, float $netAmount, \DateTimeInterface|string|null $optionDate = null): string
     {
-        $decimals = (int) config('numbers.decimals', 3);
-
-        $paid = round($paidAmount, $decimals);
-        $net  = round($netAmount, $decimals);
-
-        if ($paid <= 0) {
-            return 'unpaid';
-        } elseif ($paid < $net) {
-            return 'partial';
-        } elseif ($paid === $net) {
-            return 'paid';
-        } else {
-            return 'overpaid';
-        }
+        return Booking::derivePaymentStatus($paidAmount, $netAmount, $optionDate);
     }
 
     /**
@@ -348,7 +331,8 @@ class BookingController extends Controller
             // }
 
             // Recalculate payment status based on net rate only
-            $newStatus = $this->calcPaymentStatus((float) $paidAmount, (float) $netRate);
+            $optionDate = $request->option_date ?? $request->payment_date;
+            $newStatus = $this->calcPaymentStatus((float) $paidAmount, (float) $netRate, $optionDate);
 
             $booking = Booking::create([
                 'code' => $request->code,
@@ -361,7 +345,7 @@ class BookingController extends Controller
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
                 'nights' => $nights,
-                'option_date' => $request->option_date ?? $request->payment_date,
+                'option_date' => $optionDate,
                 'meals_plan' => $request->meals_plan,
                 'status' => 'confirmed', // Default to confirmed for now
                 'payment_status' => $newStatus,
@@ -489,7 +473,7 @@ class BookingController extends Controller
             'option_date' => 'nullable|date',
             'payment_date' => 'nullable|date', // Keep for backward compatibility
             'meals_plan' => 'nullable|string|max:255',
-            'payment_status' => 'nullable|in:paid,unpaid,partial,revised,overpaid', // ignored, auto-calculated
+            'payment_status' => 'nullable|in:paid,unpaid,partial,revised,overpaid,missed', // ignored, auto-calculated
             'rooms' => 'required|array|min:1',
             'rooms.*.room_type' => 'required|in:TPL,DBL,SGL,QUD',
             'rooms.*.room_count' => 'required|integer|min:1',
@@ -574,7 +558,8 @@ class BookingController extends Controller
             // If paid > net, status = overpaid. User can manually adjust paid_amount if needed.
 
             // Recalculate payment status based on net rate only
-            $newStatus = $this->calcPaymentStatus((float) $newPaidAmount, (float) $netRate);
+            $optionDate = $request->option_date ?? $request->payment_date;
+            $newStatus = $this->calcPaymentStatus((float) $newPaidAmount, (float) $netRate, $optionDate);
 
             $booking->update([
                 'code' => $request->code,
@@ -587,7 +572,7 @@ class BookingController extends Controller
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
                 'nights' => $nights,
-                'option_date' => $request->option_date ?? $request->payment_date,
+                'option_date' => $optionDate,
                 'meals_plan' => $request->meals_plan,
                 'payment_status' => $newStatus,
                 'total_amount' => $totalAmount,
@@ -681,7 +666,7 @@ class BookingController extends Controller
         $remainingAmount    = $booking->net_amount - $newHotelPaidAmount;
 
         // payment_status is based on hotel_paid_amount vs net_amount
-        $newStatus = $this->calcPaymentStatus($newHotelPaidAmount, (float) $booking->net_amount);
+        $newStatus = $this->calcPaymentStatus($newHotelPaidAmount, (float) $booking->net_amount, $booking->option_date);
 
         try {
             DB::beginTransaction();
@@ -856,7 +841,7 @@ class BookingController extends Controller
         // If current status is revised, switch to auto-calculate (which might be paid, partial, or unpaid)
         if ($booking->payment_status === 'revised') {
             // Auto calculate based on net amount only (paid_amount vs net_amount)
-            $newStatus = $this->calcPaymentStatus((float) $booking->paid_amount, (float) $booking->net_amount);
+            $newStatus = $this->calcPaymentStatus((float) $booking->paid_amount, (float) $booking->net_amount, $booking->option_date);
             $booking->update(['payment_status' => $newStatus]);
             $message = __('Booking status set to Auto Calculate (:status)', ['status' => ucfirst($newStatus)]);
         } else {

@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\LogUserActivity::class,
             \App\Http\Middleware\SetTimezone::class,
+            \App\Http\Middleware\SweepMissedBookings::class,
         ]);
     })
     ->withSchedule(function ($schedule) {
@@ -41,6 +42,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('02:00')
             ->withoutOverlapping()
             ->runInBackground();
+
+        // The shared host has no scheduler, so SweepMissedBookings middleware
+        // does this on the first request of each day instead. Kept here so the
+        // sweep moves onto cron by itself if one ever becomes available.
+        $schedule->command('bookings:mark-missed')
+            ->dailyAt('00:05')
+            ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -461,7 +461,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
+                    <div class="d-flex justify-content-between mb-4">
                         <div>
                             <p class="mb-1 text-muted">{{ __('Over Paid') }}</p>
                             <h4 class="mb-0 text-primary fw-bold">
@@ -470,6 +470,18 @@
                         <div class="avatar avatar-lg">
                             <div class="avatar-initial bg-label-primary rounded shadow-sm">
                                 <i class="ti tabler-arrow-up ti-md"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <p class="mb-1 text-muted">{{ __('Missed') }}</p>
+                            <h4 class="mb-0 text-dark fw-bold">
+                                {{ $missedBookings == 0 ? '' : \App\Helpers\NumberHelper::format($missedBookings) }}</h4>
+                        </div>
+                        <div class="avatar avatar-lg">
+                            <div class="avatar-initial bg-label-dark rounded shadow-sm">
+                                <i class="ti tabler-clock-exclamation ti-md"></i>
                             </div>
                         </div>
                     </div>
@@ -680,6 +692,11 @@
                                                 <span class="badge bg-info" title="{{ __('Revised') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-refresh"></i>
+                                                </span>
+                                            @elseif ($booking->payment_status == 'missed')
+                                                <span class="badge bg-dark" title="{{ __('Payment deadline passed') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-clock-exclamation"></i>
                                                 </span>
                                             @else
                                                 <span class="text-muted">-</span>

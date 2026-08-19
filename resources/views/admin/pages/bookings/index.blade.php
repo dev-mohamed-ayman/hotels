@@ -187,6 +187,10 @@
                                                             {{ request('payment_status') == 'overpaid' ? 'selected' : '' }}>
                                                             {{ __('Over Paid') }}
                                                         </option>
+                                                        <option value="missed"
+                                                            {{ request('payment_status') == 'missed' ? 'selected' : '' }}>
+                                                            {{ __('Missed') }}
+                                                        </option>
                                                     </select>
                                                 </div>
 
@@ -625,6 +629,11 @@
                                                 <span class="badge bg-primary" title="{{ __('Over Paid') }}"
                                                     style="font-size: 0.75rem;">
                                                     <i class="ti tabler-arrow-up"></i> {{ __('Over Paid') }}
+                                                </span>
+                                            @elseif ($booking->payment_status == 'missed')
+                                                <span class="badge bg-dark" title="{{ __('Payment deadline passed') }}"
+                                                    style="font-size: 0.75rem;">
+                                                    <i class="ti tabler-clock-exclamation"></i> {{ __('Missed') }}
                                                 </span>
                                             @endif
                                         </td>

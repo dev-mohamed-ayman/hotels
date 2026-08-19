@@ -211,6 +211,7 @@
                                         'unpaid'  => 'danger',
                                         'overpaid'=> 'primary',
                                         'revised' => 'info',
+                                        'missed'  => 'dark',
                                     ];
                                     $statusLabels = [
                                         'paid'    => __('Paid'),
@@ -218,6 +219,7 @@
                                         'unpaid'  => __('Unpaid'),
                                         'overpaid'=> __('Over Paid'),
                                         'revised' => __('Revised'),
+                                        'missed'  => __('Missed'),
                                     ];
                                     $currentStatus = $booking->payment_status ?? 'unpaid';
                                     $statusColor = $statusColors[$currentStatus] ?? 'secondary';
