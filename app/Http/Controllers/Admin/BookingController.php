@@ -175,8 +175,10 @@ class BookingController extends Controller
             return;
         }
 
-        // Get current filters from request
-        $currentFilters = $request->only([
+        // Actual filter fields — the filter form always submits all of them
+        // (empty ones included), so any of them in the request means this is a
+        // filter submission / filtered link and is authoritative.
+        $filterKeys = [
             'hotel_id',
             'customer_id',
             'payment_status',
@@ -190,22 +192,44 @@ class BookingController extends Controller
             'currency_id',
             'in_payment_list',
             'search',
-            'sort_by',
-            'sort_order',
-            'per_page',
-        ]);
+        ];
 
-        // Remove empty values
-        $currentFilters = array_filter($currentFilters, function ($value) {
-            return $value !== null && $value !== '';
-        });
+        // Navigation-only params (per_page, sorting) that must not wipe filters.
+        $navKeys = ['sort_by', 'sort_order', 'per_page'];
 
-        // If we have filters in the request, save them to session
-        if (! empty($currentFilters)) {
-            session(['booking_filters' => $currentFilters]);
-        } // If no filters in request but we have saved filters, apply them
-        elseif (session()->has('booking_filters') && empty($currentFilters) && ! $request->has('page')) {
-            $savedFilters = session('booking_filters');
+        $nonEmpty = function (array $values) {
+            return array_filter($values, function ($value) {
+                return $value !== null && $value !== '';
+            });
+        };
+
+        $savedFilters = session('booking_filters', []);
+
+        if ($request->hasAny($filterKeys)) {
+            // Fresh filter submission: replace saved filters, but keep the
+            // current per_page (the filter form does not carry it).
+            $filters = $nonEmpty($request->only($filterKeys)) + $nonEmpty($request->only($navKeys));
+            if (! isset($filters['per_page']) && isset($savedFilters['per_page'])) {
+                $filters['per_page'] = $savedFilters['per_page'];
+            }
+            session(['booking_filters' => $filters]);
+
+            return;
+        }
+
+        // Partial navigation carrying only per_page / sorting (e.g. changing
+        // "Show entries" on a session-restored page): merge into saved filters.
+        $nav = $nonEmpty($request->only($navKeys));
+        if (! empty($nav)) {
+            $merged = array_merge($savedFilters, $nav);
+            session(['booking_filters' => $merged]);
+            $request->merge($merged);
+
+            return;
+        }
+
+        // Plain visit: re-apply the saved filters.
+        if (! empty($savedFilters) && ! $request->has('page')) {
             $request->merge($savedFilters);
         }
     }

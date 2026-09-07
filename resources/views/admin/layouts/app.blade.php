@@ -233,6 +233,8 @@
 
     @yield('scripts')
 
+    @stack('scripts')
+
     <!-- Timezone Search Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {

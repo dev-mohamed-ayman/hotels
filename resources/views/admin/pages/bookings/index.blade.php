@@ -495,8 +495,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <label for="per_page" class="form-label mb-0">{{ __('Show') }}:</label>
                             <select name="per_page" id="per_page" class="form-select form-select-sm"
-                                style="width: auto;"
-                                onchange="window.location.href='{{ route('bookings.index') }}?' + new URLSearchParams({{ json_encode(request()->query()) }}).toString().replace(/&per_page=[^&]*/, '').replace(/per_page=[^&]*/, '') + '&per_page=' + this.value">
+                                style="width: auto;">
                                 <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
                                 <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
                                 <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
