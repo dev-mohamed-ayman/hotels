@@ -747,6 +747,18 @@ class BookingController extends Controller
      */
     private function getFilteredBookingsQuery(Request $request, $notes = false)
     {
+        // Exports triggered from a session-restored page carry no filter params
+        // in the URL — fall back to the filters currently shown on screen.
+        $filterKeys = [
+            'hotel_id', 'customer_id', 'payment_status',
+            'check_in_from', 'check_in_to', 'check_out_from', 'check_out_to',
+            'check_out_today', 'option_date_from', 'option_date_to',
+            'currency_id', 'in_payment_list', 'search',
+        ];
+        if (! $request->hasAny($filterKeys) && session()->has('booking_filters')) {
+            $request->merge(session('booking_filters'));
+        }
+
         $query = Booking::with(['customer', 'hotel', 'currency', 'rooms', 'adjustments']);
 
         if ($notes) {
@@ -949,6 +961,61 @@ class BookingController extends Controller
             });
     }
 
+    /**
+     * Build a readable export filename from the active filters and the export
+     * type, e.g. "Bank Bookings - Hotel=Marriott, Payment=paid, PaymentList
+     * - 2026-09-07 14.32.pdf".
+     */
+    private function buildExportFilename(Request $request, string $type): string
+    {
+        $parts = [];
+
+        if ($request->filled('booking_id')) {
+            $parts[] = 'Booking='.Booking::find($request->booking_id)?->code;
+        }
+        if ($request->filled('hotel_id')) {
+            $parts[] = 'Hotel='.Hotel::find($request->hotel_id)?->name;
+        }
+        if ($request->filled('customer_id')) {
+            $parts[] = 'Customer='.Customer::find($request->customer_id)?->name;
+        }
+        if ($request->filled('payment_status')) {
+            $parts[] = 'Payment='.ucfirst($request->payment_status);
+        }
+        if ($request->filled('check_in_from') || $request->filled('check_in_to')) {
+            $parts[] = 'CheckIn='.($request->check_in_from ?: '...').' to '.($request->check_in_to ?: '...');
+        }
+        if ($request->filled('check_out_from') || $request->filled('check_out_to')) {
+            $parts[] = 'CheckOut='.($request->check_out_from ?: '...').' to '.($request->check_out_to ?: '...');
+        }
+        if ($request->boolean('check_out_today')) {
+            $parts[] = 'CheckOutToday';
+        }
+        if ($request->filled('option_date_from') || $request->filled('option_date_to')) {
+            $parts[] = 'Option='.($request->option_date_from ?: '...').' to '.($request->option_date_to ?: '...');
+        }
+        if ($request->filled('currency_id')) {
+            $parts[] = 'Currency='.Currency::find($request->currency_id)?->code;
+        }
+        if ($request->boolean('in_payment_list')) {
+            $parts[] = 'PaymentList';
+        }
+        if ($request->filled('search')) {
+            $parts[] = 'Search='.$request->search;
+        }
+
+        $filters = $parts ? ' - '.implode(', ', $parts) : '';
+
+        // Keep the name readable even with many / long filter values.
+        if (strlen($filters) > 150) {
+            $filters = substr($filters, 0, 150).'...';
+        }
+
+        $name = $type.' Bookings'.$filters.' - '.now()->format('Y-m-d H.i').'.pdf';
+
+        return preg_replace('/[\/\\\\:*?"<>|]+/', '-', $name);
+    }
+
     public function exportBankPdf(Request $request)
     {
         $bookings = $this->getFilteredBookingsQuery($request)->get();
@@ -1003,7 +1070,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('bookings-bank-export.pdf', 'D');
+        return $mpdf->Output($this->buildExportFilename($request, 'Bank'), 'D');
     }
 
     public function exportDetailedPdf(Request $request)
@@ -1038,7 +1105,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('bookings-detailed-export.pdf', 'D');
+        return $mpdf->Output($this->buildExportFilename($request, 'Detailed'), 'D');
     }
 
     public function exportClientPdf(Request $request)
@@ -1073,7 +1140,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('bookings-client-export.pdf', 'D');
+        return $mpdf->Output($this->buildExportFilename($request, 'Client'), 'D');
     }
 
     public function exportGuestPdf(Request $request)
@@ -1108,7 +1175,7 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('bookings-guest-export.pdf', 'D');
+        return $mpdf->Output($this->buildExportFilename($request, 'Guest'), 'D');
     }
 
     public function exportNetRatePdf(Request $request)
@@ -1143,6 +1210,6 @@ class BookingController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('bookings-netrate-export.pdf', 'D');
+        return $mpdf->Output($this->buildExportFilename($request, 'Net Rate'), 'D');
     }
 }
