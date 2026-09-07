@@ -271,6 +271,21 @@
                                                     </div>
                                                 </div>
 
+                                                <!-- Check Out Today Filter -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label d-block">{{ __('Check Out') }}</label>
+                                                    {{-- Always submitted so unchecking the box actually clears the filter --}}
+                                                    <input type="hidden" name="check_out_today" value="0">
+                                                    <div class="form-check mt-2">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            name="check_out_today" value="1" id="checkOutTodayFilter"
+                                                            {{ request()->boolean('check_out_today') ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="checkOutTodayFilter">
+                                                            {{ __('Check Out Today') }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Sort By -->
                                                 <div class="col-md-3">
                                                     <label class="form-label">{{ __('Sort By') }}</label>
@@ -360,7 +375,7 @@
                             'currency_id',
                             'search',
                             'sort_by',
-                        ]) || request()->boolean('in_payment_list'))
+                        ]) || request()->boolean('in_payment_list') || request()->boolean('check_out_today'))
                         <div class="mb-3">
                             <strong>{{ __('Active Filters') }}:</strong>
                             <div class="d-flex flex-wrap gap-2 mt-2">
@@ -450,6 +465,14 @@
                                     <span class="badge bg-label-primary">
                                         {{ __('Only Payment List') }}
                                         <a href="{{ request()->fullUrlWithQuery(['in_payment_list' => null]) }}"
+                                            class="text-white ms-1">×</a>
+                                    </span>
+                                @endif
+
+                                @if (request()->boolean('check_out_today'))
+                                    <span class="badge bg-label-primary">
+                                        {{ __('Check Out Today') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['check_out_today' => null]) }}"
                                             class="text-white ms-1">×</a>
                                     </span>
                                 @endif

@@ -88,6 +88,11 @@ class BookingController extends Controller
             $query->whereDate('check_out', '<=', $request->check_out_to);
         }
 
+        // Filter bookings checking out today
+        if ($request->boolean('check_out_today')) {
+            $query->whereDate('check_out', now()->toDateString());
+        }
+
         // Filter by option date range
         if ($request->filled('option_date_from')) {
             $query->whereDate('option_date', '>=', $request->option_date_from);
@@ -179,6 +184,7 @@ class BookingController extends Controller
             'check_in_to',
             'check_out_from',
             'check_out_to',
+            'check_out_today',
             'option_date_from',
             'option_date_to',
             'currency_id',
@@ -757,6 +763,11 @@ class BookingController extends Controller
         }
         if ($request->filled('check_out_to')) {
             $query->whereDate('check_out', '<=', $request->check_out_to);
+        }
+
+        // Filter bookings checking out today
+        if ($request->boolean('check_out_today')) {
+            $query->whereDate('check_out', now()->toDateString());
         }
 
         // Filter by option date range
