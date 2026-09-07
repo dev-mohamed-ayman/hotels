@@ -106,9 +106,13 @@ class BookingController extends Controller
             $query->where('in_payment_list', true);
         }
 
-        // Search by booking code
+        // Search by booking code or hotel confirmation number
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%'.$request->search.'%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', '%'.$search.'%')
+                    ->orWhere('hotel_confirmation_number', 'like', '%'.$search.'%');
+            });
         }
 
         // Sorting
@@ -242,6 +246,7 @@ class BookingController extends Controller
             'client_first_name' => 'nullable|string|max:255',
             'client_last_name' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
+            'hotel_confirmation_number' => 'nullable|string|max:255',
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
@@ -343,6 +348,7 @@ class BookingController extends Controller
                 'client_last_name' => $request->client_last_name,
                 'client_name' => $this->buildClientName($request->client_first_name, $request->client_last_name),
                 'hotel_id' => $request->hotel_id,
+                'hotel_confirmation_number' => $request->hotel_confirmation_number,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
@@ -469,6 +475,7 @@ class BookingController extends Controller
             'client_last_name' => 'nullable|string|max:255',
             'customer_nationality' => 'nullable|string|max:255',
             'hotel_id' => 'required|exists:hotels,id',
+            'hotel_confirmation_number' => 'nullable|string|max:255',
             'currency_id' => 'required|exists:currencies,id',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
@@ -572,6 +579,7 @@ class BookingController extends Controller
                 'client_last_name' => $request->client_last_name,
                 'client_name' => $this->buildClientName($request->client_first_name, $request->client_last_name),
                 'hotel_id' => $request->hotel_id,
+                'hotel_confirmation_number' => $request->hotel_confirmation_number,
                 'currency_id' => $request->currency_id,
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
@@ -764,9 +772,13 @@ class BookingController extends Controller
             $query->where('currency_id', $request->currency_id);
         }
 
-        // Search by booking code
+        // Search by booking code or hotel confirmation number
         if ($request->filled('search')) {
-            $query->where('code', 'like', '%'.$request->search.'%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', '%'.$search.'%')
+                    ->orWhere('hotel_confirmation_number', 'like', '%'.$search.'%');
+            });
         }
 
         // Sorting

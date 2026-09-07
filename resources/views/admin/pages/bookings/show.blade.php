@@ -136,6 +136,12 @@
                                             {{ $booking->hotel->name }}
                                         </a>
                                     </div>
+                                    @if ($booking->hotel_confirmation_number)
+                                        <div class="text-muted small mb-2">
+                                            <i class="ti tabler-ticket me-1"></i>{{ __('Confirmation No.') }}:
+                                            {{ $booking->hotel_confirmation_number }}
+                                        </div>
+                                    @endif
                                     @if ($booking->hotel->address)
                                         <div class="text-muted small">
                                             <i

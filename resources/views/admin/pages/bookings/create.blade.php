@@ -81,7 +81,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3 d-none client-name-field" id="client_first_name_container">
-                                <label class="form-label" for="client_first_name">{{ __('Client First Name') }}</label>
+                                <label class="form-label" for="client_first_name">{{ __('Guest First Name') }}</label>
                                 <input type="text" class="form-control @error('client_first_name') is-invalid @enderror"
                                     id="client_first_name" name="client_first_name"
                                     value="{{ old('client_first_name') }}" />
@@ -91,7 +91,7 @@
                             </div>
 
                             <div class="col-md-4 mb-3 d-none client-name-field" id="client_last_name_container">
-                                <label class="form-label" for="client_last_name">{{ __('Client Last Name') }}</label>
+                                <label class="form-label" for="client_last_name">{{ __('Guest Last Name') }}</label>
                                 <input type="text" class="form-control @error('client_last_name') is-invalid @enderror"
                                     id="client_last_name" name="client_last_name"
                                     value="{{ old('client_last_name') }}" />
@@ -130,6 +130,18 @@
                                     @endforeach
                                 </select>
                                 @error('hotel_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label"
+                                    for="hotel_confirmation_number">{{ __('Hotel Confirmation Number') }}</label>
+                                <input type="text"
+                                    class="form-control @error('hotel_confirmation_number') is-invalid @enderror"
+                                    id="hotel_confirmation_number" name="hotel_confirmation_number"
+                                    value="{{ old('hotel_confirmation_number') }}" />
+                                @error('hotel_confirmation_number')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

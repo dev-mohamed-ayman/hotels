@@ -128,10 +128,10 @@
                                             <div class="row g-3">
                                                 <!-- Search -->
                                                 <div class="col-md-3">
-                                                    <label class="form-label">{{ __('Search by Code') }}</label>
+                                                    <label class="form-label">{{ __('Search by Code or Confirmation Number') }}</label>
                                                     <input type="text" name="search" class="form-control"
                                                         value="{{ request('search') }}"
-                                                        placeholder="{{ __('Enter booking code') }}">
+                                                        placeholder="{{ __('Enter booking code or confirmation number') }}">
                                                 </div>
 
                                                 <!-- Hotel Filter -->
@@ -512,7 +512,13 @@
                                 @forelse ($bookings as $booking)
                                     <tr>
                                         <td class="text-nowrap py-2"><strong>{{ $booking->code }}</strong></td>
-                                        <td class="text-nowrap py-2">{{ $booking->hotel->name }}</td>
+                                        <td class="text-nowrap py-2">
+                                            {{ $booking->hotel->name }}
+                                            @if ($booking->hotel_confirmation_number)
+                                                <br><small
+                                                    class="text-muted">{{ $booking->hotel_confirmation_number }}</small>
+                                            @endif
+                                        </td>
                                         <td class="py-2" style="width: 130px;">
                                             @if ($booking->rooms && $booking->rooms->count() > 0)
                                                 @php

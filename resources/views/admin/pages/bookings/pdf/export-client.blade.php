@@ -119,6 +119,7 @@
                 <th class="bg-light-blush nowrap" style="width: 70px">@lang('File Code')</th>
                 <th class="bg-light-blush nowrap" style="width: 130px">@lang('Client Name')</th>
                 <th class="bg-light-blush nowrap" style="width: 200px">@lang('Hotel Name')</th>
+                <th class="bg-light-blush nowrap" style="width: 110px">@lang('Confirmation No.')</th>
                 <th class="bg-light-blush" style="width: 50px">@lang('Meals Plan')</th>
                 <th class="bg-light-blush nowrap" style="width: 90px">@lang('Check In Date')</th>
                 <th class="bg-light-blush nowrap" style="width: 90px">@lang('Check Out Date')</th>
@@ -134,6 +135,7 @@
                 <th class="bg-light-green-total" style="width: 95px">@lang('Total Guest Rate')</th>
                 <th class="bg-light-green-total" style="width: 85px">@lang('Paid Amount')</th>
                 <th class="bg-light-green-total" style="width: 85px">@lang('Rem. Amount')</th>
+                <th class="bg-light-green-total nowrap" style="width: 90px">@lang('Option Date')</th>
             </tr>
         </thead>
         <tbody>
@@ -169,6 +171,7 @@
                             @endif
                             @if ($isFirstBookingInGroup && $loop->first)
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->hotel->name }}</td>
+                                <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->hotel_confirmation_number ?? '-' }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->meals_plan }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->check_in->format('d-M-y') }}</td>
                                 <td rowspan="{{ $totalRoomsInGroup }}">{{ $booking->check_out->format('d-M-y') }}</td>
@@ -220,6 +223,9 @@
                                     <span
                                         style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate - $booking->paid_amount) }}
                                 </td>
+                                <td rowspan="{{ count($booking->rooms) }}">
+                                    {{ $booking->option_date ? $booking->option_date->format('d-M-y') : '-' }}
+                                </td>
                             @endif
                         </tr>
                     @endforeach
@@ -227,7 +233,7 @@
                 @endforeach
                 @endforeach
                 <tr class="bg-gray">
-                    <td colspan="18"></td>
+                    <td colspan="20"></td>
                 </tr>
             @endforeach
 
@@ -281,7 +287,7 @@
 
             @foreach ($currencyTotals as $currencyTotal)
                 <tr class="total-row">
-                    <td style="height: 70px; text-align: center;" class="total-label" colspan="15">
+                    <td style="height: 70px; text-align: center;" class="total-label" colspan="16">
                         {{ __('Total') }}
                         <span style="font-weight: bold; font-size: 19px;">
                             ({{ $currencyTotal['symbol'] }})
@@ -303,6 +309,7 @@
                             {{ $currencyTotal['symbol'] }}
                         </span>{{ formatNumber($currencyTotal['remainingAmount']) }}
                     </td>
+                    <td style="height: 70px;"></td>
                 </tr>
             @endforeach
 
