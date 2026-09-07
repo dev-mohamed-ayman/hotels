@@ -772,6 +772,11 @@ class BookingController extends Controller
             $query->where('currency_id', $request->currency_id);
         }
 
+        // Show only the bookings marked as part of the payment list
+        if ($request->boolean('in_payment_list')) {
+            $query->where('in_payment_list', true);
+        }
+
         // Search by booking code or hotel confirmation number
         if ($request->filled('search')) {
             $search = $request->search;
