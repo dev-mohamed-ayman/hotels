@@ -3,6 +3,16 @@
 * File include item demo only specific css only
 ******************************************************************************/
 
+/* Stretch content container to full width on large screens / zoomed out */
+@media (min-width: 1400px) {
+  .container-xxl {
+    max-width: 100%;
+  }
+  .layout-navbar.navbar-detached.container-xxl {
+    max-inline-size: calc(100% - 1.5rem * 2);
+  }
+}
+
 .menu .app-brand.demo {
   height: 64px;
 }
@@ -102,4 +112,17 @@
 .layout-demo-info {
   text-align: center;
   margin-top: 1rem;
+}
+
+/*
+* Wide screens / zoomed-out: let the content container use the full viewport width
+* instead of being capped at 1440px (Bootstrap container-xxl default).
+******************************************************************************/
+@media (min-width: 1400px) {
+  .container-xxl {
+    max-width: 100%;
+  }
+  .layout-navbar.navbar-detached.container-xxl {
+    max-inline-size: 100%;
+  }
 }
