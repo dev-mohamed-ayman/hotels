@@ -115,55 +115,72 @@
 
     <!-- Transactions Table -->
     <h3>{{ __('Transactions History') }}</h3>
+    @php
+        $columnLabels = [
+            'date' => __('Date'),
+            'type' => __('Type'),
+            'amount' => __('Amount'),
+            'currency' => __('Currency'),
+            'description' => __('Description'),
+            'balance' => __('Cumulative Balance'),
+        ];
+
+        // Same column order as the wallet transactions table in the UI:
+        // Date, Description, Amount (+ Currency), Type, Cumulative Balance.
+        $columns = ['date', 'description', 'amount', 'currency', 'type', 'balance'];
+
+        $balanceFirst = $columns[0] === 'balance';
+    @endphp
     <table>
         <thead>
             <tr>
-                <th>{{ __('Date') }}</th>
-                <th>{{ __('Type') }}</th>
-                <th>{{ __('Amount') }}</th>
-                <th>{{ __('Currency') }}</th>
-                <th>{{ __('Description') }}</th>
-                <th>{{ __('Cumulative Balance') }}</th>
+                @foreach ($columns as $column)
+                    <th>{{ $columnLabels[$column] }}</th>
+                @endforeach
             </tr>
         </thead>
         <tbody>
             {{-- With filters applied, open the statement with the balance carried into the range. --}}
             @foreach ($openingRows as $openingRow)
                 <tr>
-                    <td colspan="5" style="font-weight: bold;">
-                        {{ __('Opening Balance') }}
-                        @if ($openingRow['currency'])
-                            ({{ $openingRow['currency']->code }})
-                        @endif
-                    </td>
-                    <td style="color: {{ $openingRow['balance'] < 0 ? '#dc3545' : '#198754' }}; font-weight: bold;">
-                        @formatNumber($openingRow['balance'])
-                    </td>
+                    @php
+                        $openingBalance = '<td style="color: '.($openingRow['balance'] < 0 ? '#dc3545' : '#198754').'; font-weight: bold;">'.formatNumber($openingRow['balance']).'</td>';
+                        $openingLabel = '<td colspan="5" style="font-weight: bold;">'
+                            .e(__('Opening Balance'))
+                            .($openingRow['currency'] ? ' ('.e($openingRow['currency']->code).')' : '')
+                            .'</td>';
+                    @endphp
+                    @if ($balanceFirst)
+                        {!! $openingBalance !!}
+                        {!! $openingLabel !!}
+                    @else
+                        {!! $openingLabel !!}
+                        {!! $openingBalance !!}
+                    @endif
                 </tr>
             @endforeach
 
             @foreach ($transactions as $transaction)
+                @php
+                    $credit = $transaction->type == 'credit';
+                    $cells = [
+                        'date' => '<td>'.$transaction->created_at->format('Y-m-d H:i').'</td>',
+                        'type' => '<td><span style="color: '.($credit ? '#dc3545' : '#198754').'; font-weight: bold;">'
+                            .e($credit ? __('Credit') : __('Debit')).'</span></td>',
+                        'amount' => '<td style="color: '.($credit ? '#dc3545' : '#198754').'; font-weight: bold;">'
+                            .formatNumber($credit ? -$transaction->amount : $transaction->amount).'</td>',
+                        'currency' => '<td>'.e($transaction->currency->code).'</td>',
+                        'description' => '<td>'.($type == 'hotel'
+                            ? e($model->name).(filled($transaction->description) ? ' — '.e($transaction->description) : '')
+                            : e($transaction->description)).'</td>',
+                        'balance' => '<td style="color: '.($transaction->running_balance < 0 ? '#dc3545' : '#198754').'; font-weight: bold;">'
+                            .formatNumber($transaction->running_balance).'</td>',
+                    ];
+                @endphp
                 <tr>
-                    <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
-                    <td>
-                        <span style="color: {{ $transaction->type == 'credit' ? '#dc3545' : '#198754' }}; font-weight: bold;">
-                            {{ $transaction->type == 'credit' ? __('Credit') : __('Debit') }}
-                        </span>
-                    </td>
-                    <td style="color: {{ $transaction->type == 'credit' ? '#dc3545' : '#198754' }}; font-weight: bold;">
-                        @formatNumber($transaction->type == 'credit' ? -$transaction->amount : $transaction->amount)
-                    </td>
-                    <td>{{ $transaction->currency->code }}</td>
-                    <td>
-                        @if ($type == 'hotel')
-                            {{ $model->name }}{{ filled($transaction->description) ? ' — ' . $transaction->description : '' }}
-                        @else
-                            {{ $transaction->description }}
-                        @endif
-                    </td>
-                    <td style="color: {{ $transaction->running_balance < 0 ? '#dc3545' : '#198754' }}; font-weight: bold;">
-                        @formatNumber($transaction->running_balance)
-                    </td>
+                    @foreach ($columns as $column)
+                        {!! $cells[$column] !!}
+                    @endforeach
                 </tr>
             @endforeach
         </tbody>

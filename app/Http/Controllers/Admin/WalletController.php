@@ -157,7 +157,9 @@ class WalletController extends Controller
             'margin_footer' => 9,
         ]);
 
-        $mpdf->SetDirectionality('rtl');
+        // Match the UI: the statement renders RTL only in Arabic, so the
+        // column order looks identical to the on-screen transactions table.
+        $mpdf->SetDirectionality(app()->getLocale() === 'ar' ? 'rtl' : 'ltr');
         $mpdf->autoScriptToLang = true;
         $mpdf->autoLangToFont = true;
 
