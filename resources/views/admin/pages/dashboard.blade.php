@@ -11,7 +11,8 @@
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
                             <h5 class="mb-0">{{ __('Upcoming Option Dates') }}</h5>
-                            <span class="badge bg-label-warning">{{ __('Next 7 Days') }}</span>
+                            <span class="badge bg-label-warning">{{ $upcomingOptionDates->count() }}
+                                {{ __('Bookings') }}</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -155,14 +156,14 @@
         </div>
     @endif
 
-    <!-- All Bookings Starting Within 2 Days -->
+    <!-- Upcoming Bookings -->
     @if ($upcomingBookings->isNotEmpty())
         <div class="row g-4 mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <h5 class="mb-0">{{ __('All Bookings Starting Within 2 Days') }}</h5>
+                            <h5 class="mb-0">{{ __('Upcoming Bookings') }}</h5>
                             <span class="badge bg-label-info">{{ $upcomingBookings->count() }}
                                 {{ __('Bookings') }}</span>
                         </div>
