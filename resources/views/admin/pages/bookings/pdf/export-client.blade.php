@@ -135,7 +135,6 @@
                 <th class="bg-light-green-total" style="width: 95px">@lang('Total Guest Rate')</th>
                 <th class="bg-light-green-total" style="width: 85px">@lang('Paid Amount')</th>
                 <th class="bg-light-green-total" style="width: 85px">@lang('Rem. Amount')</th>
-                <th class="bg-light-green-total nowrap" style="width: 90px">@lang('Option Date')</th>
             </tr>
         </thead>
         <tbody>
@@ -223,9 +222,6 @@
                                     <span
                                         style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate - $booking->paid_amount) }}
                                 </td>
-                                <td rowspan="{{ count($booking->rooms) }}">
-                                    {{ $booking->option_date ? $booking->option_date->format('d-M-y') : '-' }}
-                                </td>
                             @endif
                         </tr>
                     @endforeach
@@ -233,7 +229,7 @@
                 @endforeach
                 @endforeach
                 <tr class="bg-gray">
-                    <td colspan="20"></td>
+                    <td colspan="19"></td>
                 </tr>
             @endforeach
 
@@ -309,7 +305,6 @@
                             {{ $currencyTotal['symbol'] }}
                         </span>{{ formatNumber($currencyTotal['remainingAmount']) }}
                     </td>
-                    <td style="height: 70px;"></td>
                 </tr>
             @endforeach
 
