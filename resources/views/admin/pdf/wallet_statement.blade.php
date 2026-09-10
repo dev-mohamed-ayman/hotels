@@ -125,13 +125,17 @@
             'balance' => __('Cumulative Balance'),
         ];
 
-        // Same column order as the wallet transactions table in the UI:
-        // Date, Description, Amount (+ Currency), Type, Cumulative Balance.
-        $columns = ['date', 'description', 'amount', 'currency', 'type', 'balance'];
+        // mPDF renders table columns in DOM order (left to right) when the
+        // table is LTR — so mirror exactly what the on-screen transactions
+        // table shows: in the Arabic RTL UI the running balance is the
+        // left-most column, in the English LTR UI the date is.
+        $columns = app()->getLocale() === 'ar'
+            ? ['balance', 'type', 'amount', 'currency', 'description', 'date']
+            : ['date', 'description', 'amount', 'currency', 'type', 'balance'];
 
         $balanceFirst = $columns[0] === 'balance';
     @endphp
-    <table>
+    <table dir="ltr">
         <thead>
             <tr>
                 @foreach ($columns as $column)
