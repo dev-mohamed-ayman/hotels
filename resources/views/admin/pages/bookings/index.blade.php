@@ -668,7 +668,32 @@
         </div>
     </div>
 
+    @section('styles')
+        <style>
+            .select2-container--bootstrap-5 .select2-selection {
+                background-color: transparent !important;
+                border: var(--bs-border-width) solid color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg)) !important;
+            }
+
+            .select2-container--bootstrap-5 .select2-dropdown {
+                border: var(--bs-border-width) solid color-mix(in sRGB, var(--bs-base-color) 22%, var(--bs-paper-bg)) !important;
+            }
+
+            .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
+                color: #fff !important;
+            }
+        </style>
+    @endsection
+
     @push('scripts')
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+            rel="stylesheet" />
+
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize Select2 for filter dropdowns
