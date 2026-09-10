@@ -88,11 +88,6 @@ class BookingController extends Controller
             $query->whereDate('check_out', '<=', $request->check_out_to);
         }
 
-        // Filter bookings checking out today
-        if ($request->boolean('check_out_today')) {
-            $query->whereDate('check_out', now()->toDateString());
-        }
-
         // Filter by option date range
         if ($request->filled('option_date_from')) {
             $query->whereDate('option_date', '>=', $request->option_date_from);
@@ -186,7 +181,6 @@ class BookingController extends Controller
             'check_in_to',
             'check_out_from',
             'check_out_to',
-            'check_out_today',
             'option_date_from',
             'option_date_to',
             'currency_id',
@@ -752,7 +746,7 @@ class BookingController extends Controller
         $filterKeys = [
             'hotel_id', 'customer_id', 'payment_status',
             'check_in_from', 'check_in_to', 'check_out_from', 'check_out_to',
-            'check_out_today', 'option_date_from', 'option_date_to',
+            'option_date_from', 'option_date_to',
             'currency_id', 'in_payment_list', 'search',
         ];
         if (! $request->hasAny($filterKeys) && session()->has('booking_filters')) {
@@ -799,11 +793,6 @@ class BookingController extends Controller
         }
         if ($request->filled('check_out_to')) {
             $query->whereDate('check_out', '<=', $request->check_out_to);
-        }
-
-        // Filter bookings checking out today
-        if ($request->boolean('check_out_today')) {
-            $query->whereDate('check_out', now()->toDateString());
         }
 
         // Filter by option date range
@@ -987,9 +976,6 @@ class BookingController extends Controller
         }
         if ($request->filled('check_out_from') || $request->filled('check_out_to')) {
             $parts[] = 'CheckOut='.($request->check_out_from ?: '...').' to '.($request->check_out_to ?: '...');
-        }
-        if ($request->boolean('check_out_today')) {
-            $parts[] = 'CheckOutToday';
         }
         if ($request->filled('option_date_from') || $request->filled('option_date_to')) {
             $parts[] = 'Option='.($request->option_date_from ?: '...').' to '.($request->option_date_to ?: '...');

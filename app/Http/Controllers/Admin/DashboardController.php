@@ -52,6 +52,14 @@ class DashboardController extends Controller
                 ->get()
             : collect();
 
+        // Bookings checking out today (Departures Today)
+        $departuresToday = $user->can('view bookings')
+            ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
+                ->whereDate('check_out', now()->toDateString())
+                ->orderBy('check_out', 'asc')
+                ->get()
+            : collect();
+
         // Upcoming Option Dates (Next 7 days)
         $upcomingOptionDates = $user->can('view bookings')
             ? Booking::with(['customer', 'hotel', 'currency', 'rooms'])
@@ -182,6 +190,7 @@ class DashboardController extends Controller
             'topCustomersByRevenue',
             'topHotelsByRoomNights',
             'upcomingOptionDates',
+            'departuresToday',
         ));
     }
 
