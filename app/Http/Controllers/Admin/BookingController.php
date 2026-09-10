@@ -916,6 +916,10 @@ class BookingController extends Controller
      */
     public function togglePaymentList(Booking $booking)
     {
+        if (! $booking->in_payment_list && $booking->payment_status === 'paid') {
+            return back()->with('error', __('Paid bookings cannot be added to the payment list'));
+        }
+
         $booking->update(['in_payment_list' => ! $booking->in_payment_list]);
 
         $message = $booking->in_payment_list

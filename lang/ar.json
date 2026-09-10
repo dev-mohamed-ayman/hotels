@@ -249,6 +249,7 @@
     "Paid Amount": "المبلغ المدفوع",
     "Paid Net": "صافي مدفوع",
     "Paid amount cannot exceed total guest rate": "لا يمكن أن يتجاوز المبلغ المدفوع إجمالي سعر الضيف",
+    "Paid bookings cannot be added to the payment list": "الحجوزات المدفوعة لا يمكن إضافتها لقائمة المدفوعات",
     "Paid to Hotel": "المدفوع للفندق",
     "Palestinian": "فلسطيني",
     "Partial Payment": "دفعة جزئية",

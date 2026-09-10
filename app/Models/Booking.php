@@ -29,6 +29,21 @@ class Booking extends Model
     ];
 
     /**
+     * A paid booking has nothing left on the payment list: drop it the moment
+     * its status becomes paid, wherever that status was written from.
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (Booking $booking) {
+            if ($booking->wasChanged('payment_status')
+                && $booking->payment_status === 'paid'
+                && $booking->in_payment_list) {
+                $booking->update(['in_payment_list' => false]);
+            }
+        });
+    }
+
+    /**
      * Client name shortened for exports: "Mohamed Ayman" => "M. Ayman".
      * Falls back to the legacy client_name column, then to the customer name.
      */
