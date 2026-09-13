@@ -12,6 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Explicit auth redirect targets. Without these, an authenticated
+        // visitor hitting the login page falls through to the framework's
+        // name-based guess ("dashboard"/"home"), which does not exist here
+        // (the route is "dashboard.index"), so it bounces to "/" — and with
+        // a non-default locale in session the localization middleware sends
+        // "/ar" right back, creating a redirect loop.
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(fn () => route('dashboard.index'));
+
         $middleware->alias([
             /**** OTHER MIDDLEWARE ALIASES ****/
             'localize' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
