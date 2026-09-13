@@ -26,21 +26,166 @@ class Booking extends Model
         'child_price' => 'float',
         'child_margin' => 'float',
         'in_payment_list' => 'boolean',
+        'wallet_base_hotel' => 'float',
+        'wallet_base_customer' => 'float',
     ];
 
     /**
      * A paid booking has nothing left on the payment list: drop it the moment
      * its status becomes paid, wherever that status was written from.
+     *
+     * Hotel payments are mirrored into the wallets: every change to
+     * hotel_paid_amount re-syncs the booking's postings on the hotel and the
+     * customer wallets (see syncWallets()).
      */
     protected static function booted(): void
     {
+        static::created(function (Booking $booking) {
+            if ((float) $booking->hotel_paid_amount > 0) {
+                $booking->syncWallets();
+            }
+        });
+
         static::updated(function (Booking $booking) {
             if ($booking->wasChanged('payment_status')
                 && $booking->payment_status === 'paid'
                 && $booking->in_payment_list) {
                 $booking->update(['in_payment_list' => false]);
             }
+
+            if ($booking->wasChanged('hotel_paid_amount')) {
+                $booking->syncWallets((float) $booking->getOriginal('hotel_paid_amount'));
+            }
         });
+    }
+
+    /**
+     * Bring the hotel and customer wallets in line with this booking.
+     *
+     * Sync is target-based: what the booking's own postings (plus any legacy
+     * baseline it started from) should total is compared against what has
+     * actually been posted, and only the difference is entered — either
+     * direction, so corrections and rollbacks reverse themselves.
+     *
+     * - Hotel wallet   -> receives exactly hotel_paid_amount (debit).
+     * - Customer wallet -> is debited in step with the hotel payment while
+     *   the hotel is still owed money; the payment that settles the hotel
+     *   tops the debit up to the full guest price (total_amount), because a
+     *   settled hotel means the booking money is fully in hand.
+     *
+     * $priorHotelPaid is what the booking already had paid when a sync is
+     * triggered by an update. For pre-existing bookings whose payments never
+     * produced linked postings, it is captured once as the wallet baseline
+     * so later edits only post the real difference.
+     */
+    public function syncWallets(?float $priorHotelPaid = null): void
+    {
+        $decimals = (int) config('numbers.decimals', 3);
+
+        $net = round((float) $this->net_amount, $decimals);
+        $total = round((float) $this->total_amount, $decimals);
+        $hotelPaid = round((float) $this->hotel_paid_amount, $decimals);
+
+        $this->captureLegacyBaseline($priorHotelPaid, $net, $total, $decimals);
+
+        $hotelTarget = max(0.0, $hotelPaid);
+
+        $settled = $hotelPaid > 0 && $net > 0 && $hotelPaid >= $net;
+        $customerTarget = $settled ? max($total, $hotelPaid) : max(0.0, $hotelPaid);
+
+        if ($this->hotel) {
+            $this->postWalletDelta(
+                $this->hotel,
+                Hotel::class,
+                'wallet_base_hotel',
+                $hotelTarget,
+                $decimals,
+                'Booking '.$this->code.' — hotel payment',
+            );
+        }
+
+        if ($this->customer) {
+            // Customer postings are money taken out: a credit, i.e. negative
+            // in ledger terms.
+            $this->postWalletDelta(
+                $this->customer,
+                Customer::class,
+                'wallet_base_customer',
+                -$customerTarget,
+                $decimals,
+                'Booking '.$this->code.' — customer collection',
+            );
+        }
+    }
+
+    /**
+     * For bookings that carried hotel payments before any wallet posting
+     * existed for them, freeze what the wallets must be assumed to already
+     * reflect, so the sync only ever posts deltas on top of it.
+     */
+    private function captureLegacyBaseline(
+        ?float $priorHotelPaid,
+        float $net,
+        float $total,
+        int $decimals,
+    ): void {
+        if ($priorHotelPaid === null || round($priorHotelPaid, $decimals) <= 0) {
+            return;
+        }
+
+        if ($this->wallet_base_hotel != 0 || $this->wallet_base_customer != 0) {
+            return;
+        }
+
+        $alreadyLinked = WalletTransaction::query()->where('booking_id', $this->id)->exists();
+
+        if ($alreadyLinked || ! $this->exists) {
+            return;
+        }
+
+        $priorSettled = $net > 0 && $priorHotelPaid >= $net;
+
+        $this->forceFill([
+            'wallet_base_hotel' => round($priorHotelPaid, $decimals),
+            'wallet_base_customer' => -round($priorSettled ? $total : $priorHotelPaid, $decimals),
+        ])->save();
+    }
+
+    /**
+     * Post the difference between what a wallet should hold for this booking
+     * and what it already holds (linked postings plus the legacy baseline).
+     * Both sides are in signed ledger terms (debit adds, credit deducts), so
+     * a positive delta is a debit and a negative one is a credit.
+     */
+    private function postWalletDelta(
+        Model $holder,
+        string $holderType,
+        string $baseColumn,
+        float $signedTarget,
+        int $decimals,
+        string $description,
+    ): void {
+        $posted = (float) $this->{$baseColumn}
+            + (float) WalletTransaction::query()
+                ->where('booking_id', $this->id)
+                ->where('transactionable_type', $holderType)
+                ->reorder()
+                ->selectRaw(WalletTransaction::balanceExpression())
+                ->value('balance');
+
+        $delta = round($signedTarget - $posted, $decimals);
+
+        if (abs($delta) < (1 / 10 ** max(1, $decimals))) {
+            return;
+        }
+
+        $holder->walletTransactions()->create([
+            'booking_id' => $this->id,
+            'currency_id' => $this->currency_id,
+            'description' => $description,
+            'amount' => abs($delta),
+            'type' => $delta > 0 ? 'debit' : 'credit',
+        ]);
     }
 
     /**

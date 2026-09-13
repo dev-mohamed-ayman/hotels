@@ -8,6 +8,9 @@ class WalletTransactionObserver
 {
     /**
      * Handle the WalletTransaction "created" event.
+     *
+     * Debit adds to the wallet, credit deducts — the same convention the
+     * ledger helpers (signed_amount, balanceSum) and the UI use.
      */
     public function created(WalletTransaction $walletTransaction): void
     {
@@ -15,9 +18,9 @@ class WalletTransactionObserver
         if (!$holder) return;
 
         if ($walletTransaction->type === 'credit') {
-            $holder->increment('wallet', $walletTransaction->amount);
-        } else {
             $holder->decrement('wallet', $walletTransaction->amount);
+        } else {
+            $holder->increment('wallet', $walletTransaction->amount);
         }
     }
 
@@ -34,16 +37,16 @@ class WalletTransactionObserver
         $originalType = $walletTransaction->getOriginal('type');
 
         if ($originalType === 'credit') {
-            $holder->decrement('wallet', $originalAmount);
-        } else {
             $holder->increment('wallet', $originalAmount);
+        } else {
+            $holder->decrement('wallet', $originalAmount);
         }
 
         // Apply new transaction
         if ($walletTransaction->type === 'credit') {
-            $holder->increment('wallet', $walletTransaction->amount);
-        } else {
             $holder->decrement('wallet', $walletTransaction->amount);
+        } else {
+            $holder->increment('wallet', $walletTransaction->amount);
         }
     }
 
@@ -56,9 +59,9 @@ class WalletTransactionObserver
         if (!$holder) return;
 
         if ($walletTransaction->type === 'credit') {
-            $holder->decrement('wallet', $walletTransaction->amount);
-        } else {
             $holder->increment('wallet', $walletTransaction->amount);
+        } else {
+            $holder->decrement('wallet', $walletTransaction->amount);
         }
     }
 }

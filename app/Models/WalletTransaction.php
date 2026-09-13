@@ -14,6 +14,7 @@ class WalletTransaction extends Model
     protected $fillable = [
         'transactionable_id',
         'transactionable_type',
+        'booking_id',
         'currency_id',
         'description',
         'amount',
@@ -31,6 +32,11 @@ class WalletTransaction extends Model
     public function transactionable()
     {
         return $this->morphTo();
+    }
+
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
     }
 
     public function currency(): BelongsTo
@@ -53,7 +59,7 @@ class WalletTransaction extends Model
      */
     public static function balanceSum(): string
     {
-        return 'SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END)';
+        return "SUM(CASE WHEN type = 'debit' THEN amount ELSE -amount END)";
     }
 
     /**

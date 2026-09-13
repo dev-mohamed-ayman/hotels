@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status VARCHAR(50) NULL");
     }
 
@@ -20,6 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         DB::statement("ALTER TABLE bookings MODIFY COLUMN payment_status ENUM('paid', 'unpaid', 'partial', 'revised', 'overpaid') NULL");
     }
 };
