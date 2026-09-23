@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingHistory extends Model
 {
+    protected $table = 'booking_history';
     protected $guarded = [];
 
     protected $casts = [

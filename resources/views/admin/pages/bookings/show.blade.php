@@ -81,19 +81,19 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-4">
-                        <!-- Customer & Hotel Info -->
-                        <div class="col-lg-4 col-md-6">
+                        <!-- Customer Info -->
+                        <div class="col-lg-3 col-md-6">
                             <div class="card border shadow-none h-100">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
                                         <div class="avatar avatar-md me-3">
                                             <span class="avatar-initial rounded bg-label-primary">
-                                                <i class="ti tabler-user ti-md"></i>
+                                                <i class="ti tabler-building ti-md"></i>
                                             </span>
                                         </div>
                                         <div>
                                             <h6 class="mb-0">{{ __('Customer') }}</h6>
-                                            <small class="text-muted">{{ __('Customer Information') }}</small>
+                                            <small class="text-muted">{{ __('Agency / Company') }}</small>
                                         </div>
                                     </div>
                                     <div class="mb-2">
@@ -116,7 +116,40 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-4 col-md-6">
+                        <!-- Guest Info (New) -->
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card border shadow-none h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-md me-3">
+                                            <span class="avatar-initial rounded bg-label-warning">
+                                                <i class="ti tabler-user ti-md"></i>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ __('Guest') }}</h6>
+                                            <small class="text-muted">{{ __('Guest Information') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="fw-semibold">
+                                            {{ $booking->client_first_name }} {{ $booking->client_last_name }}
+                                            @if(!$booking->client_first_name && !$booking->client_last_name)
+                                                {{ $booking->client_name ?: '-' }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    @if ($booking->customer->nationality)
+                                        <div class="text-muted small">
+                                            <i class="ti tabler-flag me-1"></i>{{ $booking->customer->nationality }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hotel Info -->
+                        <div class="col-lg-3 col-md-6">
                             <div class="card border shadow-none h-100">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
@@ -153,7 +186,7 @@
                         </div>
 
                         <!-- Booking Dates -->
-                        <div class="col-lg-4 col-md-6">
+                        <div class="col-lg-3 col-md-6">
                             <div class="card border shadow-none h-100">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-3">
@@ -175,6 +208,10 @@
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="text-muted small">{{ __('Check Out') }}:</span>
                                             <span class="fw-semibold">{{ $booking->check_out->format('d-m-Y') }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small">{{ __('Meals Plan') }}:</span>
+                                            <span class="badge bg-label-secondary">{{ $booking->meals_plan ?? '-' }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <span class="text-muted small">{{ __('Nights') }}:</span>
@@ -200,20 +237,17 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-6">
+                                        <div class="col-4">
                                             <div class="mb-3">
-                                                <label
-                                                    class="form-label text-muted small mb-1">{{ __('Currency') }}</label>
+                                                <label class="form-label text-muted small mb-1">{{ __('Currency') }}</label>
                                                 <div>
-                                                    <span
-                                                        class="badge bg-label-primary fs-6">{{ $booking->currency->symbol ?? '-' }}</span>
+                                                    <span class="badge bg-label-primary fs-6">{{ $booking->currency->symbol ?? '-' }}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-4">
                                             <div class="mb-3">
-                                                <label
-                                                    class="form-label text-muted small mb-1">{{ __('Status') }}</label>
+                                                <label class="form-label text-muted small mb-1">{{ __('Booking Status') }}</label>
                                                 <div>
                                                     @if ($booking->status == 'pending')
                                                         <span class="badge bg-label-warning">{{ __('Pending') }}</span>
@@ -222,8 +256,33 @@
                                                     @elseif($booking->status == 'cancelled')
                                                         <span class="badge bg-label-danger">{{ __('Cancelled') }}</span>
                                                     @else
-                                                        <span
-                                                            class="badge bg-label-secondary">{{ __(ucfirst($booking->status)) }}</span>
+                                                        <span class="badge bg-label-secondary">{{ __(ucfirst($booking->status)) }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted small mb-1">{{ __('Payment Status') }}</label>
+                                                <div>
+                                                    @if ($booking->payment_status == 'unpaid')
+                                                        <span class="badge bg-label-danger">{{ __('Unpaid') }}</span>
+                                                    @elseif($booking->payment_status == 'partial')
+                                                        <span class="badge bg-label-warning">{{ __('Partial') }}</span>
+                                                    @elseif($booking->payment_status == 'paid')
+                                                        <span class="badge bg-label-success">{{ __('Paid') }}</span>
+                                                    @elseif($booking->payment_status == 'overpaid')
+                                                        <span class="badge bg-label-info">{{ __('Overpaid') }}</span>
+                                                    @elseif($booking->payment_status == 'missed')
+                                                        <span class="badge bg-label-danger">{{ __('Missed') }}</span>
+                                                    @else
+                                                        <span class="badge bg-label-secondary">{{ $booking->payment_status ? __(ucfirst($booking->payment_status)) : '-' }}</span>
+                                                    @endif
+                                                    
+                                                    @if ($booking->in_payment_list)
+                                                        <span class="badge bg-label-dark ms-1" title="{{ __('In Payment List') }}">
+                                                            <i class="ti tabler-list-details ti-xs"></i>
+                                                        </span>
                                                     @endif
                                                 </div>
                                             </div>
@@ -666,5 +725,71 @@
                 </div>
             </div>
         </div>
+
+        <!-- Booking History -->
+        @if ($booking->history->count() > 0)
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="ti tabler-history me-2"></i>{{ __('Booking History') }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>{{ __('Date') }}</th>
+                                        <th>{{ __('User') }}</th>
+                                        <th>{{ __('Action') }}</th>
+                                        <th>{{ __('Changes') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($booking->history as $log)
+                                        <tr>
+                                            <td style="white-space: nowrap;">
+                                                {{ formatDateTime($log->created_at) }}
+                                            </td>
+                                            <td>
+                                                @if ($log->user)
+                                                    {{ $log->user->name }}
+                                                @else
+                                                    <span class="text-muted">{{ __('System') }}</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-label-{{ $log->action == 'created' ? 'success' : ($log->action == 'deleted' ? 'danger' : 'primary') }}">
+                                                    {{ __(ucfirst($log->action)) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if ($log->changes && is_array($log->changes))
+                                                    <ul class="mb-0 ps-3 small">
+                                                        @foreach ($log->changes as $field => $change)
+                                                            <li>
+                                                                <strong>{{ __($field) }}</strong>: 
+                                                                <span class="text-danger text-decoration-line-through">{{ $change['old'] ?? '-' }}</span> 
+                                                                <i class="ti tabler-arrow-right mx-1" style="font-size: 0.8rem;"></i> 
+                                                                <span class="text-success">{{ $change['new'] ?? '-' }}</span>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @elseif($log->action == 'created')
+                                                    <span class="text-muted small">{{ __('Booking Created') }}</span>
+                                                @else
+                                                    <span class="text-muted small">-</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 @endsection
