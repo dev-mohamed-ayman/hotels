@@ -93,6 +93,8 @@ class Booking extends Model
         $settled = $hotelPaid > 0 && $net > 0 && $hotelPaid >= $net;
         $customerTarget = $settled ? max($total, $hotelPaid) : max(0.0, $hotelPaid);
 
+        $description = $this->code . ' - ' . ($this->hotel ? $this->hotel->name : '') . ' - ' . ($this->check_in ? $this->check_in->format('Y-m-d') : '');
+
         if ($this->hotel) {
             $this->postWalletDelta(
                 $this->hotel,
@@ -100,7 +102,7 @@ class Booking extends Model
                 'wallet_base_hotel',
                 $hotelTarget,
                 $decimals,
-                'Booking '.$this->code.' — hotel payment',
+                $description,
             );
         }
 
@@ -113,7 +115,7 @@ class Booking extends Model
                 'wallet_base_customer',
                 -$customerTarget,
                 $decimals,
-                'Booking '.$this->code.' — customer collection',
+                $description,
             );
         }
     }
