@@ -216,11 +216,14 @@
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($booking->paid_amount) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($booking->payment_status === 'paid' ? $totalGuestRate : $booking->paid_amount) }}
                                 </td>
+                                @php
+                                    $clientPaid = $booking->payment_status === 'paid' ? $totalGuestRate : $booking->paid_amount;
+                                @endphp
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate - $booking->paid_amount) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate - $clientPaid) }}
                                 </td>
                             @endif
                         </tr>
@@ -253,7 +256,17 @@
                         ];
                     }
 
-                    $currencyTotals[$currencyId]['paidAmount'] += $booking->paid_amount;
+                    // Calculate total guest rate for this booking
+                    $bookingTotalGuestRate = 0;
+                    foreach ($booking->rooms as $room) {
+                        $bookingTotalGuestRate += ($room->price + $room->margin) * $room->room_count * $booking->nights;
+                        $bookingTotalGuestRate += ($room->child_price + $room->child_margin) * $room->child_count * $booking->nights;
+                    }
+                    $bookingGuestExtras = $booking->adjustments->where('type', 'addition')->sum('guest_rate');
+                    $bookingGuestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
+                    $bookingTotalGuestRate += $bookingGuestExtras - $bookingGuestReducts;
+
+                    $currencyTotals[$currencyId]['paidAmount'] += $booking->payment_status === 'paid' ? $bookingTotalGuestRate : $booking->paid_amount;
 
                     // Calculate totals for this booking (sum all rooms)
                     foreach ($booking->rooms as $room) {
