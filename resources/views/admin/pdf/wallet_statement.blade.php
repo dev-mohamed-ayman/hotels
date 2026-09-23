@@ -168,7 +168,7 @@
                 @php
                     $credit = $transaction->type == 'credit';
                     $cells = [
-                        'date' => '<td>'.$transaction->created_at->format('Y-m-d H:i').'</td>',
+                        'date' => '<td>'.$transaction->created_at->format('Y-m-d').'</td>',
                         'type' => '<td><span style="color: '.($credit ? '#dc3545' : '#198754').'; font-weight: bold;">'
                             .e($credit ? __('Credit') : __('Debit')).'</span></td>',
                         'amount' => '<td style="color: '.($credit ? '#dc3545' : '#198754').'; font-weight: bold;">'
