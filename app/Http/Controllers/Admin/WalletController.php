@@ -167,6 +167,6 @@ class WalletController extends Controller
 
         $mpdf->WriteHTML($html);
 
-        return $mpdf->Output('wallet-statement.pdf', 'I');
+        return $mpdf->Output('wallet-statement.pdf', 'D');
     }
 }
