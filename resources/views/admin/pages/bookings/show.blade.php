@@ -217,11 +217,6 @@
                                             <span class="text-muted small">{{ __('Nights') }}:</span>
                                             <span class="badge bg-label-primary">{{ $booking->nights }}</span>
                                         </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted small">{{ __('Room Nights') }}:</span>
-                                            <span
-                                                class="badge bg-label-info">{{ $booking->rooms->sum('room_count') * $booking->nights }}</span>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
