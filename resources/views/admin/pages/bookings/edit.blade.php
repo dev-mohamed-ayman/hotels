@@ -69,7 +69,11 @@
                                 <select class="form-select @error('customer_id') is-invalid @enderror" id="customer_id"
                                     name="customer_id" required>
                                     <option value="">{{ __('Select Customer') }}</option>
-                                    @foreach ($customers as $customer)
+                                    @php
+                                        // Render only the customers matching the initially selected client type
+                                        $initialClientType = old('client_type', $booking->customer->type);
+                                    @endphp
+                                    @foreach ($customers->where('type', $initialClientType) as $customer)
                                         <option value="{{ $customer->id }}" data-type="{{ $customer->type }}"
                                             {{ old('customer_id', $booking->customer_id) == $customer->id ? 'selected' : '' }}>
                                             {{ $customer->name }}
@@ -594,7 +598,7 @@
         document.getElementById('client_type').addEventListener('change', function() {
             const clientType = this.value;
             const customerSelect = document.getElementById('customer_id');
-            const currentCustomerId = "{{ $booking->customer_id }}";
+            const currentCustomerId = "{{ old('customer_id', $booking->customer_id) }}";
 
             customerSelect.innerHTML = '<option value="">{{ __('Select Customer') }}</option>';
 
@@ -677,7 +681,9 @@
 
         // Initialize on load
         manageDates();
-        toggleClientName();
+        // Apply the client-type filter immediately so the customer list
+        // matches the selected client type when the page opens
+        document.getElementById('client_type').dispatchEvent(new Event('change'));
 
         // Add room
         document.getElementById('addRoom').addEventListener('click', function() {
@@ -1004,7 +1010,9 @@
         // Initial setup
         updateRemoveButtons();
         attachCalculationListeners();
-        calculateSummary();
+        // The layout defines window.roundNumber/formatNumber after this script,
+        // so defer the first calculation until the DOM is ready
+        document.addEventListener('DOMContentLoaded', calculateSummary);
 
         // Open date picker when clicking on date inputs or their labels
         document.querySelectorAll('input[type="date"]').forEach(dateInput => {
