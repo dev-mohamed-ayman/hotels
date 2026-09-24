@@ -1,3 +1,25 @@
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: N/A (initial formalization) → 1.0.0
+
+Modified principles:
+  - I. Laravel-First Architecture (formalized, no content change)
+  - II. UI/UX Consistency (Azha Brand) (formalized, no content change)
+  - III. Security & Permissions (formalized, no content change)
+  - IV. Localization (i18n) (formalized, no content change)
+  - V. Audit & Accountability (formalized, no content change)
+
+Added sections:
+  - Technology Stack Constraints (aligned with resolved template section naming)
+  - Development Workflow & Quality Gates (aligned with resolved template section naming)
+  - Governance (formalized with explicit amendment procedure)
+
+Removed sections: None
+
+Follow-up TODOs: None (all placeholders resolved)
+-->
+
 # Azha Travel Hotels Constitution
 
 ## Core Principles
@@ -54,4 +76,4 @@
 - Amendments require a PR with justification and team approval.
 - Code reviews must verify compliance with these core principles and constraints.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-24
+**Version**: 1.0.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
