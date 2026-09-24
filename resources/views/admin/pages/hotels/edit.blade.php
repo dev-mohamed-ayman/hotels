@@ -132,7 +132,7 @@
 
                         <!-- Wallet Transactions Section -->
                         <hr class="my-4">
-                        <h5 class="mb-3">{{ __('Wallet Transactions') }}</h5>
+                        <h5 class="mb-3">{{ __('Balance Transactions') }}</h5>
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped">
                                 <thead>

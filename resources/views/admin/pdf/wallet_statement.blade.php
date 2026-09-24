@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ __('Wallet Statement') }} - {{ $model->name }}</title>
+    <title>{{ __('Balance Statement') }} - {{ $model->name }}</title>
     <style>
         @page {
             margin: 10mm;
@@ -78,7 +78,7 @@
 <body>
     <div class="logo-container">
         <img src="{{ asset('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="Logo" class="logo-img" />
-        <h2>{{ __('Wallet Statement') }}</h2>
+        <h2>{{ __('Balance Statement') }}</h2>
     </div>
 
     <div class="header-info">

@@ -1,6 +1,6 @@
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{{ __('Wallet') }}</h5>
+        <h5 class="mb-0">{{ __('Balance Statement') }}</h5>
         <div class="d-flex gap-2">
             <a href="{{ route('hotels.wallet.export-pdf', ['hotel' => $hotel->id] + request()->query()) }}"
                 class="btn btn-success">
@@ -81,7 +81,7 @@
             @empty
                 <div class="col-12">
                     <div class="alert alert-info mb-0">
-                        {{ __('No wallet transactions yet.') }}
+                        {{ __('No balance transactions yet.') }}
                     </div>
                 </div>
             @endforelse
@@ -157,7 +157,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add Wallet Transaction') }}</h5>
+                <h5 class="modal-title">{{ __('Add Balance Transaction') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('hotels.wallet.transaction', $hotel->id) }}" method="POST">
@@ -204,7 +204,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Edit Wallet Transaction') }}</h5>
+                <h5 class="modal-title">{{ __('Edit Balance Transaction') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editHotelWalletTransactionForm" method="POST">
