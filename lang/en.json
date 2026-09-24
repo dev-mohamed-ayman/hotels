@@ -400,5 +400,9 @@
     "You cannot delete your own account": "You cannot delete your own account",
     "You have been logged out": "You have been logged out",
     "booking(s)": "booking(s)",
-    "entries": "entries"
+    "entries": "entries",
+    "brand.welcome_login": "Welcome to AZHA Travel! 👋",
+    "brand.footer_copyright": "© %s AZHA Travel. All rights reserved.",
+    "brand.name_short": "AZHA",
+    "brand.name_full": "AZHA Travel"
 }

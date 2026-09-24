@@ -10,8 +10,17 @@
         }
 
         body {
-            font-family: 'Aptos', sans-serif;
+            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif;
             font-size: 12px;
+        }
+
+        /* Azha brand palette (Contract 5): Navy #12214c headers, Navy-subtle row
+           bands #f0f1f5/#e0e3eb, Gold #af934e totals. mPDF renders this inline
+           <style> block; it never loads the web azha-brand.css. If Montserrat /
+           Cairo are registered in the mPDF font directory they are used,
+           otherwise mPDF falls back to its built-in fonts (graceful degradation). */
+        html[dir="rtl"] body {
+            direction: rtl;
         }
 
         .logo-container {
@@ -31,7 +40,7 @@
         }
 
         th {
-            background-color: #0d3c47;
+            background-color: #12214c;
             color: white;
             padding: 12px 4px;
             text-align: center;
@@ -43,23 +52,23 @@
         td {
             padding: 12px 4px;
             text-align: center;
-            background-color: #eef5fa;
+            background-color: #f0f1f5;
             border: 1px solid #fff;
             color: #000;
         }
 
         tbody tr:nth-child(even) td {
-            background-color: #dae8f2;
+            background-color: #e0e3eb;
         }
 
         .empty-row td {
             height: 30px;
-            background-color: #dae8f2;
+            background-color: #e0e3eb;
             border: 1px solid #fff;
         }
 
         tfoot tr.total-row td {
-            background-color: #0d3c47 !important;
+            background-color: #af934e !important;
             color: white !important;
             font-weight: bold;
             padding: 15px 7px;
@@ -69,8 +78,13 @@
 
 <body>
     <div class="logo-container">
-        <img src="{{ public_path('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="AZHA Travel Logo"
-            class="logo-img" />
+        @if (file_exists(public_path('assets/img/branding/logo.png')))
+            <img src="{{ public_path('assets/img/branding/logo.png') }}" alt="{{ __('brand.name_full') }}"
+                class="logo-img" />
+        @else
+            {{-- Graceful degradation (Contract 5): correct Navy/Gold palette + textual brand name, never a blank file. --}}
+            <h2 style="color: #12214c;">{{ __('brand.name_full') }}</h2>
+        @endif
     </div>
 
     <div style="margin-bottom: 15px; text-align: center;">

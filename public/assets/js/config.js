@@ -73,7 +73,7 @@ if (typeof TemplateCustomizer !== 'undefined') {
   window.templateCustomizer = new TemplateCustomizer({
     displayCustomizer: true,
     lang: localStorage.getItem('templateCustomizer-' + templateName + '--Lang') || 'en', // Set default language here
-    // defaultPrimaryColor: '#D11BB4',
+    defaultPrimaryColor: '#12214c', // Azha Navy Blue (Contract 4 Anchor 7 / Contract 6)
     // defaultSkin: 1,
     // defaultTheme: 'system',
     // defaultSemiDark: true,
@@ -96,4 +96,21 @@ if (typeof TemplateCustomizer !== 'undefined') {
       'rtl'
     ]
   });
+
+  // Azha brand migration (Contract 6 / FR-018): returning visitors may carry a
+  // stale pre-rebrand primary color in localStorage (e.g. old Vuexy purple
+  // #7367f0). On first load after deployment, any stored value outside the
+  // approved Azha set is reset once to Navy #12214c so the rebrand is visible
+  // immediately without opening the customizer panel.
+  try {
+    var azhaApprovedColors = ['#12214c', '#af934e'];
+    var azhaColorKey = 'templateCustomizer-' + templateName + '--Color';
+    var azhaStoredColor = localStorage.getItem(azhaColorKey);
+    if (azhaStoredColor && azhaApprovedColors.indexOf(String(azhaStoredColor).toLowerCase()) === -1) {
+      localStorage.setItem(azhaColorKey, '#12214c');
+      window.templateCustomizer.setColor('#12214c', false);
+    }
+  } catch (e) {
+    // Storage unavailable (private mode, etc.) — defaultPrimaryColor above still applies.
+  }
 }

@@ -421,5 +421,9 @@
     "You cannot delete your own account": "لا يمكنك حذف حسابك الخاص",
     "You have been logged out": "You have been logged out",
     "booking(s)": "حجز\/حجوزات",
-    "entries": "صف"
+    "entries": "صف",
+    "brand.welcome_login": "أهلاً بك في AZHA Travel! 👋",
+    "brand.footer_copyright": "© %s جميع الحقوق محفوظة - AZHA Travel",
+    "brand.name_short": "AZHA",
+    "brand.name_full": "AZHA Travel"
 }

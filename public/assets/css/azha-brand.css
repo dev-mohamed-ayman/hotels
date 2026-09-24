@@ -1,0 +1,71 @@
+/**
+ * Azha Travel — Brand Override Stylesheet
+ * -------------------------------------------------------------------------------------
+ * Single source of truth for Azha brand colors + typography in the admin web UI.
+ *
+ * CONTRACT: public/assets/css/azha-brand.css
+ * - Loaded AFTER `public/assets/vendor/css/core.css` and AFTER `demo.css`
+ *   from the shared Blade layout heads (see Contract 4 Anchors 1–2).
+ * - NEVER edit `public/assets/vendor/css/core.css` for brand values (FR-019).
+ *   All brand deviations live in this file so they survive Vuexy vendor updates.
+ * - Palette: Navy Blue primary #12214c, Gold accent #af934e (+ documented variants).
+ * - Typography: Montserrat (Latin) → Neue Frutiger World → Cairo → Tajawal → system.
+ */
+
+:root,
+[data-bs-theme='light'] {
+  --bs-primary: #12214c;
+  --bs-primary-rgb: 18, 33, 76;
+  --bs-primary-bg-subtle: #e8eaf0;
+  --bs-primary-border-subtle: #b0b8cc;
+  --bs-primary-text-emphasis: #0a1230;
+  --azha-gold: #af934e;
+  --azha-gold-rgb: 175, 147, 78;
+  --azha-gold-light: #d4b876;
+  --azha-gold-subtle: #faf6ee;
+  --bs-font-sans-serif: "Montserrat", "Neue Frutiger World", "Cairo", "Tajawal", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+/* Dark theme: Gold becomes the readable primary on dark backgrounds
+   (Navy #12214c is too dark for contrast on near-black surfaces). */
+[data-bs-theme='dark'] {
+  --bs-primary: #af934e;
+  --bs-primary-rgb: 175, 147, 78;
+}
+
+/* Brand typography application (wins over vendor defaults via cascade order). */
+body {
+  font-family: var(--bs-font-sans-serif);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: var(--bs-font-sans-serif);
+}
+
+/* Brand accent helpers — use these instead of hardcoding #af934e. */
+.text-azha-gold {
+  color: var(--azha-gold) !important;
+}
+
+.bg-azha-gold {
+  background-color: var(--azha-gold) !important;
+}
+
+.bg-azha-gold-subtle {
+  background-color: var(--azha-gold-subtle) !important;
+}
+
+.border-azha-gold {
+  border-color: var(--azha-gold) !important;
+}

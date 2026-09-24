@@ -10,9 +10,19 @@
         }
 
         body {
-            font-family: 'Aptos', sans-serif !important;
+            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif !important;
             font-size: 12pt !important;
             color: #000;
+        }
+
+        /* Azha brand palette (Contract 5 / research Decision 6): blush greens
+           remapped — blush → Gold subtle #faf6ee, light green → Navy very light
+           #e0e3eb, light blue → Gold light #d4b876, dark-green headers →
+           Navy #12214c. Red danger cells (#c00000 / #ff0000) are preserved
+           unchanged per FR-013. mPDF renders this inline <style> block; it
+           never loads the web azha-brand.css. */
+        html[dir="rtl"] body {
+            direction: rtl;
         }
 
         table {
@@ -34,25 +44,25 @@
         }
 
         th {
-            background-color: #fce4d6;
+            background-color: #faf6ee;
             font-weight: bold;
             vertical-align: middle;
         }
 
         .bg-light-blush {
-            background-color: #fbe5d6;
+            background-color: #faf6ee;
         }
 
         .header-green {
-            background-color: #e2efda;
+            background-color: #e0e3eb;
         }
 
         .bg-light-green {
-            background-color: #e2f0d9;
+            background-color: #e0e3eb;
         }
 
         .bg-light-blue {
-            background-color: #bdd7ee;
+            background-color: #d4b876;
         }
 
         .bg-red {
@@ -61,12 +71,12 @@
         }
 
         .bg-dark-green {
-            background-color: #385724;
+            background-color: #12214c;
             color: white;
         }
 
         .bg-light-green-total {
-            background-color: #a9d18e;
+            background-color: #d4b876;
         }
 
         .header-red {
@@ -76,12 +86,12 @@
         }
 
         .header-dark-green {
-            background-color: #70ad47;
+            background-color: #12214c;
             color: white;
         }
 
         .bg-gray {
-            background-color: #f2f2f2;
+            background-color: #f0f1f5;
         }
 
         .text-red {
@@ -90,12 +100,12 @@
         }
 
         .total-row {
-            background-color: #d9e1f2;
+            background-color: #d4b876;
             font-weight: bold;
         }
 
         .total-label {
-            background-color: #d9e1f2;
+            background-color: #d4b876;
             font-weight: bold;
             text-align: right;
         }

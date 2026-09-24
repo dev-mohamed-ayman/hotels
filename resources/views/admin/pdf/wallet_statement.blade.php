@@ -12,8 +12,17 @@
         }
 
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif;
             font-size: 10pt;
+        }
+
+        /* Azha brand palette (Contract 5): Navy #12214c headers, Navy-subtle row
+           bands #f0f1f5/#e0e3eb, Gold #af934e totals. mPDF renders this inline
+           <style> block; it never loads the web azha-brand.css. If Montserrat /
+           Cairo are registered in the mPDF font directory they are used,
+           otherwise mPDF falls back to its built-in fonts (graceful degradation). */
+        html[dir="rtl"] body {
+            direction: rtl;
         }
 
         .logo-container {
@@ -45,7 +54,7 @@
         }
 
         th {
-            background-color: #0d3c47;
+            background-color: #12214c;
             color: white;
             padding: 8px;
             text-align: center;
@@ -56,13 +65,13 @@
         td {
             padding: 8px;
             text-align: center;
-            background-color: #eef5fa;
+            background-color: #f0f1f5;
             border: 1px solid #fff;
             color: #000;
         }
 
         tbody tr:nth-child(even) td {
-            background-color: #dae8f2;
+            background-color: #e0e3eb;
         }
 
         .text-right {
@@ -77,7 +86,12 @@
 
 <body>
     <div class="logo-container">
-        <img src="{{ asset('./472228932_903900521859408_2733195805942687837_n.jpg') }}" alt="Logo" class="logo-img" />
+        @if (file_exists(public_path('assets/img/branding/logo.png')))
+            <img src="{{ asset('assets/img/branding/logo.png') }}" alt="{{ __('brand.name_full') }}" class="logo-img" />
+        @else
+            {{-- Graceful degradation (Contract 5): correct Navy/Gold palette + textual brand name, never a blank file. --}}
+            <h2 style="color: #12214c;">{{ __('brand.name_full') }}</h2>
+        @endif
         <h2>{{ __('Balance Statement') }}</h2>
     </div>
 
