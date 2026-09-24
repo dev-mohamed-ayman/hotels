@@ -210,6 +210,21 @@
                                         ($r->child_price + $r->child_margin) * $r->child_count * $booking->nights;
                                 }
                                 $totalGuestRate += $guestExtras - $guestReducts;
+
+                                // The client pays the full guest total (net + margin). What they
+                                // have actually paid is whatever any payment flow recorded — the
+                                // customer payment column (paid_amount), the hotel payment
+                                // column (hotel_paid_amount, which drives payment_status), or
+                                // both together. Overpayments and "fully paid" statuses settle
+                                // at exactly the total. (Net 1000 + margin 100 = total 1100:
+                                // 600 paid => 500 remaining, 0 paid => 1100, paid => 0.)
+                                $clientPaid = max(
+                                    (float) $booking->paid_amount,
+                                    (float) $booking->hotel_paid_amount
+                                );
+                                if ($clientPaid >= $totalGuestRate) {
+                                    $clientPaid = $totalGuestRate;
+                                }
                             @endphp
                             @if ($loop->first)
                                 <td rowspan="{{ count($booking->rooms) }}">
@@ -226,14 +241,11 @@
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($booking->payment_status === 'paid' ? $totalGuestRate : $booking->paid_amount) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($clientPaid) }}
                                 </td>
-                                @php
-                                    $clientPaid = $booking->payment_status === 'paid' ? $totalGuestRate : $booking->paid_amount;
-                                @endphp
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($totalGuestRate - $clientPaid) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber(max(0, $totalGuestRate - $clientPaid)) }}
                                 </td>
                             @endif
                         </tr>
@@ -276,7 +288,18 @@
                     $bookingGuestReducts = $booking->adjustments->where('type', 'discount')->sum('guest_rate');
                     $bookingTotalGuestRate += $bookingGuestExtras - $bookingGuestReducts;
 
-                    $currencyTotals[$currencyId]['paidAmount'] += $booking->payment_status === 'paid' ? $bookingTotalGuestRate : $booking->paid_amount;
+                    // Same rule as the per-row cells: client owes the full guest
+                    // total, and what they paid is whatever any payment flow
+                    // recorded (customer payments, hotel payments, or both),
+                    // capped at the total so a fully paid booking nets to zero.
+                    $bookingClientPaid = max(
+                        (float) $booking->paid_amount,
+                        (float) $booking->hotel_paid_amount
+                    );
+                    if ($bookingClientPaid >= $bookingTotalGuestRate) {
+                        $bookingClientPaid = $bookingTotalGuestRate;
+                    }
+                    $currencyTotals[$currencyId]['paidAmount'] += $bookingClientPaid;
 
                     // Calculate totals for this booking (sum all rooms)
                     foreach ($booking->rooms as $room) {
