@@ -54,7 +54,7 @@
         }
 
         th {
-            background-color: #12214c;
+            background-color: #af934e;
             color: white;
             padding: 8px;
             text-align: center;
@@ -85,24 +85,11 @@
 </head>
 
 <body>
-    <div class="logo-container">
-        @if (file_exists(public_path('assets/img/branding/logo.png')))
-            <img src="{{ asset('assets/img/branding/logo.png') }}" alt="{{ __('brand.name_full') }}" class="logo-img" />
-        @else
-            {{-- Graceful degradation (Contract 5): correct Navy/Gold palette + textual brand name, never a blank file. --}}
-            <h2 style="color: #12214c;">{{ __('brand.name_full') }}</h2>
-        @endif
-        <h2>{{ __('Balance Statement') }}</h2>
-    </div>
 
-    <div class="header-info">
-        <div class="customer-info">
-            {{ $type == 'customer' ? __('Customer') : __('Hotel') }}: {{ $model->name }}
-        </div>
-        <div>
-            {{ __('Date') }}: {{ now()->format('Y-m-d') }}
-        </div>
-    </div>
+    @include('admin.pdf.partials.header', [
+        'headerTitle' => __('Balance Statement'),
+        'headerSubtitle' => ($type == 'customer' ? __('Customer') : __('Hotel')) . ': ' . $model->name . ' | ' . __('Date') . ': ' . now()->format('Y-m-d')
+    ])
 
     <!-- Balance Summary -->
     @if ($balances->count() > 0)

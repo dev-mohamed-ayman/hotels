@@ -40,7 +40,7 @@
         }
 
         th {
-            background-color: #12214c;
+            background-color: #af934e;
             color: white;
             padding: 12px 4px;
             text-align: center;
@@ -77,19 +77,11 @@
 </head>
 
 <body>
-    <div class="logo-container">
-        @if (file_exists(public_path('assets/img/branding/logo.png')))
-            <img src="{{ public_path('assets/img/branding/logo.png') }}" alt="{{ __('brand.name_full') }}"
-                class="logo-img" />
-        @else
-            {{-- Graceful degradation (Contract 5): correct Navy/Gold palette + textual brand name, never a blank file. --}}
-            <h2 style="color: #12214c;">{{ __('brand.name_full') }}</h2>
-        @endif
-    </div>
 
-    <div style="margin-bottom: 15px; text-align: center;">
-        <strong>{{ __('Total Bookings') }}: {{ $totalBookingsCount ?? count($bookingsData) }}</strong>
-    </div>
+    @include('admin.pdf.partials.header', [
+        'headerTitle' => __('Bank Export'),
+        'headerSubtitle' => __('Total Bookings') . ': ' . ($totalBookingsCount ?? count($bookingsData))
+    ])
 
     <table>
         <thead>

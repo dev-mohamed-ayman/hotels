@@ -44,49 +44,55 @@
         }
 
         th {
-            background-color: #faf6ee;
+            background-color: #af934e;
+            color: white;
             font-weight: bold;
             vertical-align: middle;
         }
 
         .bg-light-blush {
-            background-color: #faf6ee;
+            background-color: #af934e;
+            color: white;
         }
 
         .header-green {
-            background-color: #e0e3eb;
+            background-color: #af934e;
+            color: white;
         }
 
         .bg-light-green {
-            background-color: #e0e3eb;
+            background-color: #af934e;
+            color: white;
         }
 
         .bg-light-blue {
-            background-color: #d4b876;
+            background-color: #af934e;
+            color: white;
         }
 
         .bg-red {
-            background-color: #c00000;
+            background-color: #af934e;
             color: white;
         }
 
         .bg-dark-green {
-            background-color: #12214c;
+            background-color: #af934e;
             color: white;
         }
 
         .bg-light-green-total {
-            background-color: #d4b876;
+            background-color: #af934e;
+            color: white;
         }
 
         .header-red {
-            background-color: #ff0000;
+            background-color: #af934e;
             color: white;
             font-weight: bold;
         }
 
         .header-dark-green {
-            background-color: #12214c;
+            background-color: #af934e;
             color: white;
         }
 
@@ -118,9 +124,10 @@
 
 <body>
 
-    <div style="margin-bottom: 15px; text-align: center; font-size: 12pt;">
-        <strong>{{ __('Total Bookings') }}: {{ count($bookings) }}</strong>
-    </div>
+    @include('admin.pdf.partials.header', [
+        'headerTitle' => __('Client Export'),
+        'headerSubtitle' => __('Total Bookings') . ': ' . count($bookings)
+    ])
     {{-- @dd($bookings) --}}
 
     <table>
@@ -233,7 +240,7 @@
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
-                                        style="font-weight: bold; font-size: 19px;"></span>{{ $booking->currency->symbol }}</span>{{ formatNumber($guestReducts) }}
+                                        style="font-weight: bold; font-size: 19px;">{{ $booking->currency->symbol }}</span>{{ formatNumber($guestReducts) }}
                                 </td>
                                 <td rowspan="{{ count($booking->rooms) }}">
                                     <span
