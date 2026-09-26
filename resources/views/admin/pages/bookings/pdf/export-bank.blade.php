@@ -40,8 +40,8 @@
         }
 
         th {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
             padding: 12px 4px;
             text-align: center;
             font-weight: bold;

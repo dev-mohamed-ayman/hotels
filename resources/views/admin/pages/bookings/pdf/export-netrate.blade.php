@@ -44,56 +44,56 @@
         }
 
         th {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
             font-weight: bold;
             vertical-align: middle;
         }
 
         .bg-light-blush {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .header-green {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-light-green {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-light-blue {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-red {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-dark-green {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-light-green-total {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .header-red {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
             font-weight: bold;
         }
 
         .header-dark-green {
-            background-color: #af934e;
-            color: white;
+            background-color: #d4b876;
+            color: #000000;
         }
 
         .bg-gray {

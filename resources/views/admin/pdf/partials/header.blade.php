@@ -15,12 +15,12 @@
         </td>
         <td style="width: 50%; vertical-align: middle; text-align: {{ app()->getLocale() == 'ar' ? 'left' : 'right' }}; padding: 0; border: 0; border-style: none;">
             @if (isset($headerTitle) && !empty($headerTitle))
-                <div style="font-size: 18pt; font-weight: bold; color: #12214c; margin: 0; line-height: 1.2;">
+                <div style="font-size: 18pt; font-weight: bold; color: #000000; margin: 0; line-height: 1.2;">
                     {{ $headerTitle }}
                 </div>
             @endif
             @if (isset($headerSubtitle) && !empty($headerSubtitle))
-                <div style="font-size: 12pt; color: #af934e; margin-top: 6px; line-height: 1.2;">
+                <div style="font-size: 12pt; color: #d4b876; margin-top: 6px; line-height: 1.2;">
                     {{ $headerSubtitle }}
                 </div>
             @endif
