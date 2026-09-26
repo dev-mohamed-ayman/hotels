@@ -10,7 +10,7 @@
         }
 
         body {
-            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif !important;
+            font-family: 'montserrat', 'cairo', 'dejavusans', sans-serif !important;
             font-size: 12pt !important;
             color: #000;
         }
@@ -20,7 +20,8 @@
            #e0e3eb, light blue → Gold light #d4b876, dark-green headers →
            Navy #12214c. Red danger cells (#c00000 / #ff0000) are preserved
            unchanged per FR-013. mPDF renders this inline <style> block; it
-           never loads the web azha-brand.css. */
+           never loads the web azha-brand.css. Custom montserrat + cairo fonts
+           are registered via App\Traits\GeneratesPdf on the Mpdf instance. */
         html[dir="rtl"] body {
             direction: rtl;
         }

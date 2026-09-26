@@ -10,7 +10,7 @@
         }
 
         body {
-            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif !important;
+            font-family: 'montserrat', 'cairo', 'dejavusans', sans-serif !important;
             font-size: 12pt !important;
             color: #000;
         }

@@ -12,15 +12,15 @@
         }
 
         body {
-            font-family: Montserrat, "Neue Frutiger World", Cairo, Tajawal, "DejaVu Sans Condensed", sans-serif;
+            font-family: 'montserrat', 'cairo', 'dejavusans', sans-serif;
             font-size: 10pt;
         }
 
         /* Azha brand palette (Contract 5): Navy #12214c headers, Navy-subtle row
            bands #f0f1f5/#e0e3eb, Gold #af934e totals. mPDF renders this inline
-           <style> block; it never loads the web azha-brand.css. If Montserrat /
-           Cairo are registered in the mPDF font directory they are used,
-           otherwise mPDF falls back to its built-in fonts (graceful degradation). */
+           <style> block; it never loads the web azha-brand.css. Custom
+           montserrat + cairo fonts are registered via App\Traits\GeneratesPdf
+           on the Mpdf instance. */
         html[dir="rtl"] body {
             direction: rtl;
         }

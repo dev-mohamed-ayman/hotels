@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Hotel;
 use App\Models\WalletTransaction;
+use App\Traits\GeneratesPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Mpdf\Mpdf;
 
 class WalletController extends Controller
 {
+    use GeneratesPdf;
+
     public function store(Request $request, Customer $customer)
     {
         return $this->processTransaction($request, $customer);
@@ -146,9 +148,7 @@ class WalletController extends Controller
 
         $balances = $balanceQuery->get();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'margin_left' => 15,
             'margin_right' => 15,
             'margin_top' => 16,
@@ -156,12 +156,6 @@ class WalletController extends Controller
             'margin_header' => 9,
             'margin_footer' => 9,
         ]);
-
-        // Match the UI: the statement renders RTL only in Arabic, so the
-        // column order looks identical to the on-screen transactions table.
-        $mpdf->SetDirectionality(app()->getLocale() === 'ar' ? 'rtl' : 'ltr');
-        $mpdf->autoScriptToLang = true;
-        $mpdf->autoLangToFont = true;
 
         $html = view('admin.pdf.wallet_statement', compact('model', 'transactions', 'balances', 'openingRows', 'type'))->render();
 

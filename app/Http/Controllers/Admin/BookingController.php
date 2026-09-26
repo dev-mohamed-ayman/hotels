@@ -7,13 +7,15 @@ use App\Models\Booking;
 use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Hotel;
+use App\Traits\GeneratesPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Mpdf\Mpdf;
 
 class BookingController extends Controller
 {
+    use GeneratesPdf;
+
     public function __construct()
     {
         $this->middleware('permission:view bookings')->only(['index', 'show']);
@@ -1045,17 +1047,12 @@ class BookingController extends Controller
 
         $html = view('admin.pages.bookings.pdf.export-bank', compact('bookingsData', 'totalAmount', 'totalBookingsCount'))->render();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'orientation' => 'P',
             'margin_left' => 7,
             'margin_right' => 7,
             'margin_top' => 7,
             'margin_bottom' => 7,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1080,17 +1077,12 @@ class BookingController extends Controller
             'bookingNotes' => $bookingNotes,
         ])->render();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'orientation' => 'L',
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 10,
             'margin_bottom' => 10,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1115,17 +1107,12 @@ class BookingController extends Controller
             'bookingNotes' => $bookingNotes,
         ])->render();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'orientation' => 'L',
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 10,
             'margin_bottom' => 10,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1150,17 +1137,12 @@ class BookingController extends Controller
             'bookingNotes' => $bookingNotes,
         ])->render();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'orientation' => 'L',
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 10,
             'margin_bottom' => 10,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
@@ -1185,17 +1167,12 @@ class BookingController extends Controller
             'bookingNotes' => $bookingNotes,
         ])->render();
 
-        $mpdf = new Mpdf([
-            'mode' => 'utf-8',
-            'format' => 'A4',
+        $mpdf = $this->makePdf([
             'orientation' => 'L',
             'margin_left' => 10,
             'margin_right' => 10,
             'margin_top' => 10,
             'margin_bottom' => 10,
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-            'default_font' => '',
         ]);
 
         $mpdf->WriteHTML($html);
